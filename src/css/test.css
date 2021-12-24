@@ -1,0 +1,40 @@
+<style>.search * {
+    font-size: 16px !important;
+}
+
+tr.v-data-table__selected {
+    background: #1976d2 !important;
+}
+
+.display.v-data-table {
+    white-space: nowrap;
+    color: #333333;
+}
+
+.display.v-data-table th {
+    border: 2px #333333 solid;
+    background: #55cccc;
+    font-size: 32px !important;
+    color: #333333;
+    bold: true;
+}
+
+.display.v-data-table td {
+    background: #dddddd;
+    border: 1px solid;
+    font-size: 24px !important;
+}
+
+.display.v-data-table tr:nth-child(odd) td {
+    background: #fff;
+}
+
+.v-data-table--fixed-header>>>th:nth-child(1) {
+    position: sticky !important;
+    position: -webkit-sticky !important;
+    left: 0;
+    z-index: 9999;
+    background: white;
+}
+
+</style>

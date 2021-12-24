@@ -1,0 +1,23 @@
+//フォント設定
+.v-form {
+    border: 1px solid;
+}
+
+.v-data-table {
+    border: 1px solid;
+    font-family: "MS Pゴシック" !important;
+}
+
+.v-data-table th {
+    background: #f3ffd8;
+    border: 1px solid;
+}
+
+.v-data-table td {
+    background: #f0f8ff;
+    border: 1px solid;
+}
+
+.v-data-table tr:nth-child(odd) td {
+    background: #fff;
+}
