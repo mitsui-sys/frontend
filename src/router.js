@@ -21,7 +21,25 @@ const router = new Router({
       path: "/",
       name: "home",
       // この場合、App.vueで配置した名前なしのrouter-viewのみ切り替わります。
+      component: loadView("Home"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/sheet",
+      name: "sheet",
+      // この場合、App.vueで配置した名前なしのrouter-viewのみ切り替わります。
       component: loadView("Sheet"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/pdf",
+      name: "pdf",
+      // この場合、App.vueで配置した名前なしのrouter-viewのみ切り替わります。
+      component: loadView("SamplePDF"),
       meta: {
         requiresAuth: true,
       },
@@ -113,7 +131,7 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   // NProgress.start()
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    console.log("認証が必要あり");
+    console.log("認証必要あり");
     // トークンが存在、かつログイン有効期限を過ぎてない場合、またはログイン画面の場合
     const hasToken = store.state.auth.login.token;
     const hasExpire = store.state.auth.login.expire > new Date().getTime();
@@ -131,7 +149,7 @@ router.beforeEach((to, from, next) => {
   } else {
     // ログイン画面に飛ばす。ログイン後に元の画面に戻れるよう、backuriパラメーターにリダイレクト前のURLを入れる
     //next({path: '/login', query: {redirect: to.fullPath, message: true}})
-    console.log("認証が必要なし");
+    console.log("認証必要なし");
     next();
   }
 });
