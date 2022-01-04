@@ -123,6 +123,11 @@
             </v-list-item>
           </v-list>
         </v-menu>
+        <v-btn text to="/fileregister">ファイル登録</v-btn>
+        <v-btn text to="/help">ボタン１</v-btn>
+        <v-btn text to="/help"
+          >{{ btn_title.help }}<v-icon>mdi-help</v-icon></v-btn
+        >
       </v-toolbar-items>
     </v-app-bar>
     <!-- メイン -->
@@ -163,6 +168,7 @@ export default {
         setting: "設定",
         login: "ログイン",
         support: "サポート",
+        help: "ヘルプ",
       },
       drawer: false,
       supports: [

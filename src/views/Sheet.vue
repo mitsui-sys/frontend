@@ -86,55 +86,55 @@
         <v-spacer></v-spacer>
         <v-btn class="mb-2" @click="getTemplateWorkbook()"> Excel出力 </v-btn>
         <v-divider class="mx-4" inset vertical></v-divider>
-        <v-btn
-          class="mb-2"
-          @click="registerItem()"
-          v-if="selected.length > 0 && loginData.level >= 1"
-        >
-          地図システムで確認
-        </v-btn>
-        <v-btn
-          class="mb-2"
-          @click="editItem(0)"
-          v-if="selected.length > 0 && loginData.level >= 0"
-        >
-          閲覧
-        </v-btn>
-        <v-btn
-          class="mb-2"
-          @click="editItem(1)"
-          v-if="selected.length > 0 && loginData.level >= 1"
-        >
-          編集
-        </v-btn>
-        <v-btn
-          class="mb-2"
-          @click="editItem(2)"
-          v-if="selected.length > 0 && loginData.level >= 1"
-        >
-          削除
-        </v-btn>
-        <v-btn
-          class="mb-2"
-          color="primary"
-          dark
-          @click="createItem()"
-          v-if="loginData.level >= 1"
-        >
-          新規登録
-        </v-btn>
-        <v-btn color="alert" dark class="mb-2" v-if="false">
-          検索結果初期化
-        </v-btn>
-        <v-btn
-          color="alert"
-          dark
-          class="mb-2"
-          @click="inputSample()"
-          v-if="loginData.level >= 1"
-        >
-          入力例
-        </v-btn>
+        <div>
+          <v-btn
+            class="mb-2"
+            @click="registerItem()"
+            v-if="selected.length > 0 && loginData.level >= 1"
+          >
+            地図システムで確認
+          </v-btn>
+          <v-btn
+            class="mb-2"
+            @click="editItem(0)"
+            v-if="selected.length > 0 && loginData.level >= 0"
+          >
+            閲覧
+          </v-btn>
+          <v-btn
+            class="mb-2"
+            @click="editItem(1)"
+            v-if="selected.length > 0 && loginData.level >= 1"
+          >
+            編集
+          </v-btn>
+          <v-btn
+            class="mb-2"
+            @click="editItem(2)"
+            v-if="selected.length > 0 && loginData.level >= 1"
+          >
+            削除
+          </v-btn>
+          <v-btn
+            class="mb-2"
+            color="primary"
+            dark
+            @click="createItem()"
+            v-if="loginData.level >= 1"
+          >
+            新規登録
+          </v-btn>
+          <v-divider class="mx-4" inset vertical></v-divider>
+          <v-btn
+            color="alert"
+            dark
+            class="mb-2"
+            @click="inputSample()"
+            v-if="loginData.level >= 1"
+          >
+            入力例
+          </v-btn>
+        </div>
         <v-dialog v-model="dialog" max-width="700px" scrorable>
           <v-card>
             <v-card-title>
@@ -452,6 +452,11 @@ export default {
       if (val == null) return;
       let url = `${this.backend_url}/columns/${val}`;
       let cond = {};
+      // let option = {
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      // };
       let option = {
         headers: {
           "Content-Type": "application/json",

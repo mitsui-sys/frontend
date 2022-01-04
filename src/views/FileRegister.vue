@@ -21,6 +21,11 @@
         >
       </v-col>
     </v-row>
+    <v-row dense>
+      <v-col>
+        <v-btn @click="getCurrentFile">ファイル一覧</v-btn>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -52,6 +57,7 @@ export default {
           // ファイルデータが読み込めた場合
           // ファイルデータを設定します。
           this.fileData.data = result;
+          console.log(this.fileData);
         })
         .catch((e) => {
           // エラーの場合
@@ -62,7 +68,7 @@ export default {
     // ファイルアップロードボタンを押下した時に呼び出されます。
     onClickUploadFileBtn() {
       // ファイルアップロード先のURLは置き換えてください。
-      const url = "http://harima-isk:50001/system/file/register";
+      const url = "http://localhost:50001/system/file/register?test=1";
 
       // フォームデータを生成し、設定します。
       let formData = new FormData();
@@ -76,15 +82,16 @@ export default {
       );
 
       // Content-typeに"mutlipart/form-data"を設定します。
-      const config = {
+      const option = {
         headers: {
+          Accept: "application/json",
           "Content-type": "multipart/form-data",
         },
       };
 
       // ファイルをアップロードします。
       this.axios
-        .post(url, formData, config)
+        .post(url, formData, option)
         .then((response) => {
           // 成功した場合
           console.log("成功", response);
@@ -104,6 +111,15 @@ export default {
         };
         reader.onerror = reject;
         reader.readAsArrayBuffer(file);
+      });
+    },
+    getCurrentFile() {
+      const fs = require("fs");
+
+      fs.readdir(".", (err, files) => {
+        files.forEach((file) => {
+          console.log(file);
+        });
       });
     },
   },

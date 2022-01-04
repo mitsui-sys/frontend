@@ -101,9 +101,6 @@ const router = new Router({
       path: "/fileregister",
       name: "fileregister",
       component: loadView("FileRegister"),
-      meta: {
-        requiresAuth: true,
-      },
     },
     {
       path: "/detail",
@@ -116,9 +113,14 @@ const router = new Router({
       component: loadView("DragTest"),
     },
     {
+      path: "/help",
+      name: "help",
+      component: loadView("Help"),
+    },
+    {
       path: "/error",
       name: "error",
-      component: loadView("Login"),
+      component: loadView("Error"),
     },
     {
       path: "*",
