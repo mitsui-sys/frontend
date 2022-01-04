@@ -114,13 +114,18 @@ export default {
       });
     },
     getCurrentFile() {
-      const fs = require("fs");
-
-      fs.readdir(".", (err, files) => {
-        files.forEach((file) => {
-          console.log(file);
+      const url = "http://localhost:50001/system/current";
+      // ファイルをアップロードします。
+      this.axios
+        .get(url)
+        .then((response) => {
+          // 成功した場合
+          console.log("ファイル一覧", response);
+        })
+        .catch((e) => {
+          // エラーの場合
+          console.log(e);
         });
-      });
     },
   },
 };
