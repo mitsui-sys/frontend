@@ -34,6 +34,7 @@ export default {
         { text: "指定文化財台帳", link: "/sheet", color: "yellow" },
         { text: "ファイル登録", link: "/fileregister", color: "gray" },
         { text: "台帳管理", link: "/sheet", color: "gray" },
+        { text: "帳票出力", link: "/chohyo", color: "gray" },
         { text: "操作方法", link: "/manual" },
         { text: "問い合わせ", link: "/help" },
       ],

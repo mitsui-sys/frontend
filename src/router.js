@@ -113,6 +113,11 @@ const router = new Router({
       component: loadView("DragTest"),
     },
     {
+      path: "/chohyo",
+      name: "chohyo",
+      component: loadView("Chohyo"),
+    },
+    {
       path: "/help",
       name: "help",
       component: loadView("Help"),

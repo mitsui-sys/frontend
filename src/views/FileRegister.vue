@@ -83,10 +83,7 @@ export default {
 
       // Content-typeに"mutlipart/form-data"を設定します。
       const option = {
-        headers: {
-          Accept: "application/json",
-          "Content-type": "multipart/form-data",
-        },
+        headers: formData.getHeaders(),
       };
 
       // ファイルをアップロードします。

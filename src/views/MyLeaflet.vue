@@ -1,7 +1,5 @@
 <template>
-  <v-container>
-    <div id="map"></div>
-  </v-container>
+  <div id="mapid"></div>
 </template>
 
 <script>
@@ -9,7 +7,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 export default {
-  name: "MyLeaflet",
+  name: "Leaflet",
   data() {
     return {
       center: [35.681, 139.763],
@@ -108,12 +106,8 @@ export default {
 
 <style>
 #map {
-  height: 300px;
-  width: 100%;
-}
-.mapPane {
-  height: 800px !important;
-  margin: 0;
-  text-align: left;
+  height: 300px !important;
+  width: 450px !important;
+  background-color: gray !important;
 }
 </style>

@@ -85,72 +85,69 @@
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
         <v-btn class="mb-2" @click="getTemplateWorkbook()"> Excel出力 </v-btn>
+
+        <v-btn
+          class="mb-2"
+          @click="registerItem()"
+          v-if="selected.length > 0 && loginData.level >= 1"
+        >
+          地図システムで確認
+        </v-btn>
         <v-divider class="mx-4" inset vertical></v-divider>
-        <div>
-          <v-btn
-            class="mb-2"
-            @click="registerItem()"
-            v-if="selected.length > 0 && loginData.level >= 1"
-          >
-            地図システムで確認
-          </v-btn>
-          <v-btn
-            class="mb-2"
-            @click="editItem(0)"
-            v-if="selected.length > 0 && loginData.level >= 0"
-          >
-            閲覧
-          </v-btn>
-          <v-btn
-            class="mb-2"
-            @click="editItem(1)"
-            v-if="selected.length > 0 && loginData.level >= 1"
-          >
-            編集
-          </v-btn>
-          <v-btn
-            class="mb-2"
-            @click="editItem(2)"
-            v-if="selected.length > 0 && loginData.level >= 1"
-          >
-            削除
-          </v-btn>
-          <v-btn
-            class="mb-2"
-            color="primary"
-            dark
-            @click="createItem()"
-            v-if="loginData.level >= 1"
-          >
-            新規登録
-          </v-btn>
-          <v-divider class="mx-4" inset vertical></v-divider>
-          <v-btn
-            color="alert"
-            dark
-            class="mb-2"
-            @click="inputSample()"
-            v-if="loginData.level >= 1"
-          >
-            入力例
-          </v-btn>
-        </div>
-        <v-dialog v-model="dialog" max-width="700px" scrorable>
+        <v-btn
+          class="mb-2"
+          @click="editItem(0)"
+          v-if="selected.length > 0 && loginData.level >= 0"
+        >
+          閲覧
+        </v-btn>
+        <v-btn
+          class="mb-2"
+          @click="editItem(1)"
+          v-if="selected.length > 0 && loginData.level >= 1"
+        >
+          編集
+        </v-btn>
+        <v-btn
+          class="mb-2"
+          @click="editItem(2)"
+          v-if="selected.length > 0 && loginData.level >= 1"
+        >
+          削除
+        </v-btn>
+        <v-btn
+          class="mb-2"
+          color="primary"
+          dark
+          @click="createItem()"
+          v-if="loginData.level >= 1"
+        >
+          新規登録
+        </v-btn>
+        <v-divider class="mx-4" inset vertical></v-divider>
+        <v-btn
+          color="alert"
+          dark
+          class="mb-2"
+          @click="inputSample()"
+          v-if="loginData.level >= 1"
+        >
+          入力例
+        </v-btn>
+        <v-dialog v-model="dialog" max-width="700px" scrorable v-if="!isShown">
           <v-card>
             <v-card-title>
               <span class="text-h5">{{ formTitle }}</span>
               <v-spacer></v-spacer>
               <v-btn
-                v-if="loginData.level >= 1 && editedIndex >= 0 && development"
+                v-if="loginData.level >= 1 && editedIndex >= 0"
                 @click="isEditing = !isEditing"
               >
                 <v-icon v-if="isEditing"> mdi-close </v-icon>
                 <v-icon v-else> mdi-pencil </v-icon>
                 {{ "編集" }}</v-btn
               >
-              <v-btn
-                v-if="loginData.level >= 1 && editedIndex >= 0 && development"
-              >
+              <v-btn v-if="loginData.level >= 1 && editedIndex >= 0">
                 <v-icon> mdi-delete </v-icon>
                 {{ "削除" }}</v-btn
               >
@@ -196,41 +193,13 @@
                 color="blue darken-1"
                 text
                 @click="save"
-                v-if="editedIndex != 0"
+                v-if="editedIndex < 3"
               >
                 {{ dialogYesText }}
               </v-btn>
               <v-btn outlined color="blue darken-1" text @click="close">
                 {{ dialogNoText }}
               </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="700px">
-          <v-card>
-            <v-card-title class="text-h5"
-              >選択したアイテムを削除しますか?</v-card-title
-            >
-            <v-data-table
-              :headers="tblHeader"
-              :items="selected"
-              :page.sync="page"
-              :items-per-page="25"
-              :footer-props="{ itemsPerPageOptions: [5, 25, 50, 100] }"
-              class="display"
-              hide-default-header
-              hide-default-footer
-              >>
-            </v-data-table>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                >はい</v-btn
-              >
-              <v-btn color="blue darken-1" text @click="closeDelete"
-                >いいえ</v-btn
-              >
-              <v-spacer></v-spacer>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -302,6 +271,12 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        <MyDialog
+          :dialogType="editedIndex"
+          :content="editedItem"
+          :loginType="loginData.level"
+          :dialog.sync="dialog"
+        />
       </v-toolbar>
       <v-data-table
         v-model="selected"
@@ -312,6 +287,7 @@
         :footer-props="{ itemsPerPageOptions: [5, 25, 50, 100] }"
         item-key="unique_id"
         show-select
+        single-select
         @page-count="pageCount = $event"
         @click:row="clickRow"
         class="display elevation-1 overflow-auto"
@@ -357,17 +333,17 @@
 <script>
 import XlsxPopulate from "xlsx-populate";
 import { saveAs } from "file-saver";
+import MyDialog from "@/components/Dialog";
 
 export default {
   name: "Sheet",
+  components: { MyDialog },
   data() {
     return {
       editedNumber: -1,
       isShown: true,
       isEditing: false,
       editedIndex: -1,
-      responce: [],
-      isDevelopment: false,
       dateRule: /^[0-9]{4}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/,
       inputDate: "",
       displayDate: "",
@@ -383,7 +359,7 @@ export default {
       selected: [],
       selectedId: -1,
       valid: false,
-      singleSelect: false,
+      singleSelect: true,
       success: false,
       date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
         .toISOString()
@@ -452,16 +428,12 @@ export default {
       if (val == null) return;
       let url = `${this.backend_url}/columns/${val}`;
       let cond = {};
-      // let option = {
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      // };
       let option = {
         headers: {
           "Content-Type": "application/json",
         },
       };
+
       console.log(url, cond, option);
       this.axios
         .get(url, cond, option)
@@ -599,7 +571,7 @@ export default {
     },
     dialogYesText() {
       return this.editedIndex == 0
-        ? ""
+        ? "付属図を開く"
         : this.editedIndex == 1
         ? "更新"
         : this.editedIndex == 2
@@ -719,8 +691,16 @@ export default {
           }
         }
       }
+
       this.editedItem = Object.assign(newData);
+
       this.dialog = true;
+      console.log(
+        this.editedIndex,
+        this.editedItem,
+        this.loginData.level,
+        this.dialog
+      );
     },
     deleteItem() {
       if (this.selected.length <= 0) {
@@ -740,16 +720,11 @@ export default {
         this.editedIndex = -1;
       });
     },
-    closeDelete() {
-      this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
     save() {
       if (this.editedIndex == 0) {
         console.log("閉じるだけ");
+        let filepath = "resources/test.pdf";
+        window.open(filepath);
       } else {
         if (this.editedIndex == 1) {
           this.updateRows();
@@ -841,7 +816,6 @@ export default {
         .get(url, body, option)
         .then((res) => {
           let data = res.data;
-          this.responce = data;
           if (data.length > 0) {
             for (let key in data) {
               let _date = data[key]["request_day"];

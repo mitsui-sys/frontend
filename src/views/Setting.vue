@@ -1,53 +1,74 @@
 <template>
-  <v-container fluid>
-    <v-card color="#fff">
-      <v-toolbar> ユーザー情報 </v-toolbar>
-      <v-data-table
-        :headers="userHeader"
-        :items="userContents"
-        class="userinfo elevation-1 overflow-auto"
-        disable-pagination
-        hide-default-footer
-        fixed-header
-        height="200px"
-        :header-props="{
-          'sort-icon': '▼',
-        }"
-        :items-per-page="5"
-      >
-      </v-data-table>
-      <v-toolbar> ログ </v-toolbar>
-      <v-data-table
-        :headers="searchHeader"
-        :items="searchContents"
-        class="userlog elevation-1 overflow-auto"
-        disable-pagination
-        hide-default-footer
-        fixed-header
-        height="200px"
-        :header-props="{
-          'sort-icon': '▼',
-        }"
-        :items-per-page="5"
-      >
-      </v-data-table>
-      <v-toolbar> データ </v-toolbar>
-      <v-data-table
-        :headers="headers"
-        :items="contents"
-        class="userdata elevation-1 overflow-auto"
-        disable-pagination
-        hide-default-footer
-        fixed-header
-        height="200px"
-        :header-props="{
-          'sort-icon': '▼',
-        }"
-        :items-per-page="5"
-      >
-      </v-data-table>
-    </v-card>
-  </v-container>
+  <v-content>
+    <v-container fluid fill-height>
+      <v-row>
+        <v-col cols="12" sm="8" md="6" lg="4" xl="3">
+          <v-card>
+            <v-toolbar>test</v-toolbar>
+          </v-card>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12" sm="8" md="6" lg="4" xl="3">
+          <v-card color="#fff" outlined>
+            <v-toolbar> ユーザー情報 </v-toolbar>
+            <v-data-table
+              :headers="userHeader"
+              :items="userContents"
+              class="userinfo elevation-1 overflow-auto"
+              disable-pagination
+              hide-default-footer
+              fixed-header
+              height="200px"
+              :header-props="{
+                'sort-icon': '▼',
+              }"
+              :items-per-page="5"
+            >
+            </v-data-table>
+          </v-card>
+        </v-col>
+        <v-col cols="12" sm="8" md="6" lg="4" xl="3">
+          <v-card color="#fff" outlined>
+            <v-toolbar> ログ </v-toolbar>
+            <v-data-table
+              :headers="searchHeader"
+              :items="searchContents"
+              class="userlog elevation-1 overflow-auto"
+              disable-pagination
+              hide-default-footer
+              fixed-header
+              height="200px"
+              :header-props="{
+                'sort-icon': '▼',
+              }"
+              :items-per-page="5"
+            >
+            </v-data-table>
+          </v-card>
+        </v-col>
+        <v-col cols="12" sm="8" md="6" lg="4" xl="3">
+          <v-card color="#fff" outlined>
+            <v-toolbar> データ </v-toolbar>
+            <v-data-table
+              :headers="headers"
+              :items="contents"
+              class="userdata elevation-1 overflow-auto"
+              disable-pagination
+              hide-default-footer
+              fixed-header
+              height="200px"
+              :header-props="{
+                'sort-icon': '▼',
+              }"
+              :items-per-page="5"
+            >
+            </v-data-table>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-content>
 </template>
 
 <script>

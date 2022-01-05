@@ -58,12 +58,6 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn text to="/">{{ btn_title.home }}</v-btn>
-        <v-btn
-          text
-          to="/ipsetting"
-          v-if="isDevelopment && loginData.level >= 2"
-          >{{ btn_title.setting }}</v-btn
-        >
         <v-btn text to="/login" v-if="!loginData.token">{{
           btn_title.login
         }}</v-btn>
@@ -123,8 +117,6 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn text to="/fileregister">ファイル登録</v-btn>
-        <v-btn text to="/help">ボタン１</v-btn>
         <v-btn text to="/help"
           >{{ btn_title.help }}<v-icon>mdi-help</v-icon></v-btn
         >

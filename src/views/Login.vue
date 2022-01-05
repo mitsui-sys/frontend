@@ -87,26 +87,6 @@ export default {
           this.loading = false;
         });
     },
-    submit() {
-      console.log();
-      const url = "http://harima-isk:50001/system/user";
-      let body = {
-        data: { login_name: this.name, password: this.password },
-      };
-      let option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      this.axios
-        .get(url, body, option)
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
     mounted() {
       if (this.loginData.token) this.$router.push("/");
     },
