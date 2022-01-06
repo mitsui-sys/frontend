@@ -147,10 +147,12 @@ export default {
         },
       };
       this.loading = true;
+      console.log(url);
       this.axios
         .get(url, body, option)
         .then((res) => {
-          const data = res.data;
+          const data = res.data.rows;
+          console.log(data);
           if (data.length > 0) {
             let data0 = data[0];
             let tmp = [];
@@ -161,6 +163,7 @@ export default {
               }
             }
             this.items = tmp;
+            console.log(tmp);
           }
         })
         .catch((error) => {

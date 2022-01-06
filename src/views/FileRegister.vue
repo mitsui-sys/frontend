@@ -83,7 +83,9 @@ export default {
 
       // Content-typeに"mutlipart/form-data"を設定します。
       const option = {
-        headers: formData.getHeaders(),
+        headers: {
+          ...formData.getHeaders(), // ← ← ← ← ここ!!
+        },
       };
 
       // ファイルをアップロードします。

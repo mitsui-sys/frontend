@@ -8,6 +8,7 @@ import totalCounter from "./store/modules/totalCounter";
 import table from "./store/modules/table";
 import ipconfig from "./store/modules/ipconfig";
 import auth from "./store/modules/auth";
+import config from "./store/modules/config";
 // import createPersistedState from "vuex-persistedstate";
 
 Vue.use(Vuex);
@@ -24,6 +25,7 @@ const store = new Vuex.Store({
     backend: ipconfig,
     db: ipconfig,
     auth: auth,
+    config: config,
   },
   state: {},
   mutations: {},

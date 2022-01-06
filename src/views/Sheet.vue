@@ -1,5 +1,6 @@
 <template>
   <v-container fluid>
+    <h1>{{ kind }}</h1>
     <v-card color="#fff" class="condition">
       <v-card-title class="d-flex justify-center pa-0 mt-6 mb-3"
         >検索条件</v-card-title
@@ -31,7 +32,7 @@
               <v-col cols="6">
                 <v-select
                   v-model="item.text"
-                  :items="tblHeader"
+                  :items="tblHeaders"
                   label="項目"
                 ></v-select>
               </v-col>
@@ -83,6 +84,7 @@
       <v-toolbar flat outlined>
         <v-toolbar-title>テーブル表示</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
+        件数:{{ tblContents.length }}
         <v-spacer></v-spacer>
         <v-btn class="mb-2" @click="getTemplateWorkbook()"> Excel出力 </v-btn>
 
@@ -92,6 +94,13 @@
           v-if="selected.length > 0 && loginData.level >= 1"
         >
           地図システムで確認
+        </v-btn>
+        <v-btn
+          class="mb-2"
+          @click="registerItem()"
+          v-if="selected.length > 0 && loginData.level >= 1"
+        >
+          ジオメトリ削除
         </v-btn>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-btn
@@ -124,176 +133,40 @@
         >
           新規登録
         </v-btn>
-        <v-divider class="mx-4" inset vertical></v-divider>
-        <v-btn
-          color="alert"
-          dark
-          class="mb-2"
-          @click="inputSample()"
-          v-if="loginData.level >= 1"
-        >
-          入力例
-        </v-btn>
-        <v-dialog v-model="dialog" max-width="700px" scrorable v-if="!isShown">
-          <v-card>
-            <v-card-title>
-              <span class="text-h5">{{ formTitle }}</span>
-              <v-spacer></v-spacer>
-              <v-btn
-                v-if="loginData.level >= 1 && editedIndex >= 0"
-                @click="isEditing = !isEditing"
-              >
-                <v-icon v-if="isEditing"> mdi-close </v-icon>
-                <v-icon v-else> mdi-pencil </v-icon>
-                {{ "編集" }}</v-btn
-              >
-              <v-btn v-if="loginData.level >= 1 && editedIndex >= 0">
-                <v-icon> mdi-delete </v-icon>
-                {{ "削除" }}</v-btn
-              >
-            </v-card-title>
-            <v-divider></v-divider>
-            <v-card-text>
-              <v-container style="max-height: 500px" class="overflow-y-auto">
-                <v-row
-                  v-for="(item, index) in editedItem"
-                  :key="`edited${index}`"
-                  no-gutters
-                >
-                  <v-col cols="4">
-                    <v-subheader>{{ item.text }}</v-subheader>
-                  </v-col>
-                  <v-col>
-                    <v-text-field
-                      v-model="item.value"
-                      placeholder="値を入力"
-                      ma-0
-                      outlined
-                      clearable
-                      dense
-                      :disabled="!isEditing"
-                      class="input-items"
-                      ref="focusThis"
-                      :forcus-key="index"
-                      @keydown.enter.exact="save"
-                      @keydown.prevent.tab.exact="moveNext(index)"
-                      @keydown.prevent.shift.tab="movePrev(index)"
-                      @keydown.prevent.down="moveNext(index)"
-                      @keydown.prevent.up="movePrev(index)"
-                    />
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-            <v-divider></v-divider>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn
-                outlined
-                color="blue darken-1"
-                text
-                @click="save"
-                v-if="editedIndex < 3"
-              >
-                {{ dialogYesText }}
-              </v-btn>
-              <v-btn outlined color="blue darken-1" text @click="close">
-                {{ dialogNoText }}
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-dialog v-model="dialogTest" max-width="700px">
-          <v-card>
-            <v-card-title>
-              <span class="text-h5">{{ formTitle }}</span>
-            </v-card-title>
-            <v-card-text>
-              <v-radio-group v-model="colors">
-                <v-radio
-                  v-for="n in 3"
-                  :key="n"
-                  :label="`Radio ${n}`"
-                  :value="n"
-                ></v-radio>
-              </v-radio-group>
-              <v-combobox
-                outlined
-                :items="combo_items"
-                label="combobox"
-              ></v-combobox>
-              <v-file-input show-size label="File input"></v-file-input>
-              <v-text-field
-                v-model="inputDate"
-                label="入力用"
-                @blur="formatToDateString"
-                maxlength="8"
-                type="date"
-              />
-              <!--              :rules="[rules.required, rules.yyyymmdd]" -->
-              <v-menu
-                v-model="menu2"
-                :close-on-content-click="false"
-                :nudge-right="40"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <v-text-field
-                    v-model="date"
-                    label="Picker without buttons"
-                    prepend-icon="mdi-calendar"
-                    readonly
-                    v-bind="attrs"
-                    v-on="on"
-                  ></v-text-field>
-                </template>
-
-                <v-date-picker
-                  v-model="date"
-                  locale="jp-ja"
-                  :day-format="(date) => new Date(date).getDate()"
-                  @input="menu2 = false"
-                ></v-date-picker>
-              </v-menu>
-              <v-color-picker
-                dot-size="25"
-                swatches-max-height="200"
-              ></v-color-picker>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn outlined color="blue darken-1" text> {{ "はい" }} </v-btn>
-              <v-btn outlined color="blue darken-1" text>
-                {{ "いいえ" }}
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
         <MyDialog
           :dialogType="editedIndex"
           :content="editedItem"
           :loginType="loginData.level"
           :dialog.sync="dialog"
+          @input-content="save"
         />
+        <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
+          {{ snackbarText }}
+          <v-btn color="pink" text @click="snackbar = false">Close</v-btn>
+        </v-snackbar>
       </v-toolbar>
+      <v-container fluid>
+        <v-row>
+          <v-col v-for="col in tblHeaders" :key="col.value">
+            <v-switch v-model="col.shown" :label="`${col.text}`"></v-switch>
+          </v-col>
+        </v-row>
+      </v-container>
       <v-data-table
         v-model="selected"
-        :headers="tblHeader"
-        :items="tblContent"
+        :headers="tblHeaders"
+        :items="tblContents"
         :page.sync="page"
         :items-per-page="25"
         :footer-props="{ itemsPerPageOptions: [5, 25, 50, 100] }"
-        item-key="unique_id"
+        item-key="gid"
         show-select
         single-select
         @page-count="pageCount = $event"
         @click:row="clickRow"
         class="display elevation-1 overflow-auto"
-        disable-pagination
-        hide-default-footer
         fixed-header
+        fixed-footer
         height="500px"
         calculate-widths
         :header-props="{
@@ -301,6 +174,7 @@
         }"
       >
         <template v-slot:top> </template>
+
         <template v-slot:item="{ item, isSelected, select }">
           <tr
             :class="[{ 'v-data-table__selected': isSelected }]"
@@ -313,7 +187,7 @@
                 @input="select($event)"
               />
             </td>
-            <td v-for="header in tblHeader" :key="header.value">
+            <td v-for="header in tblHeaders" :key="header.value">
               {{ item[header.value] }}
             </td>
           </tr>
@@ -331,31 +205,27 @@
 </template>
 
 <script>
-import XlsxPopulate from "xlsx-populate";
-import { saveAs } from "file-saver";
+import MyXlsx from "@/modules/myXlsx";
 import MyDialog from "@/components/Dialog";
+import Moment from "moment";
 
 export default {
   name: "Sheet",
   components: { MyDialog },
   data() {
     return {
-      editedNumber: -1,
+      tblHeaders: [],
+      tblContents: [],
       isShown: true,
+      snackbar: false,
+      snackbarText: "成功",
+      timeout: 1500,
       isEditing: false,
       editedIndex: -1,
       dateRule: /^[0-9]{4}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/,
-      inputDate: "",
-      displayDate: "",
-      outputDate: "",
-      columns: [],
-      selectedName: "",
-      checkJP: false,
-      dialog: false,
-      dialogDelete: false,
-      dialogTest: false,
       editedItem: {},
-
+      dialog: false,
+      selectedName: "",
       selected: [],
       selectedId: -1,
       valid: false,
@@ -364,9 +234,6 @@ export default {
       date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
         .toISOString()
         .substr(0, 10),
-      menu: false,
-      modal: false,
-      menu2: false,
       search: "",
       pagination: {},
       page: 1,
@@ -381,16 +248,6 @@ export default {
         { text: ">=", value: ">=", rule: ">=" },
         { text: "<=", value: "<=", rule: "<=" },
       ],
-      colors: "",
-      combo_items: ["Programming", "Design", "Vue", "Vuetify"],
-      items: [
-        { text: "ID", value: "999" },
-        { text: "名前", value: "kanko" },
-        { text: "メールアドレス", value: "test@sample.com" },
-        { text: "住所", value: "大阪府大阪市" },
-        { text: "日付", value: "2021/01/01" },
-      ],
-      workbooks: [],
       queryCondition: [],
       rules: {
         yyyymmdd: (value) => {
@@ -414,9 +271,6 @@ export default {
   watch: {
     dialog(val) {
       val || this.close();
-    },
-    dialogDelete(val) {
-      val || this.closeDelete();
     },
     search(val) {
       // すでに読み込み済みの場合は、何もしない
@@ -449,6 +303,9 @@ export default {
     },
   },
   computed: {
+    shownHeaders() {
+      return this.headers.filter((h) => h.shown);
+    },
     loginData() {
       return this.$store.getters[`auth/login`];
     },
@@ -470,31 +327,22 @@ export default {
     tableNameList() {
       return this.$store.getters[`table/tableNameList`];
     },
-    tblHeader() {
-      return this.isShown
-        ? this.$store.getters[`table/shownHeaders`]
-        : this.$store.getters[`table/header`];
-    },
-    shownHeaders() {
-      return this.$store.getters[`table/shownHeaders`];
-    },
-    tblContent() {
-      // return this.$store.getters[`table/content`];
-      //1214 idを
-      return this.$store.getters[`table/content`].map((item, index) => ({
-        unique_id: index,
-        ...item,
-      }));
-    },
-    tblSelected() {
-      return this.$store.getters[`table/selected`];
-    },
-    tblCond() {
-      return this.$store.getters[`table/conditions`];
-    },
-    tblReplace() {
-      return this.$store.getters[`table/replace`];
-    },
+    // tblHeaders() {
+    //   return this.isShown
+    //     ? this.$store.getters[`table/shownHeaders`]
+    //     : this.$store.getters[`table/header`];
+    // },
+    // shownHeaders() {
+    //   return this.$store.getters[`table/shownHeaders`];
+    // },
+    // tblContents() {
+    //   // return this.$store.getters[`table/content`];
+    //   //1214 idを
+    //   return this.$store.getters[`table/content`].map((item, index) => ({
+    //     unique_id: index,
+    //     ...item,
+    //   }));
+    // },
     db_ip() {
       return this.$store.getters[`db/ip`];
     },
@@ -512,15 +360,6 @@ export default {
     },
     backend_url() {
       return this.$store.getters[`backend/url`];
-    },
-    formTitle() {
-      return this.editedIndex === 0
-        ? "閲覧"
-        : this.editedIndex === 1
-        ? "編集"
-        : this.editedIndex === 2
-        ? "削除"
-        : "新規登録";
     },
     updateEditedItem() {
       let editedItem = Object.assign(this.editedItem);
@@ -558,48 +397,17 @@ export default {
     },
     defaultItem() {
       let data = [];
-      let header = Object.assign(this.tblHeader);
-      console.log(header);
+      let header = Object.assign(this.tblHeaders);
       for (let key in header) {
         data.push({ text: header[key].text, value: "" });
       }
-      console.log("defaultItem", data);
       return data;
     },
-    elements() {
-      return this.$refs.focusThis;
-    },
-    dialogYesText() {
-      return this.editedIndex == 0
-        ? "付属図を開く"
-        : this.editedIndex == 1
-        ? "更新"
-        : this.editedIndex == 2
-        ? "削除"
-        : "登録";
-    },
-    dialogNoText() {
-      return this.editedIndex == 1
-        ? "キャンセル"
-        : this.editedIndex == 2
-        ? "キャンセル"
-        : "閉じる";
+    kind() {
+      return this.$store.getters[`config/kind`];
     },
   },
   methods: {
-    moveFocus(i) {
-      if (this.$refs.focusThis[i]) {
-        this.$refs.focusThis[i].focus();
-      }
-    },
-    moveNext(i) {
-      console.log(`index:${i}`);
-      this.moveFocus(i + 1);
-    },
-    movePrev(i) {
-      console.log(`index:${i}`);
-      this.moveFocus(i - 1);
-    },
     logout() {
       this.$store.dispatch("auth/destoroy");
     },
@@ -624,14 +432,7 @@ export default {
     clickRow() {
       console.log(this.selected);
     },
-    clear() {
-      this.$store.dispatch(`table/updateTableName`, []);
-      this.$store.dispatch(`table/updateCond`, []);
-      this.$store.dispatch(`table/updateData`, []);
-    },
-    inputSample() {
-      this.dialogTest = true;
-    },
+    clear() {},
     createItem() {
       this.isEditing = true;
       this.editedIndex = -1;
@@ -693,24 +494,7 @@ export default {
       }
 
       this.editedItem = Object.assign(newData);
-
       this.dialog = true;
-      console.log(
-        this.editedIndex,
-        this.editedItem,
-        this.loginData.level,
-        this.dialog
-      );
-    },
-    deleteItem() {
-      if (this.selected.length <= 0) {
-        return;
-      }
-      this.dialogDelete = true;
-    },
-    deleteItemConfirm() {
-      this.deleteRows();
-      this.closeDelete();
     },
     close() {
       this.isEditing = false;
@@ -720,17 +504,19 @@ export default {
         this.editedIndex = -1;
       });
     },
-    save() {
-      if (this.editedIndex == 0) {
-        console.log("閉じるだけ");
+    save(content = -1) {
+      const index = this.editedIndex;
+      console.log("ダイアログ処理", content, index);
+      if (index == 0) {
+        console.log("pdfを開く");
         let filepath = "resources/test.pdf";
         window.open(filepath);
       } else {
-        if (this.editedIndex == 1) {
+        if (index == 1) {
           this.updateRows();
-        } else if (this.editedIndex == 2) {
+        } else if (index == 2) {
           this.deleteRows();
-        } else {
+        } else if (index == -1) {
           this.insertRows();
         }
       }
@@ -746,6 +532,34 @@ export default {
     removeInput(index) {
       this.queryCondition.splice(index, 1); // 👈 該当するデータを削除
     },
+    registerLog(action, content) {
+      let url = `http://harima-isk:50001/system/log/register`;
+      let now = Moment().format("YYYY/MM/DD HH:mm:ss dddd");
+      let cond = {
+        data: {
+          user_name: this.loginData.name,
+          document: this.kind,
+          rireki: action,
+          rireki_content: content,
+          created: now,
+        },
+      };
+      console.log(cond);
+      let option = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+      console.log("操作履歴", url, cond, option);
+      this.axios
+        .post(url, cond, option)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     initialize() {
       let postdata = {
         host: this.host,
@@ -755,14 +569,14 @@ export default {
         password: this.password,
       };
       let query = `${this.backend_url}/init`;
-      console.log("post", postdata);
+
       this.axios
         .post(query, postdata)
         .then((res) => {
           this.items = res.data;
           this.$store.dispatch(`table/updateTableNameList`, res.data);
-          console.log("tableNameList", this.tableNameList);
-          this.$store.dispatch(`table/updateData`, []);
+          // console.log("tableNameList", this.tableNameList);
+          // this.$store.dispatch(`table/updateData`, []);
         })
         .catch((err) => {
           return err.response;
@@ -786,13 +600,17 @@ export default {
           console.log(error);
         });
     },
+    sendDBRequest(type) {
+      const url = `${this.backend_url}/db/${this.selectedName}`;
+      const option = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+      console.log(url, option, type);
+    },
     submit() {
       //項目を入力したか確認
-      // const result = this.$refs.form.validate();
-      if (this.selectedName.length <= 0) {
-        alert("テーブル名が入力されていません");
-        return;
-      }
       this.$store.dispatch(`table/updateTableName`, this.selectedName);
       let conds = this.queryCondition;
       let contents = [];
@@ -810,25 +628,40 @@ export default {
           "Content-Type": "application/json",
         },
       };
-      console.log(url);
-      var moment = require("moment");
       this.axios
         .get(url, body, option)
         .then((res) => {
-          let data = res.data;
-          if (data.length > 0) {
-            for (let key in data) {
-              let _date = data[key]["request_day"];
-              res.data[key]["request_day"] = moment(_date).format("YYYY/MM/DD");
-            }
-            this.$store.dispatch(`table/updateData`, data);
+          const data = res.data;
+          const columns = data.columns;
+          let rows = data.rows;
+          const columnNames = columns.map((x) => x.columnName);
+          let headers = [];
+          for (const i in columnNames) {
+            const name = columnNames[i];
+            headers.push({ text: name, value: name, shown: true });
+          }
+
+          if (rows.length > 0) {
+            // for (const key in rows) {
+            //   let _date = data[key]["request_day"];
+            //   rows.data[key]["request_day"] =
+            //     Moment(_date).format("YYYY/MM/DD");
+            // }
+            this.tblHeaders = headers;
+            this.tblContents = rows;
+            console.log(headers);
+            console.log(rows);
+            // this.$store.dispatch(`table/updateData`, data);
           } else {
-            this.$store.dispatch(`table/updateData`, []);
+            this.tblHeaders = [];
+            this.tblContents = [];
+            // this.$store.dispatch(`table/updateData`, []);
           }
         })
         .catch((error) => {
           console.log(error);
         });
+      this.registerLog("表示", `${this.selectedName}?${content}`);
     },
     insertRows() {
       let url = `${this.backend_url}/db/${this.selectedName}`;
@@ -843,11 +676,14 @@ export default {
         .post(url, cond, option)
         .then((response) => {
           console.log(response);
+          this.submit();
+          this.snackbar = true;
         })
         .catch((error) => {
           alert("追加失敗");
           console.log(error);
         });
+      this.registerLog("追加", `${this.selectedName}?${this.insertEditedItem}`);
     },
     updateRows() {
       let url = `${this.backend_url}/db/${this.selectedName}`;
@@ -863,17 +699,19 @@ export default {
           "Content-Type": "application/json",
         },
       };
-      console.log(url, cond, option);
+      console.info("update", url, cond, option);
       this.axios
         .put(url, cond, option)
         .then((response) => {
           console.log(response);
           this.submit();
+          this.snackbar = true;
         })
         .catch((error) => {
           alert("更新失敗");
           console.log(error);
         });
+      this.registerLog("更新", `${this.selectedName}?${this.updateEditedItem}`);
     },
     deleteRows() {
       let url = `${this.backend_url}/db/${this.selectedName}`;
@@ -888,77 +726,17 @@ export default {
         .delete(url, cond, option)
         .then((response) => {
           console.log(response);
+          this.submit();
+          this.snackbar = true;
         })
         .catch((error) => {
           alert("削除失敗");
           console.log(error);
         });
-    },
-    async getWorkbook(url) {
-      const res = await this.axios.get(url, { responseType: "arraybuffer" });
-      console.log(res.data);
-      const workbook = await XlsxPopulate.fromDataAsync(res.data);
-      return workbook;
-    },
-    writeCell(worksheet, postion, val) {
-      worksheet.cell(postion).value(val);
-    },
-    async download(workbook, fileName) {
-      const wbout = await workbook.outputAsync();
-      const blob = new Blob([wbout], { type: "application/octet-stream" });
-      saveAs(blob, fileName);
-    },
-    getBlankWorkbook() {
-      XlsxPopulate.fromBlankAsync().then((workbook) => {
-        let newSheetName = "result";
-        if (workbook.sheet(newSheetName)) {
-          workbook.deleteSheet(newSheetName);
-          workbook.addSheet(newSheetName);
-        } else {
-          workbook.addSheet(newSheetName);
-        }
-        let newSheet = workbook.sheet(newSheetName);
-        // Modify the workbook.
-        newSheet.cell("A1").value("This is neat!");
-
-        // Write to file.
-        // return workbook.toFileAsync("./out.xlsx");
-        this.download(workbook, "out.xlsx");
-      });
-    },
-    copyRanges(sourceRange, destRange) {
-      sourceRange.forEach((cell, rowIndex, columnIndex) => {
-        const destCell = destRange.cell(rowIndex, columnIndex);
-
-        // get style object from current cell
-        const style = cell.style([
-          "bold",
-          "italic",
-          "underline",
-          "strikethrough",
-          "fontSize",
-          "fontFamily",
-          "fontColor",
-          "horizontalAlignment",
-          "verticalAlignment",
-          "wrapText",
-          "shrinkToFit",
-          "textDirection",
-          "textRotation",
-          "verticalText",
-          "fill",
-          "border",
-          "numberFormat",
-        ]);
-        // set the values of the destination cell
-        destCell.value(cell.value());
-
-        // set the styles of the cell
-        destCell.style(style);
-      });
+      this.registerLog("削除", `${this.selectedName}?${cond}`);
     },
     getTemplateWorkbook() {
-      this.getWorkbook("/resources/test.xlsx")
+      MyXlsx.getWorkbook("/resources/test.xlsx")
         .then((wb) => {
           // シート名の一覧を取得
           // console.log("Sheet Name", wb.sheets);
@@ -977,8 +755,8 @@ export default {
 
           //テーブル情報を読み込む
           let datas = [];
-          let header = this.tblHeader;
-          let content = this.tblContent;
+          const header = this.tblHeaders;
+          const content = this.tblContents;
           for (let i in content) {
             let data = [];
             let rowC = content[i];
@@ -997,14 +775,14 @@ export default {
             // this.writeCell(newSheet, "A" + (count * 24 + 1), style);
             let rangeStr = "A" + (count * 24 + 1) + ":C" + (count * 24 + 24);
             let destRange = newSheet.range(rangeStr);
-            this.copyRanges(copy, destRange);
-            this.writeCell(newSheet, "A" + (count * 24 + 2), datas[i]);
+            MyXlsx.copyRanges(copy, destRange);
+            MyXlsx.writeCell(newSheet, "A" + (count * 24 + 2), datas[i]);
             count += 1;
           }
 
           let filename = "out.xlsx";
 
-          this.download(wb, filename);
+          MyXlsx.download(wb, filename);
         })
         .catch((error) => {
           console.log("error", error);

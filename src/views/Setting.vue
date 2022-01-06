@@ -1,10 +1,19 @@
 <template>
-  <v-content>
+  <v-main>
     <v-container fluid fill-height>
       <v-row>
-        <v-col cols="12" sm="8" md="6" lg="4" xl="3">
+        <v-col cols="12" sm="8" md="6" lg="6" xl="6">
           <v-card>
-            <v-toolbar>test</v-toolbar>
+            <v-toolbar>ログ</v-toolbar>
+            <v-data-table
+              :headers="logHeaders"
+              :items="logContents"
+              class="elevation-1 overflow-auto"
+              fixed-header
+              fixed-footer
+              height="300px"
+            >
+            </v-data-table>
           </v-card>
         </v-col>
       </v-row>
@@ -13,13 +22,12 @@
           <v-card color="#fff" outlined>
             <v-toolbar> ユーザー情報 </v-toolbar>
             <v-data-table
-              :headers="userHeader"
+              :headers="userHeaders"
               :items="userContents"
               class="userinfo elevation-1 overflow-auto"
-              disable-pagination
-              hide-default-footer
               fixed-header
-              height="200px"
+              fixed-footer
+              height="300px"
               :header-props="{
                 'sort-icon': '▼',
               }"
@@ -32,13 +40,12 @@
           <v-card color="#fff" outlined>
             <v-toolbar> ログ </v-toolbar>
             <v-data-table
-              :headers="searchHeader"
+              :headers="searchHeaders"
               :items="searchContents"
               class="userlog elevation-1 overflow-auto"
-              disable-pagination
-              hide-default-footer
               fixed-header
-              height="200px"
+              fixed-footer
+              height="300px"
               :header-props="{
                 'sort-icon': '▼',
               }"
@@ -54,10 +61,9 @@
               :headers="headers"
               :items="contents"
               class="userdata elevation-1 overflow-auto"
-              disable-pagination
-              hide-default-footer
               fixed-header
-              height="200px"
+              fixed-footer
+              height="300px"
               :header-props="{
                 'sort-icon': '▼',
               }"
@@ -68,7 +74,7 @@
         </v-col>
       </v-row>
     </v-container>
-  </v-content>
+  </v-main>
 </template>
 
 <script>
@@ -78,9 +84,11 @@ export default {
   data() {
     return {
       loading: false,
-      userHeader: [],
+      logHeaders: [],
+      logContents: [],
+      userHeaders: [],
       userContents: [],
-      searchHeader: [],
+      searchHeaders: [],
       searchContents: [],
       headers: [
         { text: "id", value: "id" },
@@ -93,6 +101,7 @@ export default {
         { id: 2, name: "kanko2", layer: "包蔵地2", content: "" },
         { id: 3, name: "kanko3", layer: "包蔵地3", content: "" },
       ],
+      host: "localhost",
     };
   },
   computed: {
@@ -101,18 +110,45 @@ export default {
     },
   },
   methods: {
-    getSearchData() {
-      const username = this.loginData.name;
-      const url = `http://harima-isk:50001/system/search/${username}`;
-      let body = {};
-      let option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
+    getLogData() {
+      const url = `http://${this.host}:50001/system/log`;
       this.loading = true;
       this.axios
-        .get(url, body, option)
+        .get(url)
+        .then((res) => {
+          console.log(res.data);
+          // const columnNames = res.data.columns.map((x) => x.columnName);
+          const columnNames = res.data.columns.map((x) => x.columnName);
+          // const headers = columnNames.reduce(
+          //   (obj, x) => obj.push({ text: x, value: x }),
+          //   []
+          // );
+          let headers = [];
+          for (const i in columnNames) {
+            const name = columnNames[i];
+            headers.push({ text: name, value: name });
+          }
+          console.log(headers);
+          this.logHeaders = headers;
+          this.logContents = res.data.rows;
+        })
+        .catch((error) => {
+          console.log(error);
+          alert(
+            "処理が正しく行えませんでした。時間をおいてやり直してください。"
+          );
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+
+    getSearchData() {
+      const username = this.loginData.name;
+      const url = `http://${this.host}:50001/system/search/${username}`;
+      this.loading = true;
+      this.axios
+        .get(url)
         .then((res) => {
           console.log(res.data);
           const columnNames = res.data.columns.map((x) => x.columnName);
@@ -124,7 +160,7 @@ export default {
 
           const contents = res.data.rows;
 
-          this.userHeader = headers;
+          this.userHeaders = headers;
           this.userContents = contents;
         })
         .catch((error) => {
@@ -138,16 +174,10 @@ export default {
         });
     },
     getUserData() {
-      const url = `http://harima-isk:50001/system/user`;
-      let body = {};
-      let option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
+      const url = `http://${this.host}:50001/system/user`;
       this.loading = true;
       this.axios
-        .get(url, body, option)
+        .get(url)
         .then((res) => {
           console.log(res.data);
           const columnNames = res.data.columns.map((x) => x.columnName);
@@ -157,7 +187,7 @@ export default {
             h.push({ text: name, value: name });
           }
           const contents = res.data.rows;
-          this.searchHeader = h;
+          this.searchHeaders = h;
           this.searchContents = contents;
         })
         .catch((error) => {
@@ -172,6 +202,7 @@ export default {
     },
   },
   mounted() {
+    this.getLogData();
     this.getSearchData();
     this.getUserData();
   },

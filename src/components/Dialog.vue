@@ -1,10 +1,5 @@
 <template>
-  <v-dialog
-    v-model="dialog"
-    max-width="700px"
-    scrorable
-    @click:outside="$emit('update:dialog', false)"
-  >
+  <v-dialog v-model="dialog" max-width="700px" scrorable @click:outside="close">
     <v-card>
       <v-card-title>
         <span class="text-h5">{{ dialogTitle }}</span>
@@ -107,7 +102,6 @@ export default {
   computed: {
     dialogTitle() {
       const type = this.dialogType;
-      console.log(type);
       return type == 0
         ? "閲覧"
         : type == 1
@@ -152,10 +146,11 @@ export default {
     save() {
       const type = this.dialogType;
       if (type == 1) {
+        console.log(this.content);
         this.$emit("update:content", this.content);
       }
-
       this.$emit("update:dialog", false);
+      this.$emit("input-content", this.content);
     },
     close() {
       this.$emit("update:dialog", false);

@@ -1,3 +1,4 @@
+//認証情報
 const state = () => ({
   login: {
     token: false,

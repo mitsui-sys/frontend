@@ -2,7 +2,7 @@
   <v-content>
     <v-container fluid fill-height>
       <v-row class="lighten-4" align-content="center" justify="end">
-        <v-btn class="blue--text">メインメニューに戻る</v-btn>
+        <v-btn class="blue--text" to="/">メインメニューに戻る</v-btn>
       </v-row>
       <v-row class="lighten-4" justify="center" align-content="center">
         <v-col

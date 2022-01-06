@@ -70,7 +70,7 @@
           <v-list>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title>{{ loginData.name }}</v-list-item-title>
+                <v-list-item-title>{{ loginLevel }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-divider></v-divider>
@@ -153,7 +153,7 @@ export default {
   data() {
     return {
       isLogin: false,
-      isDevelopment: true,
+      isDevelopment: false,
       loading: true,
       btn_title: {
         home: "ホーム",
@@ -251,6 +251,16 @@ export default {
     loginData() {
       return this.$store.getters[`auth/login`];
     },
+    loginLevel() {
+      const level = this.loginData.level;
+      return level == 0
+        ? "閲覧者"
+        : level == 1
+        ? "編集者"
+        : level == 2
+        ? "管理者"
+        : "閲覧者";
+    },
   },
   methods: {
     logout() {
@@ -264,12 +274,19 @@ export default {
     setTimeout(() => {
       this.loading = false;
     }, 500);
-    console.log(this.$route);
   },
 };
 </script>
 
 <style>
+.v-data-table {
+  white-space: nowrap;
+}
+.v-data-table th {
+  border: 1px #333333 solid;
+  font-size: 24px !important;
+}
+
 /* ヘッダに縦線出すよ */
 .resizable-column /deep/ th + th {
   border-left: 1px solid grey;
@@ -278,14 +295,10 @@ export default {
 * {
   font-size: 24px !important;
 }
-.display.v-data-table {
-  white-space: nowrap;
-}
 .display.v-data-table th {
   border: 1px #333333 solid;
   background: #55cccc !important;
   font-size: 24px !important;
-  white-space: nowrap;
   width: 100px !important;
 }
 
@@ -308,15 +321,6 @@ export default {
   font-size: 24px !important;
 }
 
-.userinfo.v-data-table {
-  white-space: nowrap;
-}
-.userlog.v-data-table {
-  white-space: nowrap;
-}
-.userdata.v-data-table {
-  white-space: nowrap;
-}
 .userinfo.v-data-table th {
   border: 1px #333333 solid;
   background: #55cccc !important;
