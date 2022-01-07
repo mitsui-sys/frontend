@@ -20,6 +20,9 @@
           >ファイルアップロード</v-btn
         >
       </v-col>
+      <v-col>
+        <v-text-field />
+      </v-col>
     </v-row>
     <v-row dense>
       <v-col>
@@ -68,7 +71,7 @@ export default {
     // ファイルアップロードボタンを押下した時に呼び出されます。
     onClickUploadFileBtn() {
       // ファイルアップロード先のURLは置き換えてください。
-      const url = "http://localhost:50001/system/file/register?test=1";
+      const url = "http://harima-isk:50001/file";
 
       // フォームデータを生成し、設定します。
       let formData = new FormData();
@@ -80,12 +83,11 @@ export default {
         new Blob([this.fileData.data], { type: this.fileData.type }),
         this.fileData.fileName
       );
+      console.log(formData);
 
       // Content-typeに"mutlipart/form-data"を設定します。
       const option = {
-        headers: {
-          ...formData.getHeaders(), // ← ← ← ← ここ!!
-        },
+        headers: "multipart/form-data",
       };
 
       // ファイルをアップロードします。
@@ -113,7 +115,7 @@ export default {
       });
     },
     getCurrentFile() {
-      const url = "http://localhost:50001/system/current";
+      const url = "http://harima-isk:50001/system/current";
       // ファイルをアップロードします。
       this.axios
         .get(url)

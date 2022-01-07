@@ -22,13 +22,10 @@
                 placeholder="値を入力"
                 ma-0
                 outlined
-                clearable
                 dense
                 :disabled="!isEditing"
                 class="input-items"
-                ref="focusThis"
-                :forcus-key="index"
-                @keydown.enter.exact="save"
+                @focus="$event.target.select()"
                 @keydown.prevent.tab.exact="moveNext(index)"
                 @keydown.prevent.shift.tab="movePrev(index)"
                 @keydown.prevent.down="moveNext(index)"
