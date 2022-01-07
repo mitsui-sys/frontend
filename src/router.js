@@ -125,11 +125,6 @@ const router = new Router({
       name: "chohyo",
       component: loadView("Chohyo"),
     },
-    // {
-    //   path: "/help",
-    //   name: "help",
-    //   component: loadView("Help"),
-    // },
     {
       path: "/error",
       name: "error",
