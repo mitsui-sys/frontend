@@ -5,6 +5,8 @@ import router from "./router"; //追加
 import axios from "axios"; //追記
 import VueAxios from "vue-axios"; //追記
 import store from "./store";
+import VueCesium from "vue-cesium";
+Vue.use(VueCesium);
 // import log4js from "log4js";
 
 // log4js.configure({

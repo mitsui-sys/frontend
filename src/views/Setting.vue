@@ -4,72 +4,76 @@
       <v-row>
         <v-col cols="12" sm="8" md="6" lg="6" xl="6">
           <v-card>
-            <v-toolbar>ログ</v-toolbar>
-            <v-data-table
-              :headers="logHeaders"
-              :items="logContents"
-              class="elevation-1 overflow-auto"
-              fixed-header
-              fixed-footer
-              height="300px"
-            >
-            </v-data-table>
+            <v-toolbar>設定</v-toolbar>
+            <v-card-text>
+              <v-switch
+                v-model="development"
+                label="開発者モード"
+                @change="changeDev"
+              />
+              <p class="text-center">
+                新規登録は
+                <router-link to="/signup">こちら</router-link>
+              </p>
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12" sm="8" md="6" lg="4" xl="3">
-          <v-card color="#fff" outlined>
+          <v-card color="#fff">
             <v-toolbar> ユーザー情報 </v-toolbar>
-            <v-data-table
-              :headers="userHeaders"
-              :items="userContents"
-              class="userinfo elevation-1 overflow-auto"
-              fixed-header
-              fixed-footer
-              height="300px"
-              :header-props="{
-                'sort-icon': '▼',
-              }"
-              :items-per-page="5"
-            >
-            </v-data-table>
+            <v-card-text>
+              <v-data-table
+                :headers="searchHeaders"
+                :items="searchContents"
+                class="userlog elevation-1 overflow-auto"
+                fixed-header
+                fixed-footer
+                height="300px"
+                :header-props="{
+                  'sort-icon': '▼',
+                }"
+                :items-per-page="5"
+              >
+              </v-data-table>
+            </v-card-text>
           </v-card>
         </v-col>
         <v-col cols="12" sm="8" md="6" lg="4" xl="3">
-          <v-card color="#fff" outlined>
+          <v-card color="#fff">
             <v-toolbar> ログ </v-toolbar>
-            <v-data-table
-              :headers="searchHeaders"
-              :items="searchContents"
-              class="userlog elevation-1 overflow-auto"
-              fixed-header
-              fixed-footer
-              height="300px"
-              :header-props="{
-                'sort-icon': '▼',
-              }"
-              :items-per-page="5"
-            >
-            </v-data-table>
+            <v-card-text>
+              <v-data-table
+                :headers="logHeaders"
+                :items="logContents"
+                class="elevation-1 overflow-auto"
+                fixed-header
+                fixed-footer
+                height="300px"
+              >
+              </v-data-table>
+            </v-card-text>
           </v-card>
         </v-col>
         <v-col cols="12" sm="8" md="6" lg="4" xl="3">
-          <v-card color="#fff" outlined>
+          <v-card color="#fff">
             <v-toolbar> データ </v-toolbar>
-            <v-data-table
-              :headers="headers"
-              :items="contents"
-              class="userdata elevation-1 overflow-auto"
-              fixed-header
-              fixed-footer
-              height="300px"
-              :header-props="{
-                'sort-icon': '▼',
-              }"
-              :items-per-page="5"
-            >
-            </v-data-table>
+            <v-card-text>
+              <v-data-table
+                :headers="headers"
+                :items="contents"
+                class="userdata elevation-1 overflow-auto"
+                fixed-header
+                fixed-footer
+                height="300px"
+                :header-props="{
+                  'sort-icon': '▼',
+                }"
+                :items-per-page="5"
+              >
+              </v-data-table>
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
@@ -83,6 +87,7 @@ export default {
   components: {},
   data() {
     return {
+      development: false,
       loading: false,
       logHeaders: [],
       logContents: [],
@@ -101,7 +106,7 @@ export default {
         { id: 2, name: "kanko2", layer: "包蔵地2", content: "" },
         { id: 3, name: "kanko3", layer: "包蔵地3", content: "" },
       ],
-      host: "localhost",
+      host: "harima-isk",
     };
   },
   computed: {
@@ -110,6 +115,10 @@ export default {
     },
   },
   methods: {
+    changeDev() {
+      console.log("development", this.development);
+      this.$store.dispatch(`config/updateDevelopment`, this.development);
+    },
     getLogData() {
       const url = `http://${this.host}:50001/system/log`;
       this.loading = true;

@@ -1,5 +1,7 @@
 <template>
-  <div id="mapid"></div>
+  <div id="mapid">
+    <vc-viewer></vc-viewer>
+  </div>
 </template>
 
 <script>

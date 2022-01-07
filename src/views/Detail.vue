@@ -15,7 +15,7 @@
         <v-icon v-else> mdi-pencil </v-icon>
         {{ "編集" }}</v-btn
       >
-      <v-btn v-if="level >= 1">
+      <v-btn v-if="level >= 1" @click="deleteRows">
         <v-icon> mdi-delete </v-icon>
         {{ "削除" }}</v-btn
       >
@@ -43,7 +43,13 @@
     <v-divider></v-divider>
     <v-card-actions v-if="level >= 1">
       <v-spacer></v-spacer>
-      <v-btn outlined color="blue darken-1" text :disabled="!isEditing">
+      <v-btn
+        outlined
+        color="blue darken-1"
+        text
+        :disabled="!isEditing"
+        @click="updateRows"
+      >
         更新
       </v-btn>
       <v-btn outlined color="blue darken-1" text> 閉じる </v-btn>
@@ -53,7 +59,7 @@
 
 <script>
 export default {
-  name: "DetailPage",
+  name: "detail",
   data() {
     return {
       title: "台帳システム",
@@ -65,6 +71,7 @@ export default {
       hasSaved: false,
       isEditing: null,
       window: this.$root,
+      dialog: false,
     };
   },
   computed: {
@@ -173,6 +180,8 @@ export default {
           this.loading = false;
         });
     },
+    updateRows() {},
+    deleteRows() {},
   },
   mounted() {
     //クエリパラメータがあれば

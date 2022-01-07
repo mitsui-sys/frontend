@@ -5,7 +5,7 @@
       app
       clipped
       v-model="drawer"
-      v-if="isDevelopment && loginData.level >= 1"
+      v-if="development && loginData.level >= 1"
     >
       <v-container>
         <v-row>
@@ -52,7 +52,7 @@
     <v-app-bar app clippedLeft flat dark color="indigo darken-3">
       <v-app-bar-nav-icon
         @click.stop="drawer = !drawer"
-        v-if="isDevelopment && loginData.level >= 1"
+        v-if="development && loginData.level >= 1"
       ></v-app-bar-nav-icon>
       <v-toolbar-title fi>台帳システム</v-toolbar-title>
       <v-spacer></v-spacer>
@@ -91,11 +91,7 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-menu
-          offset-y
-          v-show="isDevelopment"
-          v-if="isDevelopment && loginData.level >= 1"
-        >
+        <v-menu offset-y v-if="development && loginData.level >= 1">
           <template v-slot:activator="{ on }">
             <v-btn v-on="on" text
               >{{ btn_title.support }}<v-icon>mdi-menu-down</v-icon></v-btn
@@ -153,7 +149,6 @@ export default {
   data() {
     return {
       isLogin: false,
-      isDevelopment: false,
       loading: true,
       btn_title: {
         home: "ホーム",
@@ -250,6 +245,9 @@ export default {
   computed: {
     loginData() {
       return this.$store.getters[`auth/login`];
+    },
+    development() {
+      return this.$store.getters[`config/development`];
     },
     loginLevel() {
       const level = this.loginData.level;

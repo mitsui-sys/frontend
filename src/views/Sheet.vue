@@ -32,7 +32,7 @@
               <v-col cols="6">
                 <v-select
                   v-model="item.text"
-                  :items="tblHeaders"
+                  :items="shownHeaders"
                   label="項目"
                 ></v-select>
               </v-col>
@@ -154,7 +154,7 @@
       </v-container>
       <v-data-table
         v-model="selected"
-        :headers="tblHeaders"
+        :headers="shownHeaders"
         :items="tblContents"
         :page.sync="page"
         :items-per-page="25"
@@ -187,7 +187,7 @@
                 @input="select($event)"
               />
             </td>
-            <td v-for="header in tblHeaders" :key="header.value">
+            <td v-for="header in shownHeaders" :key="header.value">
               {{ item[header.value] }}
             </td>
           </tr>
@@ -304,7 +304,7 @@ export default {
   },
   computed: {
     shownHeaders() {
-      return this.headers.filter((h) => h.shown);
+      return this.tblHeaders.filter((h) => h.shown);
     },
     loginData() {
       return this.$store.getters[`auth/login`];
@@ -397,7 +397,7 @@ export default {
     },
     defaultItem() {
       let data = [];
-      let header = Object.assign(this.tblHeaders);
+      let header = Object.assign(this.shownHeaders);
       for (let key in header) {
         data.push({ text: header[key].text, value: "" });
       }

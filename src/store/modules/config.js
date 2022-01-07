@@ -5,6 +5,7 @@ const state = () => ({
   count: 0,
   step: 1,
   content: [],
+  development: false,
 });
 
 const getters = {
@@ -13,6 +14,7 @@ const getters = {
   count: (state) => state.count,
   step: (state) => state.step,
   content: (state) => state.content,
+  development: (state) => state.development,
 };
 
 const actions = {
@@ -28,6 +30,9 @@ const actions = {
   decrement({ commit }) {
     commit("decrement");
   },
+  updateDevelopment({ commit }, development) {
+    commit("updateDevelopment", development);
+  },
 };
 
 const mutations = {
@@ -42,6 +47,9 @@ const mutations = {
   },
   decrement(state) {
     state.count -= state.step;
+  },
+  updateDevelopment(state, development) {
+    state.development = development;
   },
 };
 

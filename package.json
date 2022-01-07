@@ -37,6 +37,7 @@
     "url": "^0.11.0",
     "vue": "^2.6.11",
     "vue-axios": "^3.4.0",
+    "vue-cesium": "^2.3.1",
     "vue-dragable": "^0.0.5",
     "vue-draggable-resizable": "^2.3.0",
     "vue-i18n": "^9.2.0-beta.15",

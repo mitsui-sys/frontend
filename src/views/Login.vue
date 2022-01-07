@@ -23,10 +23,6 @@
         <v-card-actions>
           <v-btn class="info" @click="confirm">ログイン</v-btn>
         </v-card-actions>
-        <p class="text-center">
-          新規登録は
-          <router-link to="/signup">こちら</router-link>
-        </p>
       </v-form>
     </v-card-text>
   </v-card>

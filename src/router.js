@@ -98,6 +98,14 @@ const router = new Router({
       },
     },
     {
+      path: "/cesium",
+      name: "cesium",
+      component: loadView("Cesium"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
       path: "/fileregister",
       name: "fileregister",
       component: loadView("FileRegister"),
@@ -105,7 +113,7 @@ const router = new Router({
     {
       path: "/detail",
       name: "detail",
-      component: loadView("DetailPage"),
+      component: loadView("Detail"),
     },
     {
       path: "/drag",
