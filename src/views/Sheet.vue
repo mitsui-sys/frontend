@@ -2,82 +2,53 @@
   <v-container fluid>
     <h1>{{ kind }}</h1>
     <v-card color="#fff" class="condition">
-      <v-card-title class="d-flex justify-center pa-0 mt-6 mb-3"
-        >検索条件</v-card-title
-      >
+      <v-card-title class="d-flex justify-center">検索条件</v-card-title>
       <v-card-text class="d-flex justify-center flex-column search">
-        <v-container>
-          <v-row>
-            <v-col cols="3">
-              <v-subheader>テーブル名</v-subheader>
-            </v-col>
-            <v-col cols="4">
-              <v-autocomplete
-                v-model="selectedName"
-                :items="tableNameList"
-                :search-input.sync="search"
-                dense
-                label="選択"
-              ></v-autocomplete>
-            </v-col>
-            <v-spacer></v-spacer>
-          </v-row>
-        </v-container>
-        <div v-for="(item, index) in queryCondition" :key="index">
-          <v-container>
-            <v-row>
-              <v-col cols="2">
-                <v-subheader>条件{{ index + 1 }}</v-subheader>
-              </v-col>
-              <v-col cols="6">
-                <v-select
-                  v-model="item.text"
-                  :items="shownHeaders"
-                  label="項目"
-                ></v-select>
-              </v-col>
-              <!--<v-col cols="3">
-                <v-select
-                  v-model="item.rule"
-                  :items="operater"
-                  label="項目"
-                ></v-select>
-              </v-col>-->
-              <v-col>
-                <!-- 各入力ボックス -->
-                <v-text-field
-                  v-model="item.value"
-                  type="text"
-                  label="条件"
-                  :rules="[rules.required]"
-                />
-              </v-col>
-
-              <v-col cols="2">
-                <!-- 入力ボックスの削除ボタン -->
-                <v-btn block type="button" @click="removeInput(index)">
-                  削除
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-container>
+        <div class="flex">
+          <v-subheader class="flex-col">台帳名</v-subheader>
+          <v-autocomplete
+            v-model="selectedName"
+            class="flex-col"
+            :items="tableNameList"
+            :search-input.sync="search"
+            outlined
+            label="選択"
+          ></v-autocomplete>
+          <v-btn @click="submit" class="flex-col mb-9">検索</v-btn>
+          <v-btn @click="addInput" class="flex-col mb-9">条件追加</v-btn>
+          <v-btn @click="initialize" class="flex-col mb-9">クリア</v-btn>
         </div>
-
-        <v-card-actions>
-          <v-container>
-            <v-row>
-              <v-col cols="2">
-                <v-btn @click="submit">検索</v-btn>
-              </v-col>
-              <v-col cols="4">
-                <v-btn @click="addInput">検索条件追加</v-btn>
-              </v-col>
-              <v-col cols="2">
-                <v-btn @click="initialize">クリア</v-btn>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-actions>
+        <v-card max-height="200" class="overflow-auto ma-0">
+          <div
+            v-for="(item, index) in queryCondition"
+            :key="index"
+            class="flex"
+          >
+            <v-subheader class="flex-col">条件{{ index + 1 }}</v-subheader>
+            <v-select
+              v-model="item.text"
+              class="flex-col"
+              :items="shownHeaders"
+              label="項目"
+            ></v-select>
+            <!-- 各入力ボックス -->
+            <v-text-field
+              v-model="item.value"
+              class="flex-col"
+              type="text"
+              label="条件"
+              :rules="[rules.required]"
+            />
+            <!-- 入力ボックスの削除ボタン -->
+            <v-btn
+              class="flex-col mb-9"
+              type="button"
+              @click="removeInput(index)"
+            >
+              削除
+            </v-btn>
+          </div>
+        </v-card>
       </v-card-text>
     </v-card>
     <v-card>
@@ -93,7 +64,7 @@
           @click="registerItem()"
           v-if="selected.length > 0 && loginData.level >= 1"
         >
-          地図システムで確認
+          地図連携
         </v-btn>
         <v-btn
           class="mb-2"
@@ -167,7 +138,7 @@
         class="display elevation-1 overflow-auto"
         fixed-header
         fixed-footer
-        height="500px"
+        height="400px"
         calculate-widths
         :header-props="{
           'sort-icon': '▼',

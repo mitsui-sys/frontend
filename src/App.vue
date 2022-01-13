@@ -277,78 +277,88 @@ export default {
 </script>
 
 <style>
+/* サイト全体のフォント指定 */
+* {
+  font-family: "MS Pゴシック";
+  font-size: 20px !important;
+}
 .v-data-table {
   white-space: nowrap;
+  font-size: 24px !important;
 }
 .v-data-table th {
   border: 1px #333333 solid;
-  font-size: 24px !important;
+  width: 100px !important;
 }
 
-/* ヘッダに縦線出すよ */
-.resizable-column /deep/ th + th {
-  border-left: 1px solid grey;
-}
-
-* {
-  font-size: 24px !important;
-}
 .display.v-data-table th {
-  border: 1px #333333 solid;
   background: #55cccc !important;
-  font-size: 24px !important;
-  width: 100px !important;
 }
 
-.display.v-data-table td {
-  background: #dddddd;
-  border: 1px solid;
-  font-size: 24px !important;
+.display.v-data-table tr.v-data-table__selected td {
+  background: #dd3333;
 }
 
-.display.v-data-table tr:nth-child(odd) td {
-  background: #fff;
-  font-size: 24px !important;
-}
-/* ヘッダに縦線出すよ */
-.resizable-column /deep/ th + th {
-  border-left: 1px solid grey;
-}
-
-* {
-  font-size: 24px !important;
-}
-
-.userinfo.v-data-table th {
-  border: 1px #333333 solid;
-  background: #55cccc !important;
-  font-size: 24px !important;
-  white-space: nowrap;
-  width: 100px !important;
-}
-.userlog.v-data-table th {
-  border: 1px #333333 solid;
-  background: #55cc55 !important;
-  font-size: 24px !important;
-  white-space: nowrap;
-  width: 100px !important;
-}
-.userdata.v-data-table th {
-  border: 1px #333333 solid;
-  background: #cccc55 !important;
-  font-size: 24px !important;
-  white-space: nowrap;
-  width: 100px !important;
-}
-
-.v-data-table td {
-  background: #dddddd;
-  border: 1px solid;
-  font-size: 24px !important;
+.display.v-data-table tr:hover td {
+  background: #cccc00;
 }
 
 .v-data-table tr:nth-child(odd) td {
-  background: #fff;
-  font-size: 24px !important;
+  background: #ffffff;
+}
+.display.v-data-table td {
+  background: #dddddd;
+  border: 1px solid;
+}
+
+/* ヘッダに縦線出すよ */
+.resizable-column /deep/ th + th {
+  border-left: 1px solid grey;
+}
+
+/* ヘッダに縦線出すよ */
+.resizable-column /deep/ th + th {
+  border-left: 1px solid grey;
+}
+.userinfo.v-data-table th {
+  background: #55cccc !important;
+}
+.userlog.v-data-table th {
+  background: #55cc55 !important;
+}
+.userdata.v-data-table th {
+  background: #cccc55 !important;
+}
+.drop_area {
+  color: gray;
+  font-weight: bold;
+  font-size: 1.2em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 500px;
+  height: 300px;
+  border: 5px solid gray;
+  border-radius: 15px;
+}
+.enter {
+  border: 10px dotted powderblue;
+}
+ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0.5em;
+  font-size: 10px;
 }
 </style>

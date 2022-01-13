@@ -27,6 +27,11 @@ const router = new Router({
       },
     },
     {
+      path: "/login",
+      name: "login",
+      component: loadView("Login"),
+    },
+    {
       path: "/sheet",
       name: "sheet",
       // この場合、App.vueで配置した名前なしのrouter-viewのみ切り替わります。
@@ -52,18 +57,14 @@ const router = new Router({
         requiresAuth: true,
       },
     },
-    {
-      path: "/login",
-      name: "login",
-      component: loadView("Login"),
-      meta: {
-        requiresAuth: true,
-      },
-    },
+
     {
       path: "/signup",
       name: "signup",
       component: loadView("SignUp"),
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: "/setting",
@@ -145,13 +146,8 @@ router.beforeEach((to, from, next) => {
     // トークンが存在、かつログイン有効期限を過ぎてない場合、またはログイン画面の場合
     const hasToken = store.state.auth.login.token;
     const hasExpire = store.state.auth.login.expire > new Date().getTime();
-    const isLogin = to.matched.some((page) => {
-      // ログイン画面はリダイレクト対象外 (他にも404ページなどいくつか対象外にする必要があるかも)
-      return page.path === "/login";
-    });
     //ログイン情報の確認
-    // console.log(hasToken, hasExpire, isLogin);
-    if ((hasToken && hasExpire) || isLogin) {
+    if (hasToken && hasExpire) {
       next();
     } else {
       console.log("ログインしていません");
@@ -160,6 +156,7 @@ router.beforeEach((to, from, next) => {
   } else {
     // ログイン画面に飛ばす。ログイン後に元の画面に戻れるよう、backuriパラメーターにリダイレクト前のURLを入れる
     //next({path: '/login', query: {redirect: to.fullPath, message: true}})
+    console.log("ログイン必要なし");
     next();
   }
 });

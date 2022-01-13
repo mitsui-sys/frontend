@@ -186,14 +186,15 @@ export default {
   mounted() {
     //クエリパラメータがあれば
     let query = this.$route.query;
+
     if (Object.keys(query).length > 0) {
-      console.log(query);
+      console.log("query", query);
       //パラメータにlayerが存在するか
       if ("layer" in query) {
         const layer = query.layer?.slice();
         const user = query.user?.slice();
-        delete query.layer;
-        delete query.user;
+        delete query["layer"];
+        delete query["user"];
         let contents = [];
         for (const key in query) {
           contents.push(`${key}=${query[key]}`);
@@ -201,7 +202,7 @@ export default {
         const content = contents.join("&");
         this.getLayerData(layer, content);
         console.log("ユーザ確認", user);
-        this.getUserData(user);
+        // this.$router.push({ query: query });
       }
     }
   },

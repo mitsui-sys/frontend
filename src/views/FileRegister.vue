@@ -8,7 +8,8 @@
           label="ファイル名"
           show-size
           @change="onChangeFileInput"
-        ></v-file-input>
+        >
+        </v-file-input>
       </v-col>
       <v-col>
         <v-btn
@@ -20,14 +21,29 @@
           >ファイルアップロード</v-btn
         >
       </v-col>
-      <v-col>
-        <v-text-field />
-      </v-col>
-    </v-row>
-    <v-row dense>
+
       <v-col>
         <v-btn @click="getCurrentFile">ファイル一覧</v-btn>
       </v-col>
+    </v-row>
+    <v-row>
+      <div
+        class="drop_area"
+        @dragenter="dragEnter"
+        @dragleave="dragLeave"
+        @dragover.prevent
+        @drop.prevent="dropFile"
+        :class="{ enter: isEnter }"
+      >
+        ファイルアップロード
+      </div>
+      <div>
+        <ul class="flex">
+          <li v-for="file in files" :key="file.id" class="flex-col">
+            <v-icon>mdi-file</v-icon>{{ file.name }}
+          </li>
+        </ul>
+      </div>
     </v-row>
   </v-container>
 </template>
@@ -41,9 +57,40 @@ export default {
   data: () => ({
     file: null,
     fileData: null,
+    isEnter: false,
+    files: [],
   }),
 
   methods: {
+    dragEnter() {
+      this.isEnter = true;
+      console.log("Enter Drop Area");
+    },
+    dragLeave() {
+      this.isEnter = false;
+    },
+    dragOver() {
+      console.log("DragOver");
+    },
+    dropFile() {
+      console.log("Dropped File");
+      console.log(event.dataTransfer.files);
+      this.files = [...event.dataTransfer.files];
+      const url = "http://harima-isk:50001/file";
+      this.files.forEach((file) => {
+        let form = new FormData();
+        form.append("uploaded_file", file);
+        this.axios
+          .post(url, form)
+          .then((response) => {
+            console.log(response.data);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      });
+      this.isEnter = false;
+    },
     // ファイル入力が変更された時呼び出されます。
     onChangeFileInput() {
       this.fileData = new Object();
@@ -51,16 +98,12 @@ export default {
       this.fileData.type = this.file.type;
       // ファイル名を設定します。
       this.fileData.fileName = this.file.name;
-
-      console.log(this.fileData);
-
       // ファイルデータを非同期で読み込みます。
       this.readFileAsync(this.file)
         .then((result) => {
           // ファイルデータが読み込めた場合
           // ファイルデータを設定します。
           this.fileData.data = result;
-          console.log(this.fileData);
         })
         .catch((e) => {
           // エラーの場合
@@ -79,15 +122,16 @@ export default {
       // 第一引数の"file"はファイルデータの項目名です。
       // ファイルアップロード先の項目名に合わせる必要があります。
       formData.append(
-        "file",
+        "uploaded_file",
         new Blob([this.fileData.data], { type: this.fileData.type }),
         this.fileData.fileName
       );
-      console.log(formData);
 
       // Content-typeに"mutlipart/form-data"を設定します。
       const option = {
-        headers: "multipart/form-data",
+        headers: {
+          "Content-type": "multipart/form-data",
+        },
       };
 
       // ファイルをアップロードします。

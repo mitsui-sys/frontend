@@ -4,33 +4,28 @@
       <h1 class="display-1">ログイン</h1>
     </v-card-title>
     <v-card-text>
-      <v-form>
-        <v-text-field
-          prepend-icon="mdi-account-circle"
-          label="ユーザ名"
-          v-model="name"
-          @keydown.enter.exact="confirm"
-        />
-        <v-text-field
-          v-bind:type="showPassword ? 'text' : 'password'"
-          @click:append="showPassword = !showPassword"
-          @keydown.enter.exact="confirm"
-          prepend-icon="mdi-lock"
-          v-bind:append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-          label="パスワード"
-          v-model="password"
-        />
-        <v-card-actions>
-          <v-btn class="info" @click="confirm">ログイン</v-btn>
-        </v-card-actions>
-      </v-form>
+      <v-text-field
+        prepend-icon="mdi-account-circle"
+        label="ユーザ名"
+        v-model="name"
+      />
+      <v-text-field
+        v-bind:type="showPassword ? 'text' : 'password'"
+        @click:append="showPassword = !showPassword"
+        prepend-icon="mdi-lock"
+        v-bind:append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+        label="パスワード"
+        v-model="password"
+      />
+      <v-card-actions>
+        <v-btn class="info" @click="confirm">ログイン</v-btn>
+      </v-card-actions>
     </v-card-text>
   </v-card>
 </template>
 
 <script>
 export default {
-  name: "Login",
   data: () => ({
     showPassword: false,
     name: "",
@@ -40,6 +35,20 @@ export default {
   computed: {
     loginData() {
       return this.$store.getters[`auth/login`];
+    },
+    user() {
+      let user =
+        this.$route.params.user != undefined
+          ? this.$route.params.user
+          : "名無し";
+      return user;
+    },
+    passwd() {
+      let password =
+        this.$route.params.password != undefined
+          ? this.$route.params.password
+          : "名無し";
+      return password;
     },
   },
   methods: {
@@ -84,7 +93,12 @@ export default {
         });
     },
     mounted() {
-      if (this.loginData.token) this.$router.push("/");
+      console.log("sample");
+      //クエリパラメータがあれば
+      const query = this.$route.query;
+      if (Object.keys(query).length > 0) {
+        console.log("query", query);
+      }
     },
   },
 };
