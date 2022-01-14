@@ -8,23 +8,24 @@
           <v-subheader class="flex-col">台帳名</v-subheader>
           <v-autocomplete
             v-model="selectedName"
-            class="flex-col"
+            class="flex-col mr-3"
             :items="tableNameList"
             :search-input.sync="search"
             outlined
             label="選択"
           ></v-autocomplete>
-          <v-btn @click="submit" class="flex-col mb-9">検索</v-btn>
-          <v-btn @click="addInput" class="flex-col mb-9">条件追加</v-btn>
-          <v-btn @click="initialize" class="flex-col mb-9">クリア</v-btn>
+          <v-btn @click="submit" class="flex-col mb-9 mr-1">検索</v-btn>
+          <v-btn @click="addInput" class="flex-col mb-9 mr-1">条件追加</v-btn>
+          <v-btn @click="initialize" class="flex-col mb-9 mr-1">クリア</v-btn>
         </div>
         <v-card max-height="200" class="overflow-auto ma-0">
           <div
             v-for="(item, index) in queryCondition"
             :key="index"
             class="flex"
+            height="50px"
           >
-            <v-subheader class="flex-col">条件{{ index + 1 }}</v-subheader>
+            <v-subheader class="flex-col mt-3">条件{{ index + 1 }}</v-subheader>
             <v-select
               v-model="item.text"
               class="flex-col"
@@ -34,17 +35,13 @@
             <!-- 各入力ボックス -->
             <v-text-field
               v-model="item.value"
-              class="flex-col"
+              class="flex-col ml-3 mr-3"
               type="text"
               label="条件"
               :rules="[rules.required]"
             />
             <!-- 入力ボックスの削除ボタン -->
-            <v-btn
-              class="flex-col mb-9"
-              type="button"
-              @click="removeInput(index)"
-            >
+            <v-btn class="flex-col" type="button" @click="removeInput(index)">
               削除
             </v-btn>
           </div>
@@ -116,6 +113,7 @@
           <v-btn color="pink" text @click="snackbar = false">Close</v-btn>
         </v-snackbar>
       </v-toolbar>
+      <!--
       <v-container fluid>
         <v-row>
           <v-col v-for="col in tblHeaders" :key="col.value">
@@ -123,6 +121,7 @@
           </v-col>
         </v-row>
       </v-container>
+      -->
       <v-data-table
         v-model="selected"
         :headers="shownHeaders"
@@ -553,33 +552,6 @@ export default {
           return err.response;
         });
     },
-    selectReplace() {
-      let url = `${this.backend_url}/db/replace`;
-      let cond = {};
-      let option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log(url, cond, option);
-      this.axios
-        .get(url, cond, option)
-        .then((res) => {
-          this.$store.dispatch(`table/updateReplace`, res.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
-    sendDBRequest(type) {
-      const url = `${this.backend_url}/db/${this.selectedName}`;
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log(url, option, type);
-    },
     submit() {
       //項目を入力したか確認
       this.$store.dispatch(`table/updateTableName`, this.selectedName);
@@ -620,8 +592,8 @@ export default {
             // }
             this.tblHeaders = headers;
             this.tblContents = rows;
-            console.log(headers);
-            console.log(rows);
+            // console.log(headers);
+            // console.log(rows);
             // this.$store.dispatch(`table/updateData`, data);
           } else {
             this.tblHeaders = [];
@@ -707,58 +679,49 @@ export default {
       this.registerLog("削除", `${this.selectedName}?${cond}`);
     },
     getTemplateWorkbook() {
-      MyXlsx.getWorkbook("/resources/test.xlsx")
-        .then((wb) => {
-          // シート名の一覧を取得
-          // console.log("Sheet Name", wb.sheets);
-          let copy = wb.sheet("Sheet1").usedRange();
+      const assigns = {
+        __date__: "令和4年1月14日",
+        __name__: "播磨太郎", // エクセル内の__name__という文字列を置換
+        __address__: "加古郡播磨町東本荘1丁目5番30番",
+        __doc_number__: 5,
+        __doc_date__: "令和  年  月  日",
+        __city_date__: "令和  年  月  日",
+        __place__: "加古郡播磨町大中1丁目1番2号",
+        __area__: "約500㎡",
+        __owner_name__: "播磨太郎",
+        __owner_address__: "加古郡播磨町東本荘1丁目5番30番",
+        __iseki_type__: "大中遺跡",
+        __iseki_name__: "大中遺跡",
+        __iseki_current__: "大中遺跡",
+        __iseki_era__: "大中遺跡",
+        __site_main__: "大中遺跡",
+        __site_content__: "木造2階建個人住宅",
+        __site_name__: "播磨太郎",
+        __site_address__: "加古郡播磨町東本荘1丁目5番30番",
+        __construction_name__: "未定",
+        __construction_address__: "",
+        __start__: "令和4年7月1日（予定）",
+        __end__: "令和4年12月末",
+        __option__: "",
+        __guidance__: "",
+      };
 
-          // resultというSheetを作成
-          // resultシートが既にある場合エラーとなるので、存在した場合は削除し、新しく作成する
-          let newSheetName = "result";
-          if (wb.sheet(newSheetName)) {
-            wb.deleteSheet(newSheetName);
-            wb.addSheet(newSheetName);
-          } else {
-            wb.addSheet(newSheetName);
-          }
-          let newSheet = wb.sheet(newSheetName);
-
-          //テーブル情報を読み込む
-          let datas = [];
-          const header = this.tblHeaders;
-          const content = this.tblContents;
-          for (let i in content) {
-            let data = [];
-            let rowC = content[i];
-            for (let key in header) {
-              let row = [];
-              let text = header[key].text;
-              row.push(text);
-              row.push(rowC[text]);
-              data.push(row);
-            }
-            datas.push(data);
-          }
-          console.log("Content", datas);
-          let count = 0;
-          for (let i in datas) {
-            // this.writeCell(newSheet, "A" + (count * 24 + 1), style);
-            let rangeStr = "A" + (count * 24 + 1) + ":C" + (count * 24 + 24);
-            let destRange = newSheet.range(rangeStr);
-            MyXlsx.copyRanges(copy, destRange);
-            MyXlsx.writeCell(newSheet, "A" + (count * 24 + 2), datas[i]);
-            count += 1;
-          }
-
-          let filename = "out.xlsx";
-
-          MyXlsx.download(wb, filename);
-        })
-        .catch((error) => {
-          console.log("error", error);
-          // throw error;
-        });
+      //テーブル情報を読み込む
+      let datas = [];
+      const content = this.selected;
+      for (let i in content) {
+        let data = Object.assign(assigns);
+        const rowC = content[i];
+        data["__date__"] = Moment();
+        data["__name__"] = "播磨　太郎";
+        data["__address__"] = "加古郡播磨町";
+        data["__iseki_name__"] = rowC["遺跡の名称"];
+        data["__place__"] = rowC["所在地"];
+        data["__site_main__"] = rowC["種別"];
+        data["__option__"] = rowC["備考"];
+        datas.push(data);
+      }
+      MyXlsx.getTemplateWorkbook(datas);
     },
     //テーブル幅設定
     // このページのテーブルというテーブル全てリサイズ可にする

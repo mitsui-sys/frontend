@@ -12,6 +12,7 @@
             v-for="(item, index) in content"
             :key="`edited${index}`"
             no-gutters
+            class="pa-0 ma-0"
           >
             <v-col cols="4">
               <v-subheader>{{ item.text }}</v-subheader>

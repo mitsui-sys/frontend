@@ -11,6 +11,16 @@
                 label="開発者モード"
                 @change="changeDev"
               />
+              <v-container fluid>
+                <v-row>
+                  <v-col v-for="col in headers" :key="col.value">
+                    <v-switch
+                      v-model="col.shown"
+                      :label="`${col.text}`"
+                    ></v-switch>
+                  </v-col>
+                </v-row>
+              </v-container>
               <p class="text-center">
                 新規登録は
                 <router-link to="/signup">こちら</router-link>

@@ -259,6 +259,9 @@ export default {
         ? "管理者"
         : "閲覧者";
     },
+    color() {
+      return "#ff0000";
+    },
   },
   methods: {
     logout() {
@@ -296,11 +299,11 @@ export default {
 }
 
 .display.v-data-table tr.v-data-table__selected td {
-  background: #dd3333;
+  background: v-bind(color);
 }
 
 .display.v-data-table tr:hover td {
-  background: #cccc00;
+  background: #ffff3f;
 }
 
 .v-data-table tr:nth-child(odd) td {
@@ -352,6 +355,7 @@ ul {
 .flex {
   display: flex;
   align-items: center;
+  margin: 0;
 }
 
 .flex-col {

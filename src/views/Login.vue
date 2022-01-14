@@ -8,6 +8,8 @@
         prepend-icon="mdi-account-circle"
         label="ユーザ名"
         v-model="name"
+        id="username"
+        name="username"
       />
       <v-text-field
         v-bind:type="showPassword ? 'text' : 'password'"
@@ -16,9 +18,13 @@
         v-bind:append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
         label="パスワード"
         v-model="password"
+        id="password"
+        name="password"
       />
       <v-card-actions>
-        <v-btn class="info" @click="confirm">ログイン</v-btn>
+        <v-btn class="info" @click="confirm" id="loginbtn" name="loginbtn"
+          >ログイン</v-btn
+        >
       </v-card-actions>
     </v-card-text>
   </v-card>

@@ -119,54 +119,75 @@ const copyRanges = (sourceRange, destRange) => {
     destCell.style(style);
   });
 };
-const getTemplateWorkbook = () => {
-  this.getWorkbook("/resources/test.xlsx")
+/**
+ * return
+ * @param {*} datas テーブルデータ
+ */
+const getTemplateWorkbook = (datas) => {
+  getWorkbook("/resources/テンプレート.xlsx")
     .then((wb) => {
       // シート名の一覧を取得
       // console.log("Sheet Name", wb.sheets);
       let copy = wb.sheet("Sheet1").usedRange();
+      console.log(copy.width, copy.height);
 
       // resultというSheetを作成
       // resultシートが既にある場合エラーとなるので、存在した場合は削除し、新しく作成する
-      let newSheetName = "result";
+      const newSheetName = "result";
       if (wb.sheet(newSheetName)) {
         wb.deleteSheet(newSheetName);
         wb.addSheet(newSheetName);
       } else {
         wb.addSheet(newSheetName);
       }
-      let newSheet = wb.sheet(newSheetName);
-
-      //テーブル情報を読み込む
-      let datas = [];
-      let header = this.tblHeader;
-      let content = this.tblContent;
-      for (let i in content) {
-        let data = [];
-        let rowC = content[i];
-        for (let key in header) {
-          let row = [];
-          let text = header[key].text;
-          row.push(text);
-          row.push(rowC[text]);
-          data.push(row);
-        }
-        datas.push(data);
+      // const newSheet = wb.sheet(newSheetName);
+      const newSheet = wb.sheet("Sheet1");
+      //テンプレートへの書き込み
+      // let count = 0;
+      // for (let i in datas) {
+      //   // this.writeCell(newSheet, "A" + (count * 24 + 1), style);
+      //   let rangeStr = "A" + (count * 24 + 1) + ":C" + (count * 24 + 24);
+      //   let destRange = newSheet.range(rangeStr);
+      //   copyRanges(copy, destRange);
+      //   writeCell(newSheet, "A" + (count * 24 + 2), datas[i]);
+      //   count += 1;
+      // }
+      // const assigns = {
+      //   __date__: "令和4年1月14日",
+      //   __name__: "播磨太郎", // エクセル内の__name__という文字列を置換
+      //   __address__: "加古郡播磨町東本荘1丁目5番30番",
+      //   __doc_number__: 5,
+      //   __doc_date__: "令和  年  月  日",
+      //   __city_date__: "令和  年  月  日",
+      //   __place__: "加古郡播磨町大中1丁目1番2号",
+      //   __area__: "約500㎡",
+      //   __owner_name__: "播磨太郎",
+      //   __owner_address__: "加古郡播磨町東本荘1丁目5番30番",
+      //   __iseki_name__: "大中遺跡",
+      //   __work_content__: "木造2階建個人住宅",
+      //   __worker_name__: "播磨太郎",
+      //   __worker_address__: "加古郡播磨町東本荘1丁目5番30番",
+      //   __producter_name__: "未定",
+      //   __producter_address__: "",
+      //   __start__: "令和4年7月1日（予定）",
+      //   __end__: "令和4年12月末",
+      //   __option__: "",
+      // };
+      // console.log(assigns);
+      for (const i in datas) {
+        const d = datas[i];
+        newSheet._rows.forEach((row) => {
+          row._cells.forEach((cell) => {
+            const key = cell.value();
+            // if (assigns[key]) cell.value(assigns[key]);
+            if (d[key]) cell.value(d[key]);
+          });
+        });
       }
-      console.log("Content", datas);
-      let count = 0;
-      for (let i in datas) {
-        // this.writeCell(newSheet, "A" + (count * 24 + 1), style);
-        let rangeStr = "A" + (count * 24 + 1) + ":C" + (count * 24 + 24);
-        let destRange = newSheet.range(rangeStr);
-        this.copyRanges(copy, destRange);
-        this.writeCell(newSheet, "A" + (count * 24 + 2), datas[i]);
-        count += 1;
-      }
 
-      let filename = "out.xlsx";
+      let filename = "download.xlsx";
 
-      this.download(wb, filename);
+      download(wb, filename);
     })
     .catch((error) => {
       console.log("error", error);
