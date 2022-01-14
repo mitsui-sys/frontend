@@ -76,12 +76,17 @@ export default {
       console.log("Dropped File");
       console.log(event.dataTransfer.files);
       this.files = [...event.dataTransfer.files];
-      const url = "http://harima-isk:50001/file";
+      const url = "http://harima-isk:50001/upload";
       this.files.forEach((file) => {
         let form = new FormData();
-        form.append("uploaded_file", file);
+        form.append("file", file);
+        const option = {
+          headers: {
+            "Content-type": "multipart/form-data",
+          },
+        };
         this.axios
-          .post(url, form)
+          .post(url, form, option)
           .then((response) => {
             console.log(response.data);
           })
