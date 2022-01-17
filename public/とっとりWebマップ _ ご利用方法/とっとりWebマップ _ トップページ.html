@@ -1,0 +1,475 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0040)https://www2.wagmap.jp/pref-tottori/top/ -->
+<html xmlns="https://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script type="text/javascript" src="./とっとりWebマップ _ トップページ_files/preloader.js.ダウンロード" charset="UTF-8"></script>
+<!--本体読込-->
+
+
+
+
+<meta http-equiv="content-script-type" content="text/javascript">
+<meta http-equiv="content-style-type" content="text/css">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="imagetoolbar" content="no">
+<meta name="ROBOTS" content="NOFOLLOW">
+
+<meta http-equiv="X-UA-Compatible" content="IE=7">
+<link rel="icon" href="https://www2.wagmap.jp/pref-tottori/usr/tottori/images/favicon/tottori.ico" type="image/x-icon">  
+<link rel="Shortcut Icon" type="img/x-icon" href="https://www2.wagmap.jp/pref-tottori/usr/tottori/images/favicon/tottori.ico">
+
+<title>とっとりWebマップ&nbsp;|&nbsp;トップページ</title>
+<link rel="stylesheet" href="./とっとりWebマップ _ トップページ_files/import.css" type="text/css" media="all">
+<link rel="stylesheet" href="./とっとりWebマップ _ トップページ_files/option_top.css" type="text/css" media="all">
+<style type="text/css">
+    dt a{color:black; text-decoration:none;}
+    .timestamp{float:right; text-align:right; padding:4; font-size:90%;}
+    .top_border {height:500; width:590; text-align:left; overflow:hidden; white-space:nowrap;}
+    .tabbertab {
+      height:460px;
+      overflow:auto;
+    }
+    <!--■↓■タブにスクロールを追加　Start■↓■-->
+    .tabbertab {overflow-y:auto; overflow-x:hidden; height:500; width:100%;}
+    .legendtree{
+    font-size:22px;
+    margin:0pt 0pt 0pt 1px;
+    padding:0pt;
+    }
+    
+    #map ul.tabbernav li.tabberactive a{
+    font-weight: bold;
+    text-decoration:none;
+    }
+    
+    #map ul.tabbernav li a:link{
+    /*font-weight: bold; */
+    text-decoration:none;
+    }
+    
+    .map_group{
+        font:bold 24px;
+        text-align:left;
+        margin:4px;
+        height:19%;
+        padding:2px;
+    }
+/*    .map_group a:link{color:green;} */
+/*    .map_group a:visited{color:green;} */
+    
+    #logininfo9{
+        /*width: 210px;*/
+	}
+
+    .tabbernav{display:none;}
+    <!--■↑■タブにスクロールを追加　End■↑■-->
+</style>
+<script type="text/javascript" src="./とっとりWebマップ _ トップページ_files/tabber.js.ダウンロード"></script>
+<script type="text/javascript" src="./とっとりWebマップ _ トップページ_files/function.js.ダウンロード" charset="UTF-8"></script>
+<script type="text/javascript" src="./とっとりWebマップ _ トップページ_files/prototype.js.ダウンロード" charset="UTF-8"></script>
+<script type="text/javascript" src="./とっとりWebマップ _ トップページ_files/control.modal.js.ダウンロード" charset="UTF-8"></script><!--モーダルライブラリ-->
+<script type="text/javascript" src="./とっとりWebマップ _ トップページ_files/modaliframe.js.ダウンロード" charset="UTF-8"></script><!--モーダル-->
+<script type="text/javascript"><!--
+/* モーダル表示用 */
+var clsModalIframe = null;
+window.onload = function() {
+	clsModalIframe = new ModalIframe('modal_link_one');
+}
+/* ヘルプの表示 */
+function showHelp() {
+	var path;
+	path = '/pref-tottori/usr/tottori/help/index.asp';
+	window.open(path, 'help', 'width=800,height=600,scrollbars=yes,resizable=yes' ).focus();
+};
+//2012/8/9 CXY@SK ADD START トップページでの主題住所検索
+var STR_PARAM_SEARCH_KEYWORD = 'skw';
+// キーワードを入力可能な状態に
+var bskwMultiSearchEnable = false;
+function skwMultiSearchEnable (idname) {
+	var eleskw = document.getElementById(idname)
+	if (!bskwMultiSearchEnable){
+		eleskw.value = "";
+		eleskw.style.color = "#000000";
+		bskwMultiSearchEnable = true;
+	}
+	return false;
+};
+//検索して移動
+function multisearchMap (keyword) {
+	var modalW = getBrowserWidth() * 0.3;
+    var modalH = getBrowserHeight() * 0.6;
+	//var param = STR_PARAM_SEARCH_KEYWORD + '=' + keyword+'&dummy=' + Math.round(Math.random()*1000);
+	var param = STR_PARAM_SEARCH_KEYWORD + '=' + encodeURIComponent(keyword)+'&dummy=' + Math.round(Math.random()*1000); //2013/02/14 h.h@sola Edit
+	clsModalIframe.openModal("topsearch.asp?" + param,modalW,modalH,"modal_name");
+   
+};
+//2012/8/9 CXY@SK ADD END トップページでの主題住所検索
+/* グループ切替 */
+function changeMapGroup(thisElem) {
+    var ulElem = $("mapGroupKindSelect");
+    var divCategory = $("mapcategorywrap");
+    var divSection = $("mapsectionwrap");
+    
+    if (thisElem.parentNode.className == "current") {
+        return false;
+    }
+    
+    for (var i = 0; i < ulElem.childNodes.length; i++) {
+        ulElem.childNodes[i].className = "";
+    }
+    thisElem.parentNode.className = "current";
+    
+    if (divCategory.style.display == "none") {
+        divCategory.style.display = "";
+        divSection.style.display = "none";
+    } else {
+        divCategory.style.display = "none";
+        divSection.style.display = "";
+    }
+    
+    return false;
+};
+// --></script>
+</head>
+<body class="bluegreen">
+    <div id="wrap-pagebody"> 
+    
+        <div id="pagebody">
+		
+      <!--■■■ヘッダ ■■■ ここから -->
+			
+<!--■■■新規ヘッダ■■■-->
+<a name="pagetop"></a>
+<div id="header" style="background: url(&#39;/pref-tottori/usr/tottori/images/site/31000/header_bg.png&#39;) repeat scroll right top #f7f7f7;">
+<!--
+<div id="header" style="border-top: 5px solid #009999;background: url('/pref-tottori/usr/tottori/images/site/31000/header_bg.png') repeat scroll right top transparent;">
+-->
+
+  <!--リンクー-->
+  <div class="header_link" style="width:980px; margin:0 auto; height:65px;">
+    <div id="headerlink1">
+      <a href="https://www2.wagmap.jp/pref-tottori/top/index.asp" title="とっとりWebマップ" style="cursor: pointer;background:url(&#39;/pref-tottori/usr/tottori/images/site/31000/header_title.png&#39;) no-repeat scroll left top transparent;;"></a>
+    </div>
+
+<!-- 機能ボタン -->
+<div id="tool-list-outer">
+<ul class="clearfix">
+<li class="btn7">
+	<!--UPDATE START BY 10 : 20111231@QXC-->
+	<!--<a href="javascript:window.open('/pref-tottori/usr/tottori/help/index.asp', 'help', 'width=800,height=600,scrollbars=yes,resizable=yes' ).focus();" onclick="" title="ヘルプを表示します">使い方</a>-->
+	
+            <a href="javascript:window.open(&#39;../usr/tottori/help/index.html&#39;, &#39;help&#39;, &#39;width=800,height=600,scrollbars=yes,resizable=yes&#39; ).focus();" onclick="" title="ヘルプを表示します">使い方</a>
+        
+	<!--UPDATE END BY 10 : 20111231@QXC-->
+	</li>
+</ul>
+</div>
+<!-- 版 -->
+
+  </div>
+  <h1>とっとりWebマップ</h1>
+</div>
+
+        
+        <!--■■■マップ・住所検索 ■■■ ここから -->
+        <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 START-->
+        <!-- ■トップページマップ・住所検索 -->
+
+        <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 END-->
+        <!--■■■マップ・住所検索 ■■■ ここまで -->
+        
+         <!--■■■パンくずリスト ■■■ ここから -->
+         <div id="bc">
+         <!--■■■ログイン情報 ■■■ ここから -->
+           <!--■↓■ログイン情報■↓■-->
+
+<!--■↓■ログイン情報■↓■-->
+
+         <!--■■■ログイン情報 ■■■ ここまで -->
+                <dl>
+                    <dt></dt>
+                    <dd>
+                        トップページ
+                        <!--a href="./index.asp">トップページ</a--> 
+         </dd></dl></div><!--bc-->
+    
+        <!--■■■メインコンテンツ■■■-->
+        <div id="content">
+            <div id="wrap-content" class="wrap-content clearfix">
+                <!--■↓■緊急表示■↓■-->
+                <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 START-->
+                <!--■↓■新着情報■↓■-->
+
+<!--■↑■新着情報■↑■-->
+
+                <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 END-->
+                <!--■↑■緊急表示■↑■-->
+<!-- 2012/09/21 Y.Nakagomi UPD START 地図一覧の表示位置判定 -->
+
+                <div id="first-column2">
+
+<!-- 2012/09/21 Y.Nakagomi UPD END -->
+
+
+            <!--■↓■追加■↓■-->
+            <div class="clearfix" style="margin-bottom:10px; height:120px; background:#eee;">
+                <img src="./とっとりWebマップ _ トップページ_files/mds_prt_main.gif" width="735" height="120" alt="">
+            </div>
+            <!--■↑■追加■↑■-->
+
+<!--2013/02/25 LJ@SK ADD 【統合型GIS安定化】課題管理表NO174 START-->
+
+<!--2013/02/25 LJ@SK ADD 【統合型GIS安定化】課題管理表NO174 END-->
+
+<!--UPDATE START BY 指摘No359:20120503@ZJ-->
+
+
+<!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 START-->
+<!-- ■マップ選択 -->
+
+	<!-- ▼ここから　新規　地図名称表▼ -->
+	<!--<div class="mdl-maplist clearfix"> -->
+	<!--	 -->
+	<!--</div> -->
+	<!-- ▲ここまで　新規　地図名称表▲ -->
+<!--↑マップ選択↑-->
+
+<!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 END-->
+
+                    <div id="selectmap-h" class="mds-top01"><h2>各種地図選択</h2></div>
+    
+					<div>
+                        <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 START-->
+                       	<!-- ■マップ選択 -->
+
+	<!-- ▼ここから　新規　地図名称表▼ -->
+	<div class="mdl-mapgroup clearfix">
+	    
+	    <div id="mapcategorywrap">
+            <div class="box-outer clearfix">
+        		<div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=3" style="font-size:105%;">公共施設情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=3"><div class="boxExplain-inner bg-i1"><p>公共施設、市役所、町村役場、収入証紙の販売所などの情報が検索できます。</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=4" style="font-size:105%;">医療機関情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=4"><div class="boxExplain-inner bg-i2"><p>病院などの情報を見ることができます。</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=5" style="font-size:105%;">観光情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=5"><div class="boxExplain-inner bg-i3"><p>観光情報を見ることができます</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=6" style="font-size:105%;">文化財情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=6"><div class="boxExplain-inner bg-i4"><p>文化財、遺跡などの情報を見ることができます。</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=9" style="font-size:105%;">防災情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=9"><div class="boxExplain-inner bg-i5"><p>ハザードマップなどの情報を見ることができます。</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=10" style="font-size:105%;">犯罪・事故情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=10"><div class="boxExplain-inner bg-i6"><p>犯罪、事故情報を見ることができます。</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=11" style="font-size:105%;">都市計画情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=11"><div class="boxExplain-inner bg-i7"><p>用途地域などの情報を見ることができます。</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=12" style="font-size:105%;">森林情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=12"><div class="boxExplain-inner bg-i8"><p>森林計画図、樹種別分類などの情報を見ることができます。</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=7" style="font-size:105%;">県有施設情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=7"><div class="boxExplain-inner bg-i9"><p>公共財産、公共用財産などの情報を見ることができます。</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=8" style="font-size:105%;">環境情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=8"><div class="boxExplain-inner bg-i10"><p>廃棄物処分場跡地、とっとり次世代エネルギーパークなどの情報を見ることができます。</p></div></a></div></div><div class="box-inner-reset"><p class="mds-map" onclick="boxTitleClick(this);"><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=13" style="font-size:105%;">子育て応援情報</a></p><div class="boxExplain"><a class="wraplink" href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=13"><div class="boxExplain-inner bg-i1"><p>子育て応援サポート情報を見ることができます。</p></div></a></div></div>
+            </div>
+        </div>
+        <div id="mapsectionwrap" style="display: none;">
+            
+        </div>
+	</div>
+	<!-- ▲ここまで　新規　地図名称表▲ -->
+	<script type="text/javascript"><!--
+	    var boxTitleClick = function(element) {
+	        var childNode = element.getElementsByTagName("A");
+	        if (childNode.length == 1) {
+	            childNode[0].click();
+	        }
+	    }
+    --></script>
+<!--↑マップ選択↑-->
+
+                        <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 END-->
+                    </div>
+                    
+					<!--■広告スペース↓-->
+                    
+<div class="wrap-module00">
+  <div id="banners" style="text-align: center">
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+
+var	createXMLHttpRequest = function() {
+	var req = null;
+	try {
+		req = new XMLHttpRequest();
+	} catch (e) {
+		req = null;
+	}
+		if (!req && typeof(ActiveXObject) != "undefined") {
+		req = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	return req;
+}	
+var req = createXMLHttpRequest();
+var url = "./xml/banners/Banner.xml"
+
+var	loadBannerXml = function() {
+
+	try {
+		var a = req.open('GET', url, false);
+		req.send(null);
+
+	    if (req.status == 200) {
+	        var xmldata = req.responseXML;
+	        if ((xmldata == null) || (xmldata.parseError != null && xmldata.parseError.errorCode != 0) || 
+	            (xmldata.documentElement.tagName == 'parsererror' && xmldata.documentElement.namespaceURI == 'http://www.mozilla.org/newlayout/xml/parsererror.xml') || 
+	            (xmldata.documentElement == null)) {
+	          return false;
+	        }
+	        var bannerHtml = "";
+	        var uri = xmldata.getElementsByTagName("uri").item(0).firstChild.nodeValue;
+	        bannerHtml += "<table><tbody><tr><td colspan='2' class='portlet_contents'><p style='text-align: center; padding: 0 0 6px;'>";
+	        bannerHtml += "<strong>バナー広告</strong>（<a href=" + uri + ">広告の掲載について</a>）";
+	        bannerHtml += "</p></td></tr><tr><td><p align='center'>";
+
+	        var links = xmldata.getElementsByTagName("link")
+	        for (var i = 0; i < links.length; i++) {
+	        	var link = links.item(i);
+		        var href = link.getElementsByTagName("href").item(0).firstChild.nodeValue;
+		        var img = link.getElementsByTagName("img").item(0).firstChild.nodeValue;
+		        var alt = link.getElementsByTagName("alt").item(0).firstChild.nodeValue;
+				bannerHtml += "<a href='" + href + "' target='_blank'>"
+				bannerHtml += "<img src='" + img + "' alt='" + alt + "'"
+				bannerHtml += "align='bottom' border='0' height='50' width='140' /></a>"
+	        }
+			bannerHtml += "</p></td></tr></tbody></table>"
+			document.getElementById("banners").innerHTML = bannerHtml;
+		}
+    } catch (ex) {
+
+      return false;
+    }
+    return true;
+}
+loadBannerXml();
+
+// --></script>
+
+
+
+                    <!--■広告スペース↑-->
+
+                </div>
+                <!-- close id=first-column -->
+<!-- 2012/09/21 Y.Nakagomi UPD START 地図一覧の表示位置判定 -->
+
+                <div id="second-column2">
+
+<!-- 2012/09/21 Y.Nakagomi UPD END -->
+
+                    <!--■タイトル-->
+                    <div id="title">
+                        <h1></h1>
+                    </div>
+
+                    <!--■↓■新着情報■↓■-->
+                    <div style="clear:both;">
+                    <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 START-->
+                    <!--■↓■新着情報■↓■-->
+
+<div class="mds-top01">
+<h2>新着情報</h2>
+</div>
+<div class="module">
+    <div class="wrap-module line-base1">
+        <div class="box-frame">
+            <p>
+				
+            </p>
+        </div>
+    </div>
+</div>
+<!--■↑■新着情報■↑■-->
+
+                    <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 END-->
+                    </div>
+                    <!--■↑■新着情報■↑■-->
+<!--UPDATE START BY 指摘No359:20120503@ZJ-->
+
+                    <!--■サイトについて-->
+                    
+<div class="mds-top01">
+<h2>このサイトについて</h2>
+</div>
+<div class="module">
+  <div class="wrap-module clearfix line-base1">
+    <p class="txt01">
+ご利用の際は以下の注意事項を必ずご確認ください<br>
+
+    </p>
+    <p style="text-align: center;">
+      <input type="button" class="buttonType w_160 h_30" value="注意事項を確認する" onclick="window.open(&#39;rule.asp&#39;, &#39;_blank&#39;);">
+      <!--
+      <a href="rule.asp" target="_blank">
+        <img src="/pref-tottori/usr/tottori/images//btn_check.gif"
+          onmouseover="this.src='/pref-tottori/usr/tottori/images//btn_check_hover.gif'"
+          onmouseout="this.src='/pref-tottori/usr/tottori/images//btn_check.gif'" alt="注意事項を確認する" />
+      </a>
+      -->
+    </p>
+  </div>
+</div>
+
+                    <!--■↓■お問い合わせ先■↓■-->
+                    
+<div class="mds-top01">
+<h2>お問い合わせ先</h2>
+</div>
+<div class="module">
+  <div class="wrap-module line-base1">
+  <!--a href="http://www.pref.tottori.lg.jp/dd.aspx?menuid=1731" target="_blank">各地図のお問い合わせ先はこちら</a-->
+  <a href="https://www2.wagmap.jp/pref-tottori/top/inquiry.asp" target="_blank">各地図のお問い合わせ先はこちら</a>
+  </div>
+</div>
+
+                    <!--■↑■お問い合わせ先■↑■-->
+
+                    <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 START-->
+                    <!-- ■マップ選択 -->
+
+    <!--↓全マップ選択↓-->
+    <div class="mds-top01">
+        <h2>一覧から選択</h2>
+    </div>
+    <div class="module">
+        <div class="wrap-module clearfix line-base1">
+            <div class="list-fct-outer">
+    		    <ul class="ul-allselectmap"><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=3" style="font-size:105%;">公共施設情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=4" style="font-size:105%;">医療機関情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=5" style="font-size:105%;">観光情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=6" style="font-size:105%;">文化財情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=7" style="font-size:105%;">県有施設情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=8" style="font-size:105%;">環境情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=9" style="font-size:105%;">防災情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=10" style="font-size:105%;">犯罪・事故情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=11" style="font-size:105%;">都市計画情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=12" style="font-size:105%;">森林情報</a></li><li><a href="https://www2.wagmap.jp/pref-tottori/top/select.asp?dtp=13" style="font-size:105%;">子育て応援パスポート</a></li></ul>
+    		</div>
+	    </div>
+	</div>
+    <!--↑全マップ選択↑-->
+
+                    <!--2013/02/26 CLZ@SK UPDATE 【統合型GIS安定化】課題管理表NO175 END-->
+
+<!--UPDATE END BY 指摘No359:20120503@ZJ-->
+                </div>
+                <!-- close id=second-column -->
+            </div>
+            <!-- close class=wrap-content -->
+        </div>
+        <!-- close id=content -->
+        
+<!--
+<div id="confirm">
+    <p class="contact">
+        とっとりWebマップについては、<a href="/pref-tottori/top/inquiry.asp" target="_blank">こちら</a>からお問い合わせください。
+    </p>
+</div>
+-->
+
+        <!--■■■フッタ■■■-->
+        
+<p id="pPageTop"><a title="ページトップ" href="https://www2.wagmap.jp/pref-tottori/top/#pagetop">ページトップ</a></p>
+<div id="footer" class="bg-base1" style="background-color:#009999;">
+  <div id="footerAreaInner">
+    <!--フッターナビゲーションエリア/-->
+    <div id="footerNaviArea">      
+      <ul>
+<!--
+        <li><a target="top" title="利用規約" href="/pref-tottori/top/rule.asp">ご利用上の注意</a></li>
+        <li><a target="top" title="お問い合わせ" href="/pref-tottori/top/inquiry.asp">お問い合わせ</a></li>
+-->
+      </ul>
+    </div>
+    <!--コピーライト/-->
+    <p class="copy">Copyright  2013 Pref tottori. All Rights Reserved.</p>
+  </div>
+</div>
+
+
+    </div>
+    </div>
+  <!--■■■モーダル用■■■-->
+	<a id="modal_link_one" href="https://www2.wagmap.jp/pref-tottori/top/"></a>	
+
+
+</body></html>

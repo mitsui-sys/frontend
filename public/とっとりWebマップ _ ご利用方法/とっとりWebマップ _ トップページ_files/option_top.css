@@ -1,0 +1,356 @@
+@charset "UTF-8";
+
+
+/* ------------------------------------------------------------------ */
+/*【コンテンツ全体】地図ページ用 
+----------------------------------------------------------------------*/
+
+#first-column {
+	float: right;
+	width: 735px;
+}
+
+#second-column {
+	float: left;
+	width: 230px;
+	text-align: left;
+}
+
+#first-column2 {
+	float: left;
+	width: 735px;
+}
+
+#second-column2 {
+	float: right;
+	width: 230px;
+	text-align: left;
+}
+
+
+/* ------------------------------------------------------------------ */
+/*【１カラム】規約ページ用
+----------------------------------------------------------------------*/
+
+#extra-rule {
+	margin: 0 auto;
+	/*padding: 24px 0;*/
+	padding: 0 0;
+	width: 900px;
+	text-align: left;
+}
+
+/*
+	地図名称
+-------------------------------------------------------------------------------------------------*/
+
+.map-table-header{
+	height:60px;
+	text-align: center !important ;
+	background-color: darkblue;
+	color: white;
+}
+
+.map-table-item{
+	color:darkblue;
+	padding:10px !important;
+	width:50%;
+
+}
+
+.map-category{
+	padding: 2px 5px 2px 10px;
+	text-align: left;
+	background-color: rgb(122, 198, 160);
+	font-weight: bold;
+	color: rgb(255, 255, 255);
+	background:url(../images/tablist01.gif);
+	width:100%;
+}
+
+.map-name{
+	text-align:left;
+	padding:4px;
+}
+
+
+/*
+.map_group{
+	font:bold 24px;
+	text-align:left;
+	margin:4px;
+	height:19%;
+	padding:2px;
+}
+.map_group a:link{color:darkblue;}
+.map_group a:visited{color:darkblue;}
+*/
+
+/*
+.map-table tr td{
+
+}
+*/
+
+#nav {
+	background: none repeat scroll 0 0 #F1E9F7;
+	width: 980px;
+	overflow: hidden;
+	height: 30px;
+	margin: 0 auto;
+}
+#nav li {
+	display: inline;
+	float: left;
+	line-height: 30px;
+	margin-left: 20px;
+}
+
+
+
+
+
+/* 2011/11/14 管理機能用ボタンスタイル psc@mori*/
+#kanri_btn a {
+    width: auto;
+    width: -moz-available;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+	text-align:center;
+	display:block;
+	border: 1px solid #99cccc;
+	background: #e1f7f7;
+}
+
+#kanri_btn a:hover {
+	font-weight:bold;
+	color: #ff0000;
+	border: 1px solid #99cccc;
+	margin: 0 0 7px;
+}
+
+#kanri_btn h2 {
+	padding-left: 5px;
+	line-height: 2;
+	margin-bottom: 5px;
+}
+
+/*管理系*/
+.tblManageList{
+	height: 400px;
+	overflow: auto;
+	/*border: 1px #000099 solid;*/
+	margin: 5px;
+}
+.tblManageListHalf{
+	height: 200px;
+	overflow: auto;
+	border: 1px #000099 solid;
+	margin: 5px;
+}
+
+
+/* マップ分類用 2012/01/20 h.h@sola Add */
+div.mdl-mapgroup {
+    width: 100%;
+    padding: 6px 4px;
+}
+
+div.mdl-mapgroup ul {
+    width: 100%;
+}
+
+div.mdl-mapgroup ul li {
+    float: left;
+    margin: 10px;
+}
+
+#mapcategorywrap .box-outer {
+    width: auto;
+}
+
+#mapcategorywrap .box-outer .box-inner {
+    border: 1px solid #8EAAFB;
+    float: left;
+    margin-bottom: 5px;
+    margin-left: 2px;
+    margin-right: 2px;
+    width: 167px;
+    position: relative;
+}
+
+p.mds-map {
+    background: url("../images/mds_map.png") no-repeat scroll left 50% transparent;
+    border-bottom: 1px solid #999999;
+    color: #0033CC;
+    font-size: 105%;
+    font-weight: bold;
+    /*padding: 0.5em 0 0.5em 2.3em;*/
+    padding: 0 0 0 2.3em;
+    text-align: left;
+    width: auto;
+    position: relative;
+}
+
+p.mds-map a {
+    height: 30px;
+    line-height: 30px;
+}
+
+#mapcategorywrap .box-outer .box-inner p.explain {
+    position: absolute;
+    top: 35px;
+    left: 5px;
+    width: 100px;
+}
+
+#mapsectionwrap {
+    text-align: left;
+}
+
+#mapsectionwrap .mds-value a {
+    margin: 10px;
+}
+
+/* 切替タブ（地図／部署） --------------------------------------------*/
+/*
+div.mdl-mapgroup {
+	width: 100%;
+	padding: 6px 4px;
+}
+
+div.tab-map-outer {
+	margin-bottom: 10px;
+	background: url(../images/tab_slt_all.png) repeat-x 0 bottom;}
+
+div.mdl-mapgroup ul {
+    width: 100%;
+}
+
+div.mdl-mapgroup ul li {
+    float: left;
+    margin: 10px;
+}
+*/
+
+div.tab-map-outer {
+	margin: 0 0 5px;
+	width: 100%;
+	height: 40px;
+	text-align: left;
+	background: url(../images/tab_slt_all.png) repeat-x 0 bottom;
+	position: relative;
+}
+
+div.tab-map-outer ul {
+/*	margin: 0 0 0 5px;*/
+	position: absolute;
+	bottom: 3px;
+	left: 5px;
+}
+
+div.tab-map-outer ul li {
+	float: left;
+	margin-right: 5px;
+}
+
+div.tab-map-outer ul li a.tabslt1 {
+	display: block;
+	width: 160px;
+	height: 26px;
+	background: url(../images/tab_slt_all.png) no-repeat 0 -35px;
+	text-indent: -9999px;
+	overflow: hidden;
+	cursor: ;
+}
+
+div.tab-map-outer ul li a.tabslt2 {
+	display: block;
+	width: 160px;
+	height: 26px;
+	background: url(../images/tab_slt_all.png) no-repeat -170px -35px;
+	text-indent: -9999px;
+	overflow: hidden;
+	cursor: ;
+}
+
+div.tab-map-outer ul li.current a.tabslt1 {
+	display: block;
+	width: 160px;
+	height: 30px;
+	background: url(../images/tab_slt_all.png) no-repeat 0 0;
+	text-indent: -9999px;
+	overflow: hidden;
+	cursor: ;
+}
+
+div.tab-map-outer ul li.current a.tabslt2 {
+	display: block;
+	width: 160px;
+	height: 30px;
+	background: url(../images/tab_slt_all.png) no-repeat -170px 0;
+	text-indent: -9999px;
+	overflow: hidden;
+	cursor: ;
+}
+
+
+/* カテゴリボックス --------------------------------------------*/
+
+div.box-category {
+	float: left;
+	margin: 0 5px 8px; 
+	width: 172px;
+	_width: 171px;
+	height: auto;
+	background: #FCF3E9;
+}
+
+div.box-category-inner {
+	width: 100%;
+	width: -moz-available;
+	border: 1px solid #E27100;
+}
+
+div.box-category-mds a {
+	display: block;
+	width: 100%;
+	width: -moz-available;
+	height: 30px;
+	line-height: 30px;
+	padding: 0 0 0 25px;
+	background: url(../images/mds_category_bg.png) no-repeat 0 50%;
+	border-bottom: 1px solid #E27100;
+	text-align: left;
+	font-size: 116%;
+	font-weight: bold;
+}
+
+div.box-category-txt {
+	width: 100%;
+	width: -moz-available;
+	height: 70px;
+	text-align: left;
+	background: transparent;
+}
+
+	div.ctg1 { background: url(../images/pattern_category_all.png) no-repeat right 0;}
+	div.ctg2 { background: url(../images/pattern_category_all.png) no-repeat right -70px;}
+	div.ctg3 { background: url(../images/pattern_category_all.png) no-repeat right -140px;}
+	div.ctg4 { background: url(../images/pattern_category_all.png) no-repeat right -210px;}
+	div.ctg5 { background: url(../images/pattern_category_all.png) no-repeat right -280px;}
+	div.ctg6 { background: url(../images/pattern_category_all.png) no-repeat right -350px;}
+	div.ctg7 { background: url(../images/pattern_category_all.png) no-repeat right -420px;}
+	div.ctg8 { background: url(../images/pattern_category_all.png) no-repeat right -490px;}
+	div.ctg9 { background: url(../images/pattern_category_all.png) no-repeat right -560px;}
+	div.ctg10 { background: url(../images/pattern_category_all.png) no-repeat right -630px;}
+	div.ctg11 { background: url(../images/pattern_category_all.png) no-repeat right -700px;}
+	div.ctg12 { background: url(../images/pattern_category_all.png) no-repeat right -770px;}
+
+div.box-category-txt p.explain {
+	width: 100px;
+	padding: 6px;
+	font-size: 93%;
+	line-height: 1.4;
+}

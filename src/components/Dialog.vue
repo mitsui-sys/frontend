@@ -52,7 +52,7 @@
 
 <script>
 export default {
-  name: "Sheet",
+  name: "Dialog",
   props: ["dialogType", "content", "loginType", "dialog"],
   data() {
     return {

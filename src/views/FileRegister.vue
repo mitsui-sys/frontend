@@ -18,12 +18,46 @@
           rounded
           color="primary"
           @click="onClickUploadFileBtn"
-          >ファイルアップロード</v-btn
+          >アップロード</v-btn
         >
       </v-col>
 
       <v-col>
+        <v-btn @click="getCurrentDir">フォルダ一覧</v-btn>
         <v-btn @click="getCurrentFile">ファイル一覧</v-btn>
+        <v-list subheader three-line>
+          <v-subheader inset>Files</v-subheader>
+          <v-list-item-group v-model="settings" multiple active-class="">
+            <v-list-item v-for="file in files" :key="file.title">
+              <template v-slot:default="{ active }">
+                <v-list-item-action>
+                  <v-checkbox :input-value="active"></v-checkbox>
+                </v-list-item-action>
+
+                <v-list-item-avatar>
+                  <v-icon :class="file.color" dark v-text="file.icon"></v-icon>
+                </v-list-item-avatar>
+
+                <v-list-item-content>
+                  <v-list-item-title v-text="file.title"></v-list-item-title>
+
+                  <v-list-item-subtitle
+                    v-text="file.subtitle"
+                  ></v-list-item-subtitle>
+                  <v-list-item-subtitle
+                    v-text="file.path"
+                  ></v-list-item-subtitle>
+                </v-list-item-content>
+
+                <v-list-item-action>
+                  <v-btn icon>
+                    <v-icon color="grey lighten-1">mdi-information</v-icon>
+                  </v-btn>
+                </v-list-item-action>
+              </template>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
       </v-col>
     </v-row>
     <v-row>
@@ -39,7 +73,7 @@
       </div>
       <div>
         <ul class="flex">
-          <li v-for="file in files" :key="file.id" class="flex-col">
+          <li v-for="file in uploadfiles" :key="file.id" class="flex-col">
             <v-icon>mdi-file</v-icon>{{ file.name }}
           </li>
         </ul>
@@ -59,6 +93,9 @@ export default {
     fileData: null,
     isEnter: false,
     files: [],
+    uploadfiles: [],
+    settings: [],
+    url: "http://localhost:50001",
   }),
 
   methods: {
@@ -75,11 +112,13 @@ export default {
     dropFile() {
       console.log("Dropped File");
       console.log(event.dataTransfer.files);
-      this.files = [...event.dataTransfer.files];
-      const url = "http://harima-isk:50001/upload";
-      this.files.forEach((file) => {
+      this.uploadfiles = [...event.dataTransfer.files];
+
+      const url = `${url}/upload`;
+      this.uploadfiles.forEach((file) => {
+        console.log(file);
         let form = new FormData();
-        form.append("file", file);
+        form.append("uploaded_file", file);
         const option = {
           headers: {
             "Content-type": "multipart/form-data",
@@ -104,7 +143,19 @@ export default {
       // ファイル名を設定します。
       this.fileData.fileName = this.file.name;
       // ファイルデータを非同期で読み込みます。
-      this.readFileAsync(this.file)
+      const readFileAsync = (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            resolve(reader.result);
+          };
+          reader.onerror = reject;
+          reader.readAsArrayBuffer(file);
+        });
+      };
+
+      // ファイルデータを非同期で読み込みます。
+      readFileAsync(this.file)
         .then((result) => {
           // ファイルデータが読み込めた場合
           // ファイルデータを設定します。
@@ -119,7 +170,7 @@ export default {
     // ファイルアップロードボタンを押下した時に呼び出されます。
     onClickUploadFileBtn() {
       // ファイルアップロード先のURLは置き換えてください。
-      const url = "http://harima-isk:50001/file";
+      const url = `${this.url}/upload`;
 
       // フォームデータを生成し、設定します。
       let formData = new FormData();
@@ -151,26 +202,31 @@ export default {
           console.log(e);
         });
     },
+    getCurrentDir() {
+      // ファイルアップロード先のURLは置き換えてください。
+      const url = `${this.url}/upload/directory`;
 
-    // ファイルデータを非同期で読み込みます。
-    readFileAsync(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          resolve(reader.result);
-        };
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(file);
-      });
-    },
-    getCurrentFile() {
-      const url = "http://harima-isk:50001/system/current";
       // ファイルをアップロードします。
       this.axios
         .get(url)
-        .then((response) => {
+        .then((res) => {
           // 成功した場合
-          console.log("ファイル一覧", response);
+          console.log("フォルダ一覧", res.data);
+        })
+        .catch((e) => {
+          // エラーの場合
+          console.log(e);
+        });
+    },
+    getCurrentFile() {
+      const url = `${this.url}/upload`;
+      // ファイルをアップロードします。
+      this.axios
+        .get(url)
+        .then((res) => {
+          // 成功した場合
+          console.log("ファイル一覧", res.data);
+          this.files = res.data.files;
         })
         .catch((e) => {
           // エラーの場合
@@ -178,5 +234,6 @@ export default {
         });
     },
   },
+  mounted() {},
 };
 </script>

@@ -101,6 +101,14 @@
         >
           新規登録
         </v-btn>
+        <v-btn outlined color="blue darken-1" text @click="fileSelect">
+          {{ "付属図選択" }}
+        </v-btn>
+        <FileDialog
+          :dialogType="editedIndex"
+          :path.sync="fileDialogPath"
+          :dialog.sync="fileDialog"
+        />
         <MyDialog
           :dialogType="editedIndex"
           :content="editedItem"
@@ -177,11 +185,12 @@
 <script>
 import MyXlsx from "@/modules/myXlsx";
 import MyDialog from "@/components/Dialog";
+import FileDialog from "@/components/FileDialog";
 import Moment from "moment";
 
 export default {
   name: "Sheet",
-  components: { MyDialog },
+  components: { MyDialog, FileDialog },
   data() {
     return {
       tblHeaders: [],
@@ -194,6 +203,8 @@ export default {
       editedIndex: -1,
       dateRule: /^[0-9]{4}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/,
       editedItem: {},
+      fileDialog: false,
+      fileDialogPath: "",
       dialog: false,
       selectedName: "",
       selected: [],
@@ -210,32 +221,7 @@ export default {
       pageCount: 0,
       itemsPerPage: 5,
       showSelected: true,
-      operater: [
-        { text: "=", value: "=", rule: "=" },
-        { text: "LIKE", value: "LIKE", rule: "LIKE" },
-        { text: ">", value: ">", rule: ">" },
-        { text: "<", value: "<", rule: "<" },
-        { text: ">=", value: ">=", rule: ">=" },
-        { text: "<=", value: "<=", rule: "<=" },
-      ],
       queryCondition: [],
-      rules: {
-        yyyymmdd: (value) => {
-          const pattern = this.dateRule;
-          return pattern.test(value) || "yyyymmdd形式で入力してください";
-        },
-        required: (v) => !!v || "必須項目です",
-        max25chars: (v) => (v && v.length) <= 25 || "最大25文字です。",
-        AccountId: (v) => {
-          return /^[0-9]{12}$/.test(v) || "アカウントID は12桁の数値です";
-        },
-        bucketName: (v) => {
-          return (
-            /^[a-z0-9.-]{3,63}$/.test(v) ||
-            "バケット名 のフォーマットが正しくありません"
-          );
-        },
-      },
     };
   },
   watch: {
@@ -378,6 +364,9 @@ export default {
     },
   },
   methods: {
+    fileSelect() {
+      this.fileDialog = true;
+    },
     logout() {
       this.$store.dispatch("auth/destoroy");
     },
@@ -545,8 +534,6 @@ export default {
         .then((res) => {
           this.items = res.data;
           this.$store.dispatch(`table/updateTableNameList`, res.data);
-          // console.log("tableNameList", this.tableNameList);
-          // this.$store.dispatch(`table/updateData`, []);
         })
         .catch((err) => {
           return err.response;

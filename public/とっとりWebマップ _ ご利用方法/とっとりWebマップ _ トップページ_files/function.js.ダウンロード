@@ -1,0 +1,418 @@
+function isDefined(o) {
+	return (typeof(o) != 'undefined');
+};
+
+function isIdEle(id) {
+	return (PSC.$(id) != null);
+};
+
+function locateUrl(url, params) {
+	switch(typeof(params)) {
+	case 'object' :
+		params = toURLParam(params);
+		break;
+	default :
+		params = params || '';
+		break;
+	};
+	if (params.length > 0) {
+		if (url.indexOf('?', 0) >= 0) {
+			url += '&' + params;
+		}else{
+			url += '?' + params;
+		}
+	};
+	window.location.href = url;
+	return false;
+};
+
+/*ウィンドウ表示*/
+function showWindowPost(url, target, frm, width, height, options) {
+	if (isDefined(options) != true) {
+		options = ['location=no', 'menubar=no', 'status=no', 'toolbar=no', 'resizable=yes', 'scrollbars=yes'];
+	};
+	if (!isDefined(width)) {
+		//width = screen.availWidth;	//新規に画面いっぱい表示
+		width = getBrowserWidth();		//新規にもと画面と同じ大きさで表示
+	};
+	if (!isDefined(height)) {
+		//height = screen.availHeight;	//新規に画面いっぱい表示
+		height = getBrowserHeight();	//新規にもと画面と同じ大きさで表示
+	};
+	if (isDefined(width) && isDefined(height)) {
+		if (width > 0 && height > 0) {
+			var l = (screen.width - width) / 2;
+			var t = (screen.height - height) /2;
+			options.push('left=' + l);
+			options.push('top=' + t);
+			options.push('width=' + width);
+			options.push('height=' + height);
+		} else {
+			options.push('left=' + screen.availLeft);
+			options.push('top=' + screen.availTop);
+			options.push('width=' + screen.availWidth);
+			options.push('height=' + screen.availHeight);
+		};
+	} else {
+		options.push('left=' + screen.availLeft);
+		options.push('top=' + screen.availTop);
+		options.push('width=' + screen.availWidth);
+		options.push('height=' + screen.availHeight);
+	};
+
+	//var win = window.open("about:blank", target, options.join(', '));
+	var win = window.open(url, target, options.join(', '));
+  frm.target = target;
+  frm.method = "post";
+  frm.action = url;
+  frm.submit();
+	win.focus();
+	return false;
+};
+
+/*ウィンドウ表示*/
+function showWindow(url, target, params, width, height, options) {
+	if (isDefined(options) != true) {
+		options = ['location=no', 'menubar=no', 'status=no', 'toolbar=no', 'resizable=yes', 'scrollbars=yes'];
+	};
+	if (!isDefined(width)) {
+		if (target == '_self') {
+			width = getBrowserWidth();
+		}else{
+			//width = screen.availWidth;	//新規に画面いっぱい表示
+			width = getBrowserWidth();		//新規にもと画面と同じ大きさで表示
+		}
+	};
+	if (!isDefined(height)) {
+		if (target == '_self') {
+			height = getBrowserHeight();
+		}else{
+			//height = screen.availHeight;	//新規に画面いっぱい表示
+			height = getBrowserHeight();	//新規にもと画面と同じ大きさで表示
+		}
+	};
+	if (isDefined(width) && isDefined(height)) {
+		if (width > 0 && height > 0) {
+			var l = (screen.width - width) / 2;
+			var t = (screen.height - height) /2;
+			options.push('left=' + l);
+			options.push('top=' + t);
+			options.push('width=' + width);
+			options.push('height=' + height);
+		} else {
+			options.push('left=' + screen.availLeft);
+			options.push('top=' + screen.availTop);
+			options.push('width=' + screen.availWidth);
+			options.push('height=' + screen.availHeight);
+		};
+	} else {
+		options.push('left=' + screen.availLeft);
+		options.push('top=' + screen.availTop);
+		options.push('width=' + screen.availWidth);
+		options.push('height=' + screen.availHeight);
+	};
+    //2013/04/03 h.h@sola Edit
+    if (typeof(params) != "undefined") {
+    	params = toURLParam(params);
+        if (params.length > 0) {
+    		if (url.indexOf('?', 0) >= 0) {
+    			url += '&' + params;
+    		}else{
+    			url += '?' + params;
+    		}
+        }
+	};
+	//ウインドウのサイズを送る
+	if (url.indexOf('?', 0) >= 0) {
+		url += '&bsw=' + width + '&bsh=' + height;
+	}else{
+		url += '?bsw=' + width + '&bsh=' + height;
+	}
+
+	var win = window.open(url, target, options.join(', '));
+	win.focus();
+	return false;
+};
+
+function moveWindow(left, top, width, height) {
+	window.resizeTo(width, height);
+	window.moveTo(left, top);
+};
+
+function toURLParam(p) {
+	var result = '';
+	var aryParam = [];
+	if (isDefined(p) == true) {
+		for (var i in p) {
+			aryParam.push(i + '=' + encodeURIComponent(p[i]));
+		};
+	};
+	if (aryParam.length > 0) {
+		result = aryParam.join('&');
+	};
+	return result;
+};
+
+/*親ウィンドウ表示*/
+function showOpener() {
+	if(window.opener && !window.opener.closed){
+		window.opener.focus();
+	};
+};
+
+/*両側空白削除*/
+function trim(str) {
+	return ltrim(rtrim(str));
+};
+
+/*左側空白削除*/
+function ltrim(str) {
+	if(!isDefined(str)) return
+	return str.replace(/^\s+/, '');
+};
+
+/*右側空白削除*/
+function rtrim(str) {
+	if(!isDefined(str)) return
+	return str.replace(/\s+$/, '');
+};
+
+function addEvent(elem, eventName, eventHandler, flag) {
+	flag = flag || false;
+	if (document.all) {
+		elem.attachEvent('on' + eventName, eventHandler);
+	} else {
+		elem.addEventListener(eventName, eventHandler, flag);
+	};
+};
+function removeEvent(elem, eventName, flag) {
+	flag = flag || false;
+	if (document.all) {
+		elem.detachEvent('on' + eventName, eventHandler);
+	} else {
+		elem.removeEventListener(eventName, eventHandler, flag);
+	};
+};
+
+function checkString(txt, aryChr, message) {
+	for (var i = 0;i<aryChr.length;i++) {
+		if (txt.indexOf(aryChr[i], 0) > -1) {
+			alert(message);
+			return false;
+		};
+	};
+};
+
+function checkDate(d1, d2, message1, message2) {
+	if ((d1.length > 0) && (d2.length > 0)) {
+		if (d1 > d2) {
+			alert(message1);
+			return false;
+		};
+	} else {
+		if (d1.length == 0) {
+		    if (typeof(message2) != 'undefined' && message2.length > 0) {
+			    alert(message2);
+			    return false;
+		    }
+		}
+	};
+};
+function addComma(value){
+    var i;
+    for(i = 0; i < value.length/3; i++){
+        value = value.replace(/^([+-]?\d+)(\d\d\d)/,"$1,$2");
+    };
+    return value;
+};
+
+//追加2008.12.2@noda
+//編集者、管理者の時のiframe地図表示に使用
+function showIframe(sElename,sUrl,lHeight,lWidth){
+	var sIFUrl;
+	sIFUrl = "<iframe id='disp' name='disp' src='" + sUrl + "' scrolling='auto' frameborder='no' style='width:100%;height:100%;'></iframe>"
+
+//	sIFUrl = "<object id ='disp' name='disp' type='text/html' data='" + sUrl + "' classid='clsid:25336920-03F9-11CF-8FD0-00AA00686F13'><p>non object</p></object>"
+
+	//Add 2009/08/13
+	document.getElementById('header').style.display = 'none';	//既存のタイトルを削除
+	document.getElementById('bc').style.display = 'none';	//パンクズ削除
+	document.getElementById('wrap-content').style.width = '100%';	//上部設定
+
+	document.getElementById('selectmap-h').style.display = 'none';	//地図選択ヘッダー
+	document.getElementById('second-column').style.display = 'none';	//左側の非表示
+	document.getElementById('confirm').style.display = 'none';			//フッター問い合わせ非表示
+	document.getElementById('footer').style.display = 'none';			//フッター非表示
+	document.getElementById('first-column').style.width = '100%';			//フッター非表示
+	document.getElementById('first-column').style.height = '100%';			//フッター非表示
+	if (navigator.appName == "Microsoft Internet Explorer") {
+		document.getElementById("first-column").style.styleFloat = 'left';
+	} else {
+		document.getElementById("first-column").style.cssFloat = 'left';
+	}
+
+	
+	document.getElementById(sElename).innerHTML = sIFUrl;
+    if (typeof(lHeight) == 'number') {lHeight += "px"}
+	if (typeof(lWidth) == 'number') {lWidth += "px"}
+	
+	document.getElementById("wrap-pagebody").style.height = lHeight;
+	document.getElementById("wrap-pagebody").style.width = lWidth;
+	document.getElementById("pagebody").style.height = lHeight;
+	document.getElementById("pagebody").style.width = lWidth;
+	document.getElementById("wrap-content").style.height = lHeight;
+	document.getElementById("wrap-content").style.width = lWidth;
+	document.getElementById("content").style.height = lHeight;
+	document.getElementById("content").style.width = lWidth;
+	document.getElementById("first-column").style.height = lHeight;
+	document.getElementById("first-column").style.width = lWidth;
+	document.getElementById("disp").style.height = lHeight;
+	document.getElementById("disp").style.width = lWidth;
+};
+
+//追加2009.01.26@noda
+//block表示のON/OFF 
+//新しいバージョンではいらない。 2009.07.13@noda
+function showBlock(sElename){
+	var ele = document.getElementById(sElename);
+    ele.style.display = (ele.style.display == 'none') ? 'block' : 'none';
+    return false;
+};
+
+	
+/**追加2009.08.19@noda
+ * 前方期間を出力する。sidからeid（今日）まで。sid,eidのvalueにセット
+ * sid 年
+ * eid 月
+ * mode day:n日間、month：nヶ月間
+ * n 期間
+ */
+var setPeriod = function(sid,eid,mode,n) {
+	var sdate,edate
+	var toDay = new Date();
+	var startDay
+
+	switch (mode) {
+		case "day":		startDay = computeDate(toDay.getFullYear(),(toDay.getMonth() + 1),toDay.getDate(),-n);	break;
+		case "month":	startDay = computeMonth(toDay.getFullYear(),(toDay.getMonth() + 1),toDay.getDate(),-n);	break;
+		default:	break;
+	};	
+	sdate = startDay.getFullYear() + "/" + (startDay.getMonth() + 1) + "/" + startDay.getDate();
+	edate = toDay.getFullYear() + "/" + (toDay.getMonth() + 1) + "/" + toDay.getDate();
+	document.getElementById(sid).value = sdate;
+	document.getElementById(eid).value = edate;
+}
+	
+/**追加2009.08.19@noda
+ * 年月を指定して月末日を求める関数
+ * year 年
+ * month 月
+ */
+var getMonthEndDay = function(year, month) {
+    var dt = new Date(year, month, 0);
+    return dt.getDate();
+}
+
+/**追加2009.08.19@noda
+ * 年月日と加算月からnヶ月後、nヶ月前の日付を求める
+ * year 年
+ * month 月
+ * day 日
+ * addMonths 加算月。マイナス指定でnヶ月前も設定可能
+ */
+var computeMonth = function(year, month, day, addMonths) {
+    month += addMonths;
+    var endDay = getMonthEndDay(year, month);//ここで、前述した月末日を求める関数を使用します
+    if(day > endDay) day = endDay;
+    var dt = new Date(year, month - 1, day);
+    return dt;
+}
+
+/**追加2009.08.19@noda
+ * 年月日と加算日からn日後、n日前を求める関数
+ * year 年
+ * month 月
+ * day 日
+ * addDays 加算日。マイナス指定でn日前も設定可能
+ */
+var computeDate = function(year, month, day, addDays) {
+    var dt = new Date(year, month - 1, day);
+    var baseSec = dt.getTime();
+    var addSec = addDays * 86400000;//日数 * 1日のミリ秒数
+    var targetSec = baseSec + addSec;
+    dt.setTime(targetSec);
+    return dt;
+}
+/**追加2010.12.09@noda
+ * 文字のバイト数を求める
+ * aStr 文字列
+ */
+var getStrByte = function(astr){
+	if(astr.length == 0){return 0;}
+	var count = 0;
+	var str = "";
+	for(var i=0;i <astr.length;i++){
+		str = astr.charAt(i);
+		str = escape(str);
+		if( str.length  < 4 ){
+			count = count + 1;
+		}else{
+			count = count + 2;
+		}
+	}
+ return count;
+}
+/**追加2011.01.07@noda
+ * ブラウザの幅を求める
+ */
+var getBrowserWidth = function(){
+	if ( window.innerWidth ) { return window.innerWidth; }  
+	else if ( document.documentElement && document.documentElement.clientWidth != 0 ) { return document.documentElement.clientWidth; }  
+	else if ( document.body ) { return document.body.clientWidth; }  
+	return 0;  
+}
+/**追加2011.01.07@noda
+ * ブラウザの高さを求める
+ */
+var getBrowserHeight = function(){
+	if ( window.innerHeight ) { return window.innerHeight; }  
+	else if ( document.documentElement && document.documentElement.clientHeight != 0 ) { return document.documentElement.clientHeight; }  
+	else if ( document.body ) { return document.body.clientHeight; }  
+	return 0;  
+}
+/**追加2011.01.10@noda
+ 数値のみ入力IE対応
+*/
+function numOnlyByOnkeyDown(k) {
+	if ( k.keyCode==8 ||						//バックスペース
+		 k.keyCode==9 ||						//タブキー
+		 k.keyCode==46 ||						//deleteキー
+		 (37<=k.keyCode && k.keyCode<=40) ||	//矢印キー
+//		 k.keyCode==189 ||						//マイナス「-」
+//		 k.keyCode==109 ||						//テンキーのマイナス「-」
+
+		 (48<=k.keyCode && k.keyCode<=57) ||	//テンキーじゃない方の数字
+		 (96<=k.keyCode && k.keyCode<=105)		//テンキーの数字
+		)
+	{
+		return true;
+	}
+	return false;
+} 
+/**追加2011.01.10@noda
+ 数値のみ入力FF対応
+*/
+function numOnlyByOnkeyPress(k) {
+	if((48 > k.which || k.which > 57) && k.which > 31) return false;
+	else return true;
+}
+/**追加2011.04.02@noda
+ テキスト出力の確認
+*/
+function checkOutText(txt){
+	  	txt = txt.replace(/&/g,"&amp;");
+		txt = txt.replace(/"/g,"&quot;");
+		txt = txt.replace(/</g,"&lt;");
+		txt = txt.replace(/>/g,"&gt;");
+	return txt;
+  }
