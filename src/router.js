@@ -22,14 +22,10 @@ const router = new Router({
       name: "home",
       // この場合、App.vueで配置した名前なしのrouter-viewのみ切り替わります。
       component: loadView("Home"),
+      children: [],
       meta: {
         requiresAuth: true,
       },
-    },
-    {
-      path: "/login",
-      name: "login",
-      component: loadView("Login"),
     },
     {
       path: "/sheet",
@@ -40,6 +36,12 @@ const router = new Router({
         requiresAuth: true,
       },
     },
+    {
+      path: "/login",
+      name: "login",
+      component: loadView("Login"),
+    },
+
     {
       path: "/pdf",
       name: "pdf",
@@ -57,7 +59,6 @@ const router = new Router({
         requiresAuth: true,
       },
     },
-
     {
       path: "/signup",
       name: "signup",
@@ -114,7 +115,17 @@ const router = new Router({
     {
       path: "/detail",
       name: "detail",
-      component: loadView("Detail"),
+      component: loadView("DetailPage"),
+    },
+    // {
+    //   path: "/page",
+    //   name: "page",
+    //   component: loadView("DetailPage"),
+    // },
+    {
+      path: "/document",
+      name: "document",
+      component: loadView("Document"),
     },
     {
       path: "/drag",
@@ -140,6 +151,7 @@ const router = new Router({
 
 // router gards
 router.beforeEach((to, from, next) => {
+  console.log(to);
   // NProgress.start()
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     // console.log("認証必要あり");
@@ -165,5 +177,6 @@ router.beforeEach((to, from, next) => {
 //   console.log(to, from)
 //   NProgress.done()
 // })
+// script window.open に解決されたurlを渡す
 
 export default router;

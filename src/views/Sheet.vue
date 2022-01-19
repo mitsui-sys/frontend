@@ -9,7 +9,7 @@
           <v-autocomplete
             v-model="selectedName"
             class="flex-col mr-3"
-            :items="tableNameList"
+            :items="displayItems"
             :search-input.sync="search"
             outlined
             label="選択"
@@ -193,6 +193,7 @@ export default {
   components: { MyDialog, FileDialog },
   data() {
     return {
+      displayItems: [],
       tblHeaders: [],
       tblContents: [],
       isShown: true,
@@ -222,6 +223,7 @@ export default {
       itemsPerPage: 5,
       showSelected: true,
       queryCondition: [],
+      display: [],
     };
   },
   watch: {
@@ -364,6 +366,44 @@ export default {
     },
   },
   methods: {
+    initialize() {
+      // let postdata = {
+      //   host: this.host,
+      //   port: this.port,
+      //   database: this.tableName,
+      //   user: this.user,
+      //   password: this.password,
+      // };
+      // let query = `${this.backend_url}/display`;
+
+      // this.axios
+      //   .post(query, postdata)
+      //   .then((res) => {
+      //     this.items = res.rows.data;
+      //     this.$store.dispatch(`table/updateTableNameList`, res.data);
+      //   })
+      //   .catch((err) => {
+      //     return err.response;
+      //   });
+
+      const url = `${this.backend_url}/display`;
+      console.log("get all display", url);
+      this.axios
+        .get(url)
+        .then((res) => {
+          //成功時
+          console.log("success", res.data);
+          const rows = res.data.rows;
+          this.display = rows;
+          this.displayItems = rows.map((row) => row.name);
+          this.selectedName = Object.assign(this.displayItems[0]);
+          // const json = JSON.parse(rows[0].display);
+          // this.headers = json;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
     fileSelect() {
       this.fileDialog = true;
     },
@@ -401,7 +441,7 @@ export default {
     },
     registerItem() {
       // let url = `${this.backend_url}/db/${this.selectedName}`;
-      const url = "http://harima-isk:50001/system/search/register";
+      const url = `${this.backend_url}/system/search/register`;
       const layer = this.selectedName;
       const selected = this.selected;
       if (selected == "") {
@@ -492,7 +532,7 @@ export default {
       this.queryCondition.splice(index, 1); // 👈 該当するデータを削除
     },
     registerLog(action, content) {
-      let url = `http://harima-isk:50001/system/log/register`;
+      let url = `${this.backend_url}/system/log/register`;
       let now = Moment().format("YYYY/MM/DD HH:mm:ss dddd");
       let cond = {
         data: {
@@ -519,29 +559,18 @@ export default {
           console.log(error);
         });
     },
-    initialize() {
-      let postdata = {
-        host: this.host,
-        port: this.port,
-        database: this.tableName,
-        user: this.user,
-        password: this.password,
-      };
-      let query = `${this.backend_url}/init`;
 
-      this.axios
-        .post(query, postdata)
-        .then((res) => {
-          this.items = res.data;
-          this.$store.dispatch(`table/updateTableNameList`, res.data);
-        })
-        .catch((err) => {
-          return err.response;
-        });
-    },
     submit() {
-      //項目を入力したか確認
-      this.$store.dispatch(`table/updateTableName`, this.selectedName);
+      const name = this.selectedName;
+      if (name === undefined) {
+        console.log("台帳名が選択されていません");
+        return;
+      }
+      //項目を入力したか確認      this.$store.dispatch(`table/updateTableName`, this.selectedName);
+      const display = this.display.filter((x) => x.name == name)[0].display;
+      const json = JSON.parse(display);
+      this.tblHeaders = json;
+      // this.shownHeaders = this.display.filter(x=>x.name==this.selectedName)
       let conds = this.queryCondition;
       let contents = [];
       for (let key in conds) {
@@ -551,7 +580,7 @@ export default {
       }
       let content = contents.join("&");
 
-      let url = `${this.backend_url}/db/${this.selectedName}?${content}`;
+      let url = `${this.backend_url}/db/${name}?${content}`;
       let body = {};
       let option = {
         headers: {
@@ -570,23 +599,7 @@ export default {
             const name = columnNames[i];
             headers.push({ text: name, value: name, shown: true });
           }
-
-          if (rows.length > 0) {
-            // for (const key in rows) {
-            //   let _date = data[key]["request_day"];
-            //   rows.data[key]["request_day"] =
-            //     Moment(_date).format("YYYY/MM/DD");
-            // }
-            this.tblHeaders = headers;
-            this.tblContents = rows;
-            // console.log(headers);
-            // console.log(rows);
-            // this.$store.dispatch(`table/updateData`, data);
-          } else {
-            this.tblHeaders = [];
-            this.tblContents = [];
-            // this.$store.dispatch(`table/updateData`, []);
-          }
+          this.tblContents = rows.length > 0 ? rows : [];
         })
         .catch((error) => {
           console.log(error);

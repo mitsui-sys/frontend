@@ -282,6 +282,7 @@ export default {
   font-family: "MS Pゴシック";
   font-size: 20px !important;
 }
+
 .v-data-table {
   white-space: nowrap;
   font-size: 24px !important;

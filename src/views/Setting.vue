@@ -2,7 +2,7 @@
   <v-main>
     <v-container fluid fill-height>
       <v-row>
-        <v-col cols="12" sm="8" md="6" lg="6" xl="6">
+        <v-col cols="12" sm="8" md="8" lg="8" xl="6">
           <v-card>
             <v-toolbar>表示</v-toolbar>
             <v-card-text>
@@ -11,24 +11,40 @@
                 label="開発者モード"
                 @change="changeDev"
               />
-              <v-container fluid>
-                <v-autocomplete
-                  v-model="selectedTable"
-                  :items="tableNameList"
-                  @change="changeTable"
-                  dense
-                  filled
-                />
-                <v-btn @click="registerTableShown">登録</v-btn>
-                <v-row>
-                  <v-switch
-                    v-for="col in headers"
-                    :key="col.value"
-                    v-model="col.shown"
-                    :label="`${col.text}`"
-                  ></v-switch>
-                </v-row>
-              </v-container>
+              <v-card class="pa-5">
+                <v-container fluid>
+                  <v-row>
+                    <v-subheader>テーブル名</v-subheader>
+                    <v-autocomplete
+                      v-model="selectedTable"
+                      :items="tableNameList"
+                      dense
+                      filled
+                    />
+                    <v-btn @click="registerTableShown">登録</v-btn>
+                    <v-btn @click="deleteTableShown">削除</v-btn>
+                  </v-row>
+                  <v-row>
+                    <v-subheader>表示名</v-subheader>
+                    <v-autocomplete
+                      v-model="selectedDisplay"
+                      :items="displayItems"
+                      @change="selectTableShown"
+                      dense
+                      filled
+                    />
+                  </v-row>
+                  <v-row>
+                    <v-switch
+                      v-for="col in headers"
+                      :key="col.value"
+                      v-model="col.shown"
+                      :label="`${col.text}`"
+                      @change="changeTableShown"
+                    ></v-switch>
+                  </v-row>
+                </v-container>
+              </v-card>
             </v-card-text>
           </v-card>
         </v-col>
@@ -87,8 +103,10 @@ export default {
   components: {},
   data() {
     return {
-      selectedTable: "",
       tableItems: [],
+      selectedTable: "",
+      displayItems: [],
+      selectedDisplay: "",
       development: false,
       loading: false,
       logHeaders: [],
@@ -97,18 +115,14 @@ export default {
       userContents: [],
       searchHeaders: [],
       searchContents: [],
-      headers: [
-        { text: "id", value: "id" },
-        { text: "name", value: "name" },
-        { text: "layer", value: "layer" },
-        { text: "content", value: "content" },
-      ],
+      headers: [],
       contents: [
         { id: 1, name: "kanko1", layer: "包蔵地1", content: "" },
         { id: 2, name: "kanko2", layer: "包蔵地2", content: "" },
         { id: 3, name: "kanko3", layer: "包蔵地3", content: "" },
       ],
       host: "harima-isk",
+      url: "http://harima-isk:50001",
     };
   },
   computed: {
@@ -121,9 +135,10 @@ export default {
   },
   methods: {
     init() {
-      let query = `http://localhost:50001/table`;
+      //DBにあるすべてのテーブル名を取得する
+      const url = `${this.url}/table`;
       this.axios
-        .get(query)
+        .get(url)
         .then((res) => {
           //成功時
           console.log("table", res.data.rows);
@@ -135,42 +150,48 @@ export default {
           return err.response;
         });
     },
-    changeTable() {
-      let query = "";
-      query = `http://localhost:50001/columns/${this.selectedTable}`;
-      this.axios
-        .get(query)
-        .then((res) => {
-          //成功時
-          console.log("table", res.data);
-          const columns = res.data.columns;
-          let headers = this.headers;
-          headers = [];
-          for (const i in columns) {
-            const columnName = columns[i].columnName;
-            headers.push({ text: columnName, value: columnName, shown: true });
-          }
-          this.headers = headers;
-          console.log(columns);
-        })
-        .catch((err) => {
-          return err.response;
-        });
-    },
-    selectTableShown() {
-      const url = `http://localhost:50001/display/${this.selectedTable}`;
+    getTableShown() {
+      const url = `${this.url}/display`;
+      console.log("get all display", url);
       this.axios
         .get(url)
         .then((res) => {
           //成功時
-          console.log("table", res.data);
+          console.log("success", res.data);
+          const rows = res.data.rows;
+          this.displayItems = rows.map((row) => row.name);
+          // const json = JSON.parse(rows[0].display);
+          // this.headers = json;
         })
         .catch((err) => {
           console.log(err);
         });
     },
+    selectTableShown() {
+      const table = this.selectedDisplay;
+      const url = `${this.url}/display/${table}`;
+      console.log("select display", url);
+      this.axios
+        .get(url)
+        .then((res) => {
+          //成功時
+          console.log("success", res.data);
+          const rows = res.data.rows;
+          if (rows.length <= 0) {
+            console.log(`台帳${table}が存在しません`);
+            return;
+          }
+          const json = JSON.parse(rows[0].display);
+          this.headers = json;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+
     registerTableShown() {
-      const url = `http://localhost:50001/display/${this.selectedTable}`;
+      const table = this.selectedTable;
+      const url = `${this.url}/display/${table}`;
       const data = {
         data: {
           name: this.selectedTable,
@@ -182,22 +203,23 @@ export default {
           "Content-Type": "application/json",
         },
       };
+      console.log("insert display", url, data, option);
       this.axios
         .post(url, data, option)
         .then((res) => {
           //成功時
-          console.log("table", res.data);
+          console.log("success", res.data);
         })
         .catch((err) => {
           console.log(err);
         });
     },
     changeTableShown() {
-      const url = `http://localhost:50001/display/${this.selectedTable}`;
+      const table = this.selectedDisplay;
+      const url = `${this.url}/display/${table}`;
       const data = {
         data: {
-          key: "name",
-          id: this.selectedTable,
+          key: { name: table },
           update: { display: JSON.stringify(this.headers) },
         },
       };
@@ -206,29 +228,36 @@ export default {
           "Content-Type": "application/json",
         },
       };
+      console.log("update display", url, data, option);
       this.axios
         .put(url, data, option)
         .then((res) => {
           //成功時
-          console.log("table", res.data);
+          console.log("success", res.data);
         })
         .catch((err) => {
           console.log(err);
         });
     },
     deleteTableShown() {
-      const url = `http://localhost:50001/display/${this.selectedTable}`;
-      const data = {};
+      const table = this.selectedTable;
+      const url = `http://localhost:50001/display/${table}`;
+      const data = {
+        data: {
+          key: { name: table },
+        },
+      };
       const option = {
         headers: {
           "Content-Type": "application/json",
         },
       };
+      console.log("delete display", url, data, option);
       this.axios
         .delete(url, data, option)
         .then((res) => {
           //成功時
-          console.log("table", res.data);
+          console.log("success", res.data);
         })
         .catch((err) => {
           console.log(err);
@@ -305,6 +334,7 @@ export default {
   },
   mounted() {
     this.init();
+    this.getTableShown();
     this.getLogData();
     this.getUserData();
   },

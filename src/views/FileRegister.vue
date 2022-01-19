@@ -95,7 +95,7 @@ export default {
     files: [],
     uploadfiles: [],
     settings: [],
-    url: "http://localhost:50001",
+    url: "http://harima-isk:50001",
   }),
 
   methods: {
@@ -114,7 +114,7 @@ export default {
       console.log(event.dataTransfer.files);
       this.uploadfiles = [...event.dataTransfer.files];
 
-      const url = `${url}/upload`;
+      const url = `${this.url}/upload`;
       this.uploadfiles.forEach((file) => {
         console.log(file);
         let form = new FormData();

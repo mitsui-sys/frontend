@@ -1,7 +1,12 @@
 <template>
   <v-app>
     <!-- サイドメニュー -->
-    <v-navigation-drawer app clipped v-model="drawer" v-if="isDevelopment">
+    <v-navigation-drawer
+      app
+      clipped
+      v-model="drawer"
+      v-if="development && loginData.level >= 1"
+    >
       <v-container>
         <v-row>
           <v-col cols="12">
@@ -47,19 +52,46 @@
     <v-app-bar app clippedLeft flat dark color="indigo darken-3">
       <v-app-bar-nav-icon
         @click.stop="drawer = !drawer"
-        v-if="isDevelopment"
+        v-if="development && loginData.level >= 1"
       ></v-app-bar-nav-icon>
       <v-toolbar-title fi>台帳システム</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn text to="/">{{ btn_title.home }}</v-btn>
-        <v-btn text to="/setting" v-if="isDevelopment">{{
-          btn_title.setting
-        }}</v-btn>
-        <v-btn text to="/login" v-if="isDevelopment">{{
+        <v-btn text to="/login" v-if="!loginData.token">{{
           btn_title.login
         }}</v-btn>
-        <v-menu offset-y v-if="isDevelopment">
+        <v-menu bottom offset-y v-if="loginData.token">
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on"
+              >{{ loginData.name }}<v-icon>mdi-account</v-icon></v-btn
+            >
+          </template>
+          <v-list>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>{{ loginLevel }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-list-item to="/setting" v-if="loginData.level >= 2">
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >設定</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-list-item @click="logout">
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >ログアウト</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        <v-menu offset-y v-if="development && loginData.level >= 1">
           <template v-slot:activator="{ on }">
             <v-btn v-on="on" text
               >{{ btn_title.support }}<v-icon>mdi-menu-down</v-icon></v-btn
@@ -81,16 +113,18 @@
             </v-list-item>
           </v-list>
         </v-menu>
+        <v-btn text to="/help"
+          >{{ btn_title.help }}<v-icon>mdi-help</v-icon></v-btn
+        >
       </v-toolbar-items>
     </v-app-bar>
     <!-- メイン -->
     <v-main>
-      <!-- 名前なしと名前付きのrouter-viewを配置します。 -->
-      <router-view class="title" />
-      <router-view name="content1" class="content" />
-      <router-view name="content2" class="content" />
+      <v-container fluid>
+        <!-- vue-routerを使用する場合 -->
+        <router-view></router-view>
+      </v-container>
     </v-main>
-
     <!-- フッター -->
     <v-footer app color="primary" dark align="right">
       <v-spacer></v-spacer>
@@ -99,23 +133,29 @@
         alt="かんこうロゴ"
         title="かんこうロゴ"
         width="100"
-        @click="clickLogo"
     /></v-footer>
   </v-app>
 </template>
 
 <script>
-// import { config } from "@/const/const";
+// import Loading from "./components/Loading";
+import Main from "@/views/Main.vue";
+
 export default {
-  name: "Main",
+  name: "App",
+  component: {
+    Main,
+  },
   data() {
     return {
-      isDevelopment: false,
+      isLogin: false,
+      loading: true,
       btn_title: {
         home: "ホーム",
         setting: "設定",
         login: "ログイン",
         support: "サポート",
+        help: "ヘルプ",
       },
       drawer: false,
       supports: [
@@ -202,13 +242,36 @@ export default {
       ],
     };
   },
-  computed: {},
-  methods: {
-    clickLogo() {
-      this.isDevelopment = !this.isDevelopment;
-      console.log(`display development: ${this.isDevelopment}`);
+  computed: {
+    loginData() {
+      return this.$store.getters[`auth/login`];
+    },
+    development() {
+      return this.$store.getters[`config/development`];
+    },
+    loginLevel() {
+      const level = this.loginData.level;
+      return level == 0
+        ? "閲覧者"
+        : level == 1
+        ? "編集者"
+        : level == 2
+        ? "管理者"
+        : "閲覧者";
     },
   },
-  mounted() {},
+  methods: {
+    logout() {
+      console.log(this.token);
+      this.$store.dispatch(`auth/destroy`);
+      // already logined
+      this.$router.push("/login", () => {});
+    },
+  },
+  mounted() {
+    setTimeout(() => {
+      this.loading = false;
+    }, 500);
+  },
 };
 </script>
