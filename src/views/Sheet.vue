@@ -38,7 +38,6 @@
               class="flex-col ml-3 mr-3"
               type="text"
               label="条件"
-              :rules="[rules.required]"
             />
             <!-- 入力ボックスの削除ボタン -->
             <v-btn class="flex-col" type="button" @click="removeInput(index)">
@@ -104,11 +103,7 @@
         <v-btn outlined color="blue darken-1" text @click="fileSelect">
           {{ "付属図選択" }}
         </v-btn>
-        <FileDialog
-          :dialogType="editedIndex"
-          :path.sync="fileDialogPath"
-          :dialog.sync="fileDialog"
-        />
+        <FileDialog :dialog.sync="fileDialog" @clickSubmit="onSubmit" />
         <MyDialog
           :dialogType="editedIndex"
           :content="editedItem"
@@ -121,15 +116,6 @@
           <v-btn color="pink" text @click="snackbar = false">Close</v-btn>
         </v-snackbar>
       </v-toolbar>
-      <!--
-      <v-container fluid>
-        <v-row>
-          <v-col v-for="col in tblHeaders" :key="col.value">
-            <v-switch v-model="col.shown" :label="`${col.text}`"></v-switch>
-          </v-col>
-        </v-row>
-      </v-container>
-      -->
       <v-data-table
         v-model="selected"
         :headers="shownHeaders"
@@ -366,26 +352,13 @@ export default {
     },
   },
   methods: {
+    onSubmit(path) {
+      console.log("onSubmit", path);
+    },
     initialize() {
-      // let postdata = {
-      //   host: this.host,
-      //   port: this.port,
-      //   database: this.tableName,
-      //   user: this.user,
-      //   password: this.password,
-      // };
-      // let query = `${this.backend_url}/display`;
-
-      // this.axios
-      //   .post(query, postdata)
-      //   .then((res) => {
-      //     this.items = res.rows.data;
-      //     this.$store.dispatch(`table/updateTableNameList`, res.data);
-      //   })
-      //   .catch((err) => {
-      //     return err.response;
-      //   });
-
+      this.selectedName = "";
+      this.queryCondition = [];
+      this.tblContents = [];
       const url = `${this.backend_url}/display`;
       console.log("get all display", url);
       this.axios
@@ -407,6 +380,7 @@ export default {
     fileSelect() {
       this.fileDialog = true;
     },
+    fileClose() {},
     logout() {
       this.$store.dispatch("auth/destoroy");
     },

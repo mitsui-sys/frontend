@@ -52,11 +52,17 @@
     <v-app-bar app clippedLeft flat dark color="indigo darken-3">
       <v-app-bar-nav-icon
         @click.stop="drawer = !drawer"
-        v-if="development && loginData.level >= 1"
+        v-if="development"
       ></v-app-bar-nav-icon>
       <v-toolbar-title fi>台帳システム</v-toolbar-title>
+      <v-btn v-if="development" @click="$router.go(-1)"
+        >戻る<v-icon>mdi-arrow-left-bold-circle-outline</v-icon></v-btn
+      >
+      <v-btn v-if="development" @click="$router.go(1)"
+        >進む<v-icon>mdi-arrow-right-bold-circle-outline</v-icon></v-btn
+      >
       <v-spacer></v-spacer>
-      <v-toolbar-items>
+      <v-toolbar-items v-if="!$vuetify.breakpoint.xs">
         <v-btn text to="/">{{ btn_title.home }}</v-btn>
         <v-btn text to="/login" v-if="!loginData.token">{{
           btn_title.login
@@ -120,10 +126,8 @@
     </v-app-bar>
     <!-- メイン -->
     <v-main>
-      <v-container fluid>
-        <!-- vue-routerを使用する場合 -->
-        <router-view></router-view>
-      </v-container>
+      <!-- vue-routerを使用する場合 -->
+      <router-view></router-view>
     </v-main>
     <!-- フッター -->
     <v-footer app color="primary" dark align="right">
@@ -295,7 +299,6 @@ export default {
 .display.v-data-table th {
   background: #55cccc !important;
 }
-
 .display.v-data-table tr.v-data-table__selected td {
   background: #d4987e;
 }
@@ -323,13 +326,33 @@ export default {
 }
 .userinfo.v-data-table th {
   background: #55cccc !important;
+  border: 1px solid;
 }
 .userlog.v-data-table th {
   background: #55cc55 !important;
+  border: 1px solid;
 }
 .userdata.v-data-table th {
   background: #cccc55 !important;
+  border: 1px solid;
 }
+
+.document.v-data-table th {
+  background: #55cc55 !important;
+  border: 1px solid;
+}
+.document.v-data-table tr.v-data-table__selected td {
+  background: #d4987e;
+}
+
+.document.v-data-table tr:hover td {
+  background: #ffff3f;
+}
+.document.v-data-table td {
+  background: #dddddd;
+  border: 1px solid;
+}
+
 .drop_area {
   color: gray;
   font-weight: bold;

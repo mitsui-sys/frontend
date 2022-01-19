@@ -4,7 +4,7 @@
       <v-card-title>
         <span class="text-h5">{{ "ファイル選択" }}</span>
         <v-spacer></v-spacer>
-        <v-switch v-model="isNew" label="新規作成" v-if="dialogType == -1" />
+        <v-switch v-model="isNew" label="新規作成" />
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text>
@@ -29,8 +29,8 @@
               >
             </template>
             <template v-else>
-              <v-list v-model="items" subheader three-line>
-                <v-list-item-group multiple active-class="">
+              <v-list flat subheader three-line>
+                <v-list-item-group v-model="settings" active-class="">
                   <v-list-item v-for="(file, i) in files" :key="i" outlined>
                     <template v-slot:default="{ active }">
                       <v-list-item-action>
@@ -90,7 +90,7 @@
 <script>
 export default {
   name: "FileDialog",
-  props: ["content", "dialog", "dialogType"],
+  props: ["path", "dialog"],
   data() {
     return {
       isNew: false,
@@ -98,7 +98,7 @@ export default {
       selectedName: "",
       dialogYesText: "選択",
       dialogNoText: "キャンセル",
-      url: "http://localhost:50001",
+      url: "http://harima-isk:50001",
       files: [],
       items: [],
       settings: [],
@@ -108,9 +108,13 @@ export default {
   computed: {},
   methods: {
     save() {
-      console.log(this.items);
+      const id = this.settings;
+      if (id == undefined) {
+        alert("選択されていません");
+        return;
+      }
+      this.$emit("clickSubmit", this.files[id].path);
       this.$emit("update:dialog", false);
-      this.$emit("input-content", this.content);
     },
     close() {
       this.$emit("update:dialog", false);
@@ -165,7 +169,7 @@ export default {
     // ファイルアップロードボタンを押下した時に呼び出されます。
     onClickUploadFileBtn() {
       // ファイルアップロード先のURLは置き換えてください。
-      const url = `${url}/upload`;
+      const url = `${this.url}/upload`;
 
       // フォームデータを生成し、設定します。
       let formData = new FormData();
@@ -198,7 +202,7 @@ export default {
         });
     },
   },
-  mounted() {
+  created() {
     this.getCurrentFile();
   },
 };

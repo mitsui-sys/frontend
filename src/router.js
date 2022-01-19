@@ -75,14 +75,14 @@ const router = new Router({
         requiresAuth: true,
       },
     },
-    {
-      path: "/ipsetting",
-      name: "ipsetting",
-      component: loadView("IPSetting"),
-      meta: {
-        requiresAuth: true,
-      },
-    },
+    // {
+    //   path: "/ipsetting",
+    //   name: "ipsetting",
+    //   component: loadView("IPSetting"),
+    //   meta: {
+    //     requiresAuth: true,
+    //   },
+    // },
     {
       path: "/leaflet",
       name: "leaflet",
@@ -114,14 +114,9 @@ const router = new Router({
     },
     {
       path: "/detail",
-      name: "detail",
-      component: loadView("DetailPage"),
+      // name: "detail",
+      component: loadView("Detail"),
     },
-    // {
-    //   path: "/page",
-    //   name: "page",
-    //   component: loadView("DetailPage"),
-    // },
     {
       path: "/document",
       name: "document",
@@ -151,7 +146,6 @@ const router = new Router({
 
 // router gards
 router.beforeEach((to, from, next) => {
-  console.log(to);
   // NProgress.start()
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     // console.log("認証必要あり");

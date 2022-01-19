@@ -121,7 +121,6 @@ export default {
         { id: 2, name: "kanko2", layer: "包蔵地2", content: "" },
         { id: 3, name: "kanko3", layer: "包蔵地3", content: "" },
       ],
-      host: "harima-isk",
       url: "http://harima-isk:50001",
     };
   },
@@ -190,8 +189,7 @@ export default {
     },
 
     registerTableShown() {
-      const table = this.selectedTable;
-      const url = `${this.url}/display/${table}`;
+      const url = `${this.url}/display`;
       const data = {
         data: {
           name: this.selectedTable,
@@ -216,7 +214,7 @@ export default {
     },
     changeTableShown() {
       const table = this.selectedDisplay;
-      const url = `${this.url}/display/${table}`;
+      const url = `${this.url}/display`;
       const data = {
         data: {
           key: { name: table },
@@ -241,7 +239,7 @@ export default {
     },
     deleteTableShown() {
       const table = this.selectedTable;
-      const url = `http://localhost:50001/display/${table}`;
+      const url = `${this.url}/display`;
       const data = {
         data: {
           key: { name: table },
@@ -268,7 +266,7 @@ export default {
       this.$store.dispatch(`config/updateDevelopment`, this.development);
     },
     getLogData() {
-      const url = `http://${this.host}:50001/system/log`;
+      const url = `${this.url}/system/log`;
       this.loading = true;
       this.axios
         .get(url)
@@ -300,7 +298,7 @@ export default {
         });
     },
     getUserData() {
-      const url = `http://${this.host}:50001/system/user`;
+      const url = `${this.url}/system/user`;
       this.loading = true;
       this.axios
         .get(url)

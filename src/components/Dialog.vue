@@ -10,7 +10,7 @@
         <v-container style="max-height: 500px" class="overflow-y-auto">
           <v-row
             v-for="(item, index) in content"
-            :key="`edited${index}`"
+            :key="index"
             no-gutters
             class="pa-0 ma-0"
           >
@@ -18,6 +18,7 @@
               <v-subheader>{{ item.text }}</v-subheader>
             </v-col>
             <v-col>
+              <!--
               <v-text-field
                 v-model="item.value"
                 placeholder="値を入力"
@@ -32,6 +33,23 @@
                 @keydown.prevent.down="moveNext(index)"
                 @keydown.prevent.up="movePrev(index)"
               />
+              -->
+
+              <v-text-field
+                v-model="content[index].value"
+                placeholder="値を入力"
+                ma-0
+                outlined
+                dense
+                :disabled="!isEditing"
+              >
+                <template v-slot:append-outer v-if="item.text == 'filepath'">
+                  <v-btn @click="openFile"
+                    >ファイル<v-icon>mdi-file</v-icon></v-btn
+                  >
+                  <FileDialog :dialog="filedialog" @clickSubmit="onSubmit()" />
+                </template>
+              </v-text-field>
             </v-col>
           </v-row>
         </v-container>
@@ -51,11 +69,16 @@
 </template>
 
 <script>
+import FileDialog from "@/components/FileDialog";
+
 export default {
   name: "Dialog",
+  components: { FileDialog },
   props: ["dialogType", "content", "loginType", "dialog"],
   data() {
     return {
+      filedialog: false,
+      filepath: "",
       columns: [],
       selectedName: "",
       checkJP: false,
@@ -97,6 +120,7 @@ export default {
       },
     };
   },
+
   computed: {
     dialogTitle() {
       const type = this.dialogType;
@@ -128,6 +152,14 @@ export default {
     },
   },
   methods: {
+    openFile() {
+      this.filedialog = true;
+    },
+    onSubmit(path) {
+      this.filedialog = false;
+      this.filepath = Object.assign(path);
+      console.log(this.filepath);
+    },
     moveFocus(i) {
       if (this.$refs.focusThis[i]) {
         this.$refs.focusThis[i].focus();
