@@ -1,77 +1,50 @@
 <template>
-  <!--
-  <v-content>
-    <h1>お絵かきアプリ</h1>
-    <div>
-      <canvas
-        id="draw-area"
-        width="400px"
-        height="400px"
-        style="border: 1px solid #000000"
-        @mousenmove="paint"
-      ></canvas>
-        -->
-  <!-- 色を選択できるカラーパレットを用意する。 
-      <span id="color-palette"></span>
-    </div>
-    <div>
-      <button id="clear-button">全消し</button>
-    </div>
-    <div>
-      <button id="eraser-button">消しゴムモード</button>
-    </div>
-    <v-data-table header="" items=""> </v-data-table>
-  </v-content>
-  -->
   <v-app>
-    {{ "調査票" }}
-    <v-btn class="" @click="open(-1)" outlined>新規登録</v-btn>
-    <v-btn
-      class="yellow"
-      @click="open(0)"
-      :disabled="!selectItem.length > 0"
-      outlined
-      >閲覧</v-btn
-    >
-
-    <v-btn
-      class="orange"
-      @click="open(1)"
-      :disabled="!selectItem.length > 0"
-      outlined
-      >編集</v-btn
-    >
-    <v-btn
-      class="red"
-      @click="open(2)"
-      :disabled="!selectItem.length > 0"
-      outlined
-      >削除</v-btn
-    >
-    <v-btn
-      class="primary"
-      @click="download"
-      :disabled="!selectItem.length > 0"
-      outlined
-      >ダウンロード</v-btn
-    >
-    <MyDialog
-      :dialogType="selectIndex"
-      :content="editItem"
-      :loginType="loginData"
-      :dialog.sync="dialog"
-      @input-content="save"
-    />
     <v-card>
+      <v-toolbar>
+        <v-toolbar-title>{{ title }}</v-toolbar-title>
+        <v-divider class="mx-4" vertical></v-divider>
+        件数：{{ contents.length }}
+        <v-spacer />
+        <v-divider class="mx-4" vertical></v-divider>
+        <v-btn @click="open(-1)" outlined>新規登録</v-btn>
+        <v-btn @click="open(0)" :disabled="!selectItem.length > 0" outlined
+          >閲覧</v-btn
+        >
+
+        <v-btn @click="open(1)" :disabled="!selectItem.length > 0" outlined
+          >編集</v-btn
+        >
+        <v-btn @click="open(2)" :disabled="!selectItem.length > 0" outlined
+          >削除</v-btn
+        >
+        <v-divider class="mx-4" vertical></v-divider>
+        <v-btn
+          class="primary"
+          @click="download"
+          :disabled="!selectItem.length > 0"
+          outlined
+          >ダウンロード</v-btn
+        >
+        <v-dialog v-model="dialog" max-width="700px" scrorable>
+          <DialogCard
+            :dialogType="selectIndex"
+            :content="editItem"
+            :loginType="loginData"
+            @clickSubmit="save"
+            @clickCancel="close"
+          />
+        </v-dialog>
+      </v-toolbar>
       <v-data-table
         v-model="selectItem"
         :headers="shownHeaders"
         :items="contents"
         class="document elevation-1 overflow-auto"
-        fixed-header
-        fixed-footer
         show-select
         single-select
+        fixed-header
+        fixed-footer
         height="300px"
         :header-props="{
           'sort-icon': '▼',
@@ -100,17 +73,17 @@
   </v-app>
 </template>
 <script>
-import MyDialog from "@/components/Dialog";
+import DialogCard from "@/components/DialogCard";
 import MyXlsx from "@/modules/myXlsx";
 
 import Moment from "moment";
 
 export default {
   name: "document",
-  components: { MyDialog },
+  components: { DialogCard },
   data() {
     return {
-      title: "404 NOT FOUND",
+      title: "埋蔵文化財発掘届出・通知書",
       message: "お探しのページが見つかりませんでした。",
       mouse: {
         x: 0,

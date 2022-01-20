@@ -1,24 +1,23 @@
 <template>
-  <v-dialog v-model="dialog" max-width="700px" scrorable @click:outside="close">
-    <v-card>
-      <v-card-title>
-        <span class="text-h5">{{ dialogTitle }}</span>
-        <v-spacer></v-spacer>
-      </v-card-title>
-      <v-divider></v-divider>
-      <v-card-text>
-        <v-container style="max-height: 500px" class="overflow-y-auto">
-          <v-row
-            v-for="(item, index) in content"
-            :key="index"
-            no-gutters
-            class="pa-0 ma-0"
-          >
-            <v-col cols="4">
-              <v-subheader>{{ item.text }}</v-subheader>
-            </v-col>
-            <v-col>
-              <!--
+  <v-card>
+    <v-card-title>
+      <span class="text-h5">{{ dialogTitle }}</span>
+      <v-spacer></v-spacer>
+    </v-card-title>
+    <v-divider></v-divider>
+    <v-card-text>
+      <v-container style="max-height: 500px" class="overflow-y-auto">
+        <v-row
+          v-for="(item, index) in content"
+          :key="index"
+          no-gutters
+          class="pa-0 ma-0"
+        >
+          <v-col cols="4">
+            <v-subheader>{{ item.text }}</v-subheader>
+          </v-col>
+          <v-col>
+            <!--
               <v-text-field
                 v-model="item.value"
                 placeholder="値を入力"
@@ -35,48 +34,62 @@
               />
               -->
 
-              <v-text-field
-                v-model="content[index].value"
-                placeholder="値を入力"
-                ma-0
-                outlined
-                dense
-                :disabled="!isEditing"
+            <v-text-field
+              v-model="content[index].value"
+              placeholder="値を入力"
+              outlined
+              :disabled="!isEditing"
+              hide-details
+            >
+              <template
+                v-slot:append
+                v-if="item.text == 'ファイルパス' && dialogType == 1"
               >
-                <template v-slot:append-outer v-if="item.text == 'filepath'">
-                  <v-btn @click="openFile"
-                    >ファイル<v-icon>mdi-file</v-icon></v-btn
-                  >
-                  <FileDialog :dialog="filedialog" @clickSubmit="onSubmit()" />
-                </template>
-              </v-text-field>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn outlined color="blue darken-1" text @click="save">
-          {{ dialogYesText }}
-        </v-btn>
-        <v-btn outlined color="blue darken-1" text @click="close">
-          {{ dialogNoText }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+                <v-btn @click="filedialog = true">選択</v-btn>
+                <v-dialog v-model="filedialog" max-width="700px" scrorable>
+                  <DialogCardFile
+                    :param.sync="content[index].value"
+                    @clickSubmit="onSubmit"
+                    @clickCancel="onCancel"
+                  />
+                </v-dialog>
+              </template>
+              <v-text-field
+                v-model="inputDate"
+                label="入力用"
+                @blur="formatToDateString"
+                maxlength="8"
+                type="date"
+                v-if="inputType == 'date'"
+              />
+            </v-text-field>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card-text>
+    <v-divider></v-divider>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn outlined color="blue darken-1" text @click="submit">
+        {{ dialogYesText }}
+      </v-btn>
+      <v-btn outlined color="blue darken-1" text @click="cancel">
+        {{ dialogNoText }}
+      </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>
-import FileDialog from "@/components/FileDialog";
+import DialogCardFile from "@/components/DialogCardFile";
 
 export default {
-  name: "Dialog",
-  components: { FileDialog },
+  name: "DialogCard",
+  components: { DialogCardFile },
   props: ["dialogType", "content", "loginType", "dialog"],
   data() {
     return {
+      pathname: "ファイルパス",
       filedialog: false,
       filepath: "",
       columns: [],
@@ -118,6 +131,10 @@ export default {
           );
         },
       },
+      returnData: {
+        content: "",
+      },
+      inputType: "",
     };
   },
 
@@ -152,13 +169,13 @@ export default {
     },
   },
   methods: {
-    openFile() {
-      this.filedialog = true;
-    },
-    onSubmit(path) {
+    onSubmit(params) {
       this.filedialog = false;
-      this.filepath = Object.assign(path);
-      console.log(this.filepath);
+      this.filepath = params.filepath;
+      console.log(this.returnData.content);
+    },
+    onCancel() {
+      this.filedialog = false;
     },
     moveFocus(i) {
       if (this.$refs.focusThis[i]) {
@@ -173,17 +190,12 @@ export default {
       console.log(`index:${i}`);
       this.moveFocus(i - 1);
     },
-    save() {
-      const type = this.dialogType;
-      if (type == 1) {
-        console.log(this.content);
-        this.$emit("update:content", this.content);
-      }
-      this.$emit("update:dialog", false);
-      this.$emit("input-content", this.content);
+    //親コンポーネントへ送信
+    submit() {
+      this.$emit("clickSubmit", this.returnData);
     },
-    close() {
-      this.$emit("update:dialog", false);
+    cancel() {
+      this.$emit("clickCancel");
     },
   },
 };

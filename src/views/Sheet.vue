@@ -1,6 +1,5 @@
 <template>
   <v-container fluid>
-    <h1>{{ kind }}</h1>
     <v-card color="#fff" class="condition">
       <v-card-title class="d-flex justify-center">検索条件</v-card-title>
       <v-card-text class="d-flex justify-center flex-column search">
@@ -50,67 +49,50 @@
     <v-card>
       <v-toolbar flat outlined>
         <v-toolbar-title>テーブル表示</v-toolbar-title>
-        <v-divider class="mx-4" inset vertical></v-divider>
+        <v-divider class="mx-4" vertical></v-divider>
         件数:{{ tblContents.length }}
-        <v-spacer></v-spacer>
-        <v-btn class="mb-2" @click="getTemplateWorkbook()"> Excel出力 </v-btn>
+        <v-spacer />
+        <v-btn @click="getTemplateWorkbook()"> Excel出力 </v-btn>
 
         <v-btn
-          class="mb-2"
           @click="registerItem()"
           v-if="selected.length > 0 && loginData.level >= 1"
         >
           地図連携
         </v-btn>
         <v-btn
-          class="mb-2"
           @click="registerItem()"
           v-if="selected.length > 0 && loginData.level >= 1"
         >
           ジオメトリ削除
         </v-btn>
-        <v-divider class="mx-4" inset vertical></v-divider>
-        <v-btn
-          class="mb-2"
-          @click="editItem(0)"
-          v-if="selected.length > 0 && loginData.level >= 0"
-        >
-          閲覧
+        <v-divider class="mx-4" vertical></v-divider>
+        <v-btn @click="createItem()" v-if="loginData.level >= 1">
+          新規登録
         </v-btn>
+        <v-btn @click="editItem(0)" v-if="selected.length > 0"> 閲覧 </v-btn>
         <v-btn
-          class="mb-2"
           @click="editItem(1)"
           v-if="selected.length > 0 && loginData.level >= 1"
         >
           編集
         </v-btn>
         <v-btn
-          class="mb-2"
           @click="editItem(2)"
           v-if="selected.length > 0 && loginData.level >= 1"
         >
           削除
         </v-btn>
-        <v-btn
-          class="mb-2"
-          color="primary"
-          dark
-          @click="createItem()"
-          v-if="loginData.level >= 1"
-        >
-          新規登録
-        </v-btn>
-        <v-btn outlined color="blue darken-1" text @click="fileSelect">
-          {{ "付属図選択" }}
-        </v-btn>
-        <FileDialog :dialog.sync="fileDialog" @clickSubmit="onSubmit" />
-        <MyDialog
-          :dialogType="editedIndex"
-          :content="editedItem"
-          :loginType="loginData.level"
-          :dialog.sync="dialog"
-          @input-content="save"
-        />
+        <v-divider class="mx-4" vertical></v-divider>
+        <v-dialog v-model="dialog" max-width="700px" scrorable>
+          <DialogCard
+            :dialogType="editedIndex"
+            :content.sync="editedItem"
+            :loginType="loginData.level"
+            @clickSubmit="save"
+            @clickCancel="close"
+          />
+        </v-dialog>
         <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
           {{ snackbarText }}
           <v-btn color="pink" text @click="snackbar = false">Close</v-btn>
@@ -170,13 +152,12 @@
 
 <script>
 import MyXlsx from "@/modules/myXlsx";
-import MyDialog from "@/components/Dialog";
-import FileDialog from "@/components/FileDialog";
+import DialogCard from "@/components/DialogCard";
 import Moment from "moment";
 
 export default {
   name: "Sheet",
-  components: { MyDialog, FileDialog },
+  components: { DialogCard },
   data() {
     return {
       displayItems: [],
@@ -249,6 +230,14 @@ export default {
   computed: {
     shownHeaders() {
       return this.tblHeaders.filter((h) => h.shown);
+    },
+    defaultItem() {
+      let data = [];
+      let header = Object.assign(this.shownHeaders);
+      for (let key in header) {
+        data.push({ text: header[key].text, value: "" });
+      }
+      return data;
     },
     loginData() {
       return this.$store.getters[`auth/login`];
@@ -339,14 +328,7 @@ export default {
       console.log(sendData);
       return sendData;
     },
-    defaultItem() {
-      let data = [];
-      let header = Object.assign(this.shownHeaders);
-      for (let key in header) {
-        data.push({ text: header[key].text, value: "" });
-      }
-      return data;
-    },
+
     kind() {
       return this.$store.getters[`config/kind`];
     },
@@ -354,6 +336,10 @@ export default {
   methods: {
     onSubmit(path) {
       console.log("onSubmit", path);
+      this.dialog = false;
+    },
+    onCancel() {
+      this.dialog = false;
     },
     initialize() {
       this.selectedName = "";
@@ -369,16 +355,12 @@ export default {
           const rows = res.data.rows;
           this.display = rows;
           this.displayItems = rows.map((row) => row.name);
-          this.selectedName = Object.assign(this.displayItems[0]);
           // const json = JSON.parse(rows[0].display);
           // this.headers = json;
         })
         .catch((err) => {
           console.log(err);
         });
-    },
-    fileSelect() {
-      this.fileDialog = true;
     },
     fileClose() {},
     logout() {
@@ -405,12 +387,10 @@ export default {
     clickRow() {
       console.log(this.selected);
     },
-    clear() {},
     createItem() {
       this.isEditing = true;
       this.editedIndex = -1;
       this.editedItem = Object.assign(this.defaultItem);
-      console.log(this.editedItem);
       this.dialog = true;
     },
     registerItem() {
@@ -453,7 +433,9 @@ export default {
       if (selected.length <= 0) {
         return;
       }
-      const selected1 = selected[0];
+
+      const selected1 = Object.assign(selected[0]);
+
       this.editedNumber = selected1["番号"];
       const data = Object.assign(this.defaultItem);
       let newData = [];
@@ -465,7 +447,6 @@ export default {
           }
         }
       }
-
       this.editedItem = Object.assign(newData);
       this.dialog = true;
     },
@@ -477,7 +458,8 @@ export default {
         this.editedIndex = -1;
       });
     },
-    save(content = -1) {
+    save(params) {
+      const content = params.content || [];
       const index = this.editedIndex;
       console.log("ダイアログ処理", content, index);
       if (index == 0) {
@@ -533,10 +515,16 @@ export default {
           console.log(error);
         });
     },
-
+    changeName() {
+      const name = this.selectedName;
+      const display = this.display.filter((x) => x.name == name)[0].display;
+      const json = JSON.parse(display);
+      this.tblHeaders = json;
+      this.content = [];
+    },
     submit() {
       const name = this.selectedName;
-      if (name === undefined) {
+      if (name === undefined || name == null || name == "") {
         console.log("台帳名が選択されていません");
         return;
       }

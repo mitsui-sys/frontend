@@ -36,8 +36,12 @@ export default {
         // { text: "照会・回答調査台帳", link: "/sheet", color: "gray" },
         // { text: "発掘調査台帳", link: "/sheet", color: "gray" },
         // { text: "指定文化財台帳", link: "/sheet", color: "gray" },
-        { text: "調査票管理", link: "/document", color: "gray" },
-        { text: "ファイル登録", link: "/fileregister", color: "gray" },
+        {
+          text: "埋蔵文化財発掘届出・通知書",
+          link: "/document",
+          color: "gray",
+        },
+        // { text: "ファイル登録", link: "/fileregister", color: "gray" },
 
         // { text: "台帳管理", link: "/sheet"},
         // { text: "帳票出力", link: "/chohyo"},

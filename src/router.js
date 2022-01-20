@@ -22,7 +22,6 @@ const router = new Router({
       name: "home",
       // この場合、App.vueで配置した名前なしのrouter-viewのみ切り替わります。
       component: loadView("Home"),
-      children: [],
       meta: {
         requiresAuth: true,
       },
@@ -75,14 +74,6 @@ const router = new Router({
         requiresAuth: true,
       },
     },
-    // {
-    //   path: "/ipsetting",
-    //   name: "ipsetting",
-    //   component: loadView("IPSetting"),
-    //   meta: {
-    //     requiresAuth: true,
-    //   },
-    // },
     {
       path: "/leaflet",
       name: "leaflet",

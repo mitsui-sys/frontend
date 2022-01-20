@@ -1,7 +1,18 @@
 <template>
   <v-container>
-    <v-row dense>
-      <v-col>
+    <v-row>
+      <v-text-field v-model="filepath" />
+      <v-btn @click="dialog = true">選択</v-btn>
+      <v-dialog v-model="dialog">
+        <DialogCardFile
+          :filepath="filepath"
+          @clickSubmit="onSubmit"
+          @clickCancel="onCancel"
+        />
+      </v-dialog>
+    </v-row>
+    <v-row>
+      <v-col cols="12" sm="4" md="4">
         <v-file-input
           v-model="file"
           accept="image/*"
@@ -11,7 +22,7 @@
         >
         </v-file-input>
       </v-col>
-      <v-col>
+      <v-col cols="12" sm="4" md="4">
         <v-btn
           dark
           outlined
@@ -79,16 +90,23 @@
         </ul>
       </div>
     </v-row>
+    <v-row>
+      <router-view class="view one"></router-view>
+    </v-row>
   </v-container>
 </template>
 
 <script>
 // ライブラリを使用します。
 import FormData from "form-data";
+import DialogCardFile from "@/components/DialogCardFile";
 
 export default {
   name: "FileRegister",
+  components: { DialogCardFile },
   data: () => ({
+    dialog: false,
+    filepath: "",
     file: null,
     fileData: null,
     isEnter: false,
@@ -99,6 +117,13 @@ export default {
   }),
 
   methods: {
+    onSubmit(params) {
+      this.dialog = false;
+      this.filepath = params.filepath;
+    },
+    onCancel() {
+      this.dialog = false;
+    },
     dragEnter() {
       this.isEnter = true;
       console.log("Enter Drop Area");

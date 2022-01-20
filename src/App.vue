@@ -119,7 +119,7 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn text to="/help"
+        <v-btn text v-if="development" to="/help"
           >{{ btn_title.help }}<v-icon>mdi-help</v-icon></v-btn
         >
       </v-toolbar-items>
@@ -130,7 +130,7 @@
       <router-view></router-view>
     </v-main>
     <!-- フッター -->
-    <v-footer app color="primary" dark align="right">
+    <v-footer app clippedLeft color="primary" dark align="right">
       <v-spacer></v-spacer>
       <img
         src="/resources/kanko.svg"
@@ -385,5 +385,32 @@ ul {
   align-items: center;
   margin: 0.5em;
   font-size: 10px;
+}
+
+.us {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto;
+  grid-template-areas:
+    "header header"
+    "nav content"
+    "nav helper";
+}
+
+h2 {
+  grid-area: header;
+}
+
+.us__nav {
+  grid-area: nav;
+  border: 1px dotted;
+  margin-right: 0.75rem;
+  padding: 0.3rem;
+}
+.us__content {
+  grid-area: content;
+}
+.us__content--helper {
+  grid-area: helper;
 }
 </style>
