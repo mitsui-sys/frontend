@@ -1,9 +1,16 @@
 <template>
-  <v-main>
+  <v-card class="mx-auto" :min-height="bkPoint.minHeight">
     <v-container fluid fill-height>
-      <v-row class="blue lighten-4" justify="center" align-content="center">
-        <v-col cols="4" align="center">
-          <h1>{{ title }}</h1>
+      <v-row class="blue lighten-4">
+        <v-col cols="12" align="center">
+          <v-text :class="`text-${bkPoint.titleModel}`">
+            {{ title }}
+          </v-text>
+          <!--
+          <v-text :class="`text-${bkPoint.titleModel}`">
+            {{ bkPoint.name }}
+          </v-text>
+          -->
           <v-divider></v-divider>
           <v-container>
             <v-row v-for="(item, index) in items" :key="index">
@@ -11,8 +18,9 @@
                 <v-btn
                   :color="item.color"
                   @click="setKind(item)"
-                  width="300px"
-                  height="100px"
+                  :width="bkPoint.btnWidth"
+                  :height="bkPoint.btnHeight"
+                  :class="`text-${bkPoint.model}`"
                   >{{ item.text }}</v-btn
                 >
               </v-col>
@@ -21,7 +29,7 @@
         </v-col>
       </v-row>
     </v-container>
-  </v-main>
+  </v-card>
 </template>
 
 <script>
@@ -29,7 +37,7 @@ export default {
   name: "Home",
   data() {
     return {
-      title: "台帳システム",
+      title: "ホーム画面",
       label: { link: "利用規約", text: "に同意して利用する" },
       items: [
         { text: "台帳システム", link: "/sheet", color: "gray" },
@@ -49,6 +57,60 @@ export default {
         // { text: "問い合わせ", link: "/help" },
       ],
     };
+  },
+  computed: {
+    bkPoint() {
+      // $vuetify.breakpointでブレークポイントを取得
+      const bkPt = this.$vuetify.breakpoint;
+      const point = {
+        name: bkPt.name,
+        minHeight: 200,
+        titleModel: "",
+        model: "h6",
+        btnWidth: 350,
+        btnHeight: 50,
+      };
+      switch (bkPt.name) {
+        case "xl":
+          point.minHeight = 200;
+          point.titleModel = "h2";
+          point.model = "h3";
+          point.btnWidth = 700;
+          point.btnHeight = 150;
+          break;
+        case "lg":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "h5";
+          point.btnWidth = 500;
+          point.btnHeight = 100;
+          break;
+        case "md":
+          point.minHeight = 200;
+          point.titleModel = "h6";
+          point.model = "subtitle-1";
+          point.btnWidth = 325;
+          point.btnHeight = 50;
+          break;
+        case "sm":
+          point.minHeight = 200;
+          point.titleModel = "subtitle-2";
+          point.model = "body-1";
+          point.btnWidth = 275;
+          point.btnHeight = 40;
+          break;
+        case "xs":
+          point.minHeight = 200;
+          point.titleModel = "body-2";
+          point.model = "button";
+          point.btnWidth = 250;
+          point.btnHeight = 30;
+          break;
+        default:
+          break;
+      }
+      return point;
+    },
   },
   methods: {
     setKind(item) {

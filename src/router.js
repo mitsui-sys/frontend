@@ -102,6 +102,9 @@ const router = new Router({
       path: "/fileregister",
       name: "fileregister",
       component: loadView("FileRegister"),
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: "/detail",
@@ -112,6 +115,9 @@ const router = new Router({
       path: "/document",
       name: "document",
       component: loadView("Document"),
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: "/drag",
@@ -148,7 +154,8 @@ router.beforeEach((to, from, next) => {
       next();
     } else {
       console.log("ログインしていません");
-      next({ path: "/login", query: { backuri: to.fullPath } });
+      // next({ path: "/login", query: { backuri: to.fullPath } });
+      next({ path: "/login" });
     }
   } else {
     // ログイン画面に飛ばす。ログイン後に元の画面に戻れるよう、backuriパラメーターにリダイレクト前のURLを入れる

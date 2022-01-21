@@ -54,35 +54,58 @@
         @click.stop="drawer = !drawer"
         v-if="development"
       ></v-app-bar-nav-icon>
-      <v-toolbar-title fi>台帳システム</v-toolbar-title>
-      <v-btn v-if="development" @click="$router.go(-1)"
+      <v-toolbar-title :class="`text-${bkPoint.titleModel}`"
+        >台帳システム</v-toolbar-title
+      >
+      <v-btn
+        v-if="development"
+        @click="$router.go(-1)"
+        :class="`text-${bkPoint.titleModel}`"
         >戻る<v-icon>mdi-arrow-left-bold-circle-outline</v-icon></v-btn
       >
-      <v-btn v-if="development" @click="$router.go(1)"
+      <v-btn
+        v-if="development"
+        @click="$router.go(1)"
+        :class="`text-${bkPoint.titleModel}`"
         >進む<v-icon>mdi-arrow-right-bold-circle-outline</v-icon></v-btn
       >
       <v-spacer></v-spacer>
       <v-toolbar-items v-if="!$vuetify.breakpoint.xs">
-        <v-btn text to="/">{{ btn_title.home }}</v-btn>
-        <v-btn text to="/login" v-if="!loginData.token">{{
-          btn_title.login
+        <v-btn text to="/" :class="`text-${bkPoint.titleModel}`">{{
+          btn_title.home
         }}</v-btn>
-        <v-menu bottom offset-y v-if="loginData.token">
+        <v-btn
+          text
+          to="/login"
+          v-if="!loginData.token"
+          :class="`text-${bkPoint.titleModel}`"
+          >{{ btn_title.login }}</v-btn
+        >
+        <v-menu
+          bottom
+          offset-y
+          v-if="loginData.token"
+          :class="`text-${bkPoint.titleModel}`"
+        >
           <template v-slot:activator="{ on }">
-            <v-btn v-on="on"
+            <v-btn v-on="on" :class="`text-${bkPoint.titleModel}`"
               >{{ loginData.name }}<v-icon>mdi-account</v-icon></v-btn
             >
           </template>
           <v-list>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title>{{ loginLevel }}</v-list-item-title>
+                <v-list-item-title :class="`text-${bkPoint.titleModel}`">{{
+                  loginLevel
+                }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-divider></v-divider>
             <v-list-item to="/setting" v-if="loginData.level >= 2">
               <v-list-item-content>
-                <v-list-item-title class="primary--text"
+                <v-list-item-title
+                  class="primary--text"
+                  :class="`text-${bkPoint.titleModel}`"
                   >設定</v-list-item-title
                 >
               </v-list-item-content>
@@ -90,16 +113,22 @@
             <v-divider></v-divider>
             <v-list-item @click="logout">
               <v-list-item-content>
-                <v-list-item-title class="primary--text"
+                <v-list-item-title
+                  class="primary--text"
+                  :class="`text-${bkPoint.titleModel}`"
                   >ログアウト</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-menu offset-y v-if="development && loginData.level >= 1">
+        <v-menu
+          offset-y
+          v-if="development && loginData.level >= 1"
+          :class="`text-${bkPoint.titleModel}`"
+        >
           <template v-slot:activator="{ on }">
-            <v-btn v-on="on" text
+            <v-btn v-on="on" text :class="`text-${bkPoint.titleModel}`"
               >{{ btn_title.support }}<v-icon>mdi-menu-down</v-icon></v-btn
             >
           </template>
@@ -119,7 +148,11 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn text v-if="development" to="/help"
+        <v-btn
+          text
+          v-if="development"
+          to="/help"
+          :class="`text-${bkPoint.titleModel}`"
           >{{ btn_title.help }}<v-icon>mdi-help</v-icon></v-btn
         >
       </v-toolbar-items>
@@ -263,6 +296,58 @@ export default {
         ? "管理者"
         : "閲覧者";
     },
+    bkPoint() {
+      // $vuetify.breakpointでブレークポイントを取得
+      const bkPt = this.$vuetify.breakpoint;
+      const point = {
+        name: bkPt.name,
+        minHeight: 200,
+        titleModel: "",
+        model: "h6",
+        btnWidth: 350,
+        btnHeight: 50,
+      };
+      switch (bkPt.name) {
+        case "xl":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "h2";
+          point.btnWidth = 600;
+          point.btnHeight = 150;
+          break;
+        case "lg":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "h5";
+          point.btnWidth = 500;
+          point.btnHeight = 100;
+          break;
+        case "md":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "subtitle-1";
+          point.btnWidth = 325;
+          point.btnHeight = 50;
+          break;
+        case "sm":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "h4";
+          point.btnWidth = 275;
+          point.btnHeight = 40;
+          break;
+        case "xs":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "button";
+          point.btnWidth = 250;
+          point.btnHeight = 30;
+          break;
+        default:
+          break;
+      }
+      return point;
+    },
   },
   methods: {
     logout() {
@@ -278,13 +363,13 @@ export default {
     }, 500);
   },
 };
+//  font-size: 20px !important;
 </script>
 
 <style>
 /* サイト全体のフォント指定 */
 * {
   font-family: "MS Pゴシック";
-  font-size: 20px !important;
 }
 
 .v-data-table {
@@ -296,15 +381,16 @@ export default {
   width: 100px !important;
 }
 
-.display.v-data-table th {
-  background: #55cccc !important;
+.display.v-data-table tr th {
+  background: #fdfcaa !important;
+  font-size: 24px !important;
 }
 .display.v-data-table tr.v-data-table__selected td {
-  background: #d4987e;
+  background: #aadaff;
 }
 
 .display.v-data-table tr:hover td {
-  background: #ffff3f;
+  background: #aafcff;
 }
 
 .v-data-table tr:nth-child(odd) td {

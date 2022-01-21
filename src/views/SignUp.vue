@@ -1,5 +1,5 @@
 <template>
-  <v-card width="400px" class="mx-auto mt-5">
+  <v-card width="600px" class="mx-auto mt-5">
     <v-card-title>
       <h1 class="display-1">新規登録</h1>
     </v-card-title>
@@ -96,6 +96,60 @@ export default {
       //this.$router.push("/login");
     },
     mounted() {},
+  },
+  computed: {
+    bkPoint() {
+      // $vuetify.breakpointでブレークポイントを取得
+      const bkPt = this.$vuetify.breakpoint;
+      const point = {
+        name: bkPt.name,
+        minHeight: 200,
+        titleModel: "",
+        model: "h6",
+        btnWidth: 350,
+        btnHeight: 50,
+      };
+      switch (bkPt.name) {
+        case "xl":
+          point.minHeight = 600;
+          point.titleModel = "h3";
+          point.model = "h5";
+          point.btnWidth = 600;
+          point.btnHeight = 150;
+          break;
+        case "lg":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "h5";
+          point.btnWidth = 500;
+          point.btnHeight = 100;
+          break;
+        case "md":
+          point.minHeight = 200;
+          point.titleModel = "h6";
+          point.model = "subtitle-1";
+          point.btnWidth = 325;
+          point.btnHeight = 50;
+          break;
+        case "sm":
+          point.minHeight = 200;
+          point.titleModel = "subtitle-2";
+          point.model = "body-1";
+          point.btnWidth = 275;
+          point.btnHeight = 40;
+          break;
+        case "xs":
+          point.minHeight = 200;
+          point.titleModel = "body-2";
+          point.model = "button";
+          point.btnWidth = 250;
+          point.btnHeight = 30;
+          break;
+        default:
+          break;
+      }
+      return point;
+    },
   },
 };
 </script>

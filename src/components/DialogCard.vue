@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title>
-      <span class="text-h5">{{ dialogTitle }}</span>
+      <span :class="`text-${bkPoint.titleModel}`">{{ dialogTitle }}</span>
       <v-spacer></v-spacer>
     </v-card-title>
     <v-divider></v-divider>
@@ -14,7 +14,9 @@
           class="pa-0 ma-0"
         >
           <v-col cols="4">
-            <v-subheader>{{ item.text }}</v-subheader>
+            <v-subheader :class="`text-${bkPoint.model}`">{{
+              item.text
+            }}</v-subheader>
           </v-col>
           <v-col>
             <!--
@@ -40,12 +42,20 @@
               outlined
               :disabled="!isEditing"
               hide-details
+              :class="`text-${bkPoint.model}`"
             >
               <template
                 v-slot:append
-                v-if="item.text == 'ファイルパス' && dialogType == 1"
+                v-if="
+                  item.text == 'ファイルパス' &&
+                  (dialogType == 1 || dialogType == -1)
+                "
               >
-                <v-btn @click="filedialog = true">選択</v-btn>
+                <v-btn
+                  @click="filedialog = true"
+                  :class="`text-${bkPoint.model}`"
+                  >選択</v-btn
+                >
                 <v-dialog v-model="filedialog" max-width="700px" scrorable>
                   <DialogCardFile
                     :param.sync="content[index].value"
@@ -61,6 +71,7 @@
                 maxlength="8"
                 type="date"
                 v-if="inputType == 'date'"
+                :class="`text-${bkPoint.model}`"
               />
             </v-text-field>
           </v-col>
@@ -70,10 +81,22 @@
     <v-divider></v-divider>
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn outlined color="blue darken-1" text @click="submit">
+      <v-btn
+        outlined
+        color="blue darken-1"
+        text
+        @click="submit"
+        :class="`text-${bkPoint.model}`"
+      >
         {{ dialogYesText }}
       </v-btn>
-      <v-btn outlined color="blue darken-1" text @click="cancel">
+      <v-btn
+        outlined
+        color="blue darken-1"
+        text
+        @click="cancel"
+        :class="`text-${bkPoint.model}`"
+      >
         {{ dialogNoText }}
       </v-btn>
     </v-card-actions>
@@ -166,6 +189,58 @@ export default {
     isEditing() {
       const type = this.dialogType;
       return type !== 0 && type !== 2;
+    },
+    bkPoint() {
+      // $vuetify.breakpointでブレークポイントを取得
+      const bkPt = this.$vuetify.breakpoint;
+      const point = {
+        name: bkPt.name,
+        minHeight: 200,
+        titleModel: "",
+        model: "h6",
+        btnWidth: 350,
+        btnHeight: 50,
+      };
+      switch (bkPt.name) {
+        case "xl":
+          point.minHeight = 200;
+          point.titleModel = "h3";
+          point.model = "h5";
+          point.btnWidth = 600;
+          point.btnHeight = 150;
+          break;
+        case "lg":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "h5";
+          point.btnWidth = 500;
+          point.btnHeight = 100;
+          break;
+        case "md":
+          point.minHeight = 200;
+          point.titleModel = "h6";
+          point.model = "subtitle-1";
+          point.btnWidth = 325;
+          point.btnHeight = 50;
+          break;
+        case "sm":
+          point.minHeight = 200;
+          point.titleModel = "subtitle-2";
+          point.model = "body-1";
+          point.btnWidth = 275;
+          point.btnHeight = 40;
+          break;
+        case "xs":
+          point.minHeight = 200;
+          point.titleModel = "body-2";
+          point.model = "button";
+          point.btnWidth = 250;
+          point.btnHeight = 30;
+          break;
+        default:
+          break;
+      }
+      return point;
     },
   },
   methods: {

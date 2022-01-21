@@ -1,28 +1,49 @@
 <template>
-  <v-card>
-    <v-card-title>
-      {{ title | truncate(bkPoint.titleLength) }}
+  <v-card class="mx-auto">
+    <v-container fluid>
+      <v-card>
+        <v-card-title>
+          <v-row align="center">
+            <v-col cols="12" :class="`text-${bkPoint.titleModel}`"
+              >{{ title }}
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col
+              ><a @click="windowClose" :class="`text-${bkPoint.model}`"
+                >詳細画面を閉じる</a
+              ></v-col
+            >
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-slider
+                v-model="slider"
+                :class="`text-${bkPoint.model}`"
+                :max="max"
+                :min="min"
+                hide-details
+              >
+                <template v-slot:append>
+                  <v-text-field
+                    v-model="slider"
+                    class="mt-0 pt-0"
+                    hide-details
+                    single-line
+                    type="number"
+                  ></v-text-field>
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
+          <v-row v-resize="onResize" align="center">
+            <v-subheader :class="`text-${bkPoint.model}`"
+              >Window Size</v-subheader
+            >
+            {{ windowSize }}
+          </v-row>
 
-      <v-spacer></v-spacer>
-      <a @click="windowClose">詳細画面を閉じる</a>
-      <v-slider
-        v-model="slider"
-        class="align-center"
-        :max="max"
-        :min="min"
-        hide-details
-      >
-        <template v-slot:append>
-          <v-text-field
-            v-model="slider"
-            class="mt-0 pt-0"
-            hide-details
-            single-line
-            type="number"
-          ></v-text-field>
-        </template>
-      </v-slider>
-      <!--
+          <!--
       <v-btn v-if="level >= 1" @click="isEditing = !isEditing">
         <v-icon v-if="isEditing"> mdi-close </v-icon>
         <v-icon v-else> mdi-pencil </v-icon>
@@ -33,55 +54,59 @@
         {{ "削除" }}</v-btn
       >
       -->
-    </v-card-title>
-    <v-row v-resize="onResize" align="center" justify="center">
-      <v-subheader>Window Size</v-subheader>
-      {{ windowSize }}
-    </v-row>
-    <v-divider></v-divider>
-    <v-card-text>
-      <v-container style="max-height: 300px" class="overflow-auto" fluid>
-        <v-row
-          v-for="(item, index) in items"
-          :key="index"
-          no-gutters
-          align="center"
-          justify="center"
-          :size="iconSize"
-          height="1px"
-        >
-          <v-col cols="2">
-            <v-subheader class="text-caption">{{ item.text }}</v-subheader>
-          </v-col>
-          <v-col cols="4">
-            <v-text-field
-              v-model="item.value"
-              placeholder="値を入力"
-              class="text-caption detailitem"
-              outlined
-              dense
-              single-line
-              hide-detailas
-              :disabled="!isEditing"
-            />
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-card-text>
-    <v-divider></v-divider>
-    <v-card-actions v-if="level >= 1">
-      <v-spacer></v-spacer>
-      <v-btn
-        outlined
-        color="blue darken-1"
-        text
-        :disabled="!isEditing"
-        @click="updateRows"
-      >
-        更新
-      </v-btn>
-      <v-btn outlined color="blue darken-1" text> 閉じる </v-btn>
-    </v-card-actions>
+        </v-card-title>
+
+        <v-divider></v-divider>
+        <v-card-text>
+          <v-container style="max-height: 600px" class="overflow-y">
+            <v-row
+              v-for="(item, index) in items"
+              :key="index"
+              no-gutters
+              class="pa-0 ma-0"
+            >
+              <v-col cols="4">
+                <v-subheader :class="`text-${bkPoint.model}`">{{
+                  item.text
+                }}</v-subheader>
+              </v-col>
+              <v-col>
+                <v-text-field
+                  v-model="item.value"
+                  placeholder="値を入力"
+                  outlined
+                  hide-details
+                  :disabled="!isEditing"
+                  :class="`text-${bkPoint.model} ma-2`"
+                />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions v-if="level >= 1">
+          <v-spacer></v-spacer>
+          <v-btn
+            outlined
+            color="blue darken-1"
+            text
+            :disabled="!isEditing"
+            @click="updateRows"
+            :class="`text-${bkPoint.model}`"
+          >
+            更新
+          </v-btn>
+          <v-btn
+            outlined
+            color="blue darken-1"
+            text
+            :class="`text-${bkPoint.model}`"
+          >
+            閉じる
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-container>
   </v-card>
 </template>
 
@@ -139,46 +164,6 @@ export default {
     loginData() {
       return this.$store.getters[`auth/login`];
     },
-    bkPoint() {
-      // $vuetify.breakpointでブレークポイントを取得
-      const bkPt = this.$vuetify.breakpoint;
-      const point = {
-        name: bkPt.name,
-        cardHeight: 200,
-        titleLength: 10,
-        textLength: 15,
-      };
-      switch (bkPt.name) {
-        case "xl":
-          point.titleLength = 30;
-          point.textLength = 100;
-          point.cardHeight = 150;
-          break;
-        case "lg":
-          point.titleLength = 20;
-          point.textLength = 80;
-          point.cardHeight = 150;
-          break;
-        case "md":
-          point.titleLength = 10;
-          point.textLength = 60;
-          point.cardHeight = 350;
-          break;
-        case "sm":
-          point.titleLength = 10;
-          point.textLength = 100;
-          point.cardHeight = 570;
-          break;
-        case "xs":
-          point.titleLength = 8;
-          point.textLength = 100;
-          point.cardHeight = 600;
-          break;
-        default:
-          break;
-      }
-      return point;
-    },
     imageHeight() {
       // 画面サイズに合わせた高さを返却します。
       switch (this.$vuetify.breakpoint.name) {
@@ -201,6 +186,58 @@ export default {
     },
     fontstyle() {
       return "font-size: " + this.slider + "px;";
+    },
+    bkPoint() {
+      // $vuetify.breakpointでブレークポイントを取得
+      const bkPt = this.$vuetify.breakpoint;
+      const point = {
+        name: bkPt.name,
+        minHeight: 200,
+        titleModel: "",
+        model: "h6",
+        btnWidth: 350,
+        btnHeight: 50,
+      };
+      switch (bkPt.name) {
+        case "xl":
+          point.minHeight = 200;
+          point.titleModel = "h3";
+          point.model = "h5";
+          point.btnWidth = 600;
+          point.btnHeight = 150;
+          break;
+        case "lg":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "h5";
+          point.btnWidth = 500;
+          point.btnHeight = 100;
+          break;
+        case "md":
+          point.minHeight = 200;
+          point.titleModel = "h6";
+          point.model = "subtitle-1";
+          point.btnWidth = 325;
+          point.btnHeight = 50;
+          break;
+        case "sm":
+          point.minHeight = 200;
+          point.titleModel = "subtitle-2";
+          point.model = "body-1";
+          point.btnWidth = 275;
+          point.btnHeight = 40;
+          break;
+        case "xs":
+          point.minHeight = 200;
+          point.titleModel = "body-2";
+          point.model = "button";
+          point.btnWidth = 250;
+          point.btnHeight = 30;
+          break;
+        default:
+          break;
+      }
+      return point;
     },
   },
   watch: {

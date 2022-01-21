@@ -1,153 +1,225 @@
 <template>
-  <v-container fluid>
-    <v-card color="#fff" class="condition">
-      <v-card-title class="d-flex justify-center">検索条件</v-card-title>
-      <v-card-text class="d-flex justify-center flex-column search">
-        <div class="flex">
-          <v-subheader class="flex-col">台帳名</v-subheader>
-          <v-autocomplete
-            v-model="selectedName"
-            class="flex-col mr-3"
-            :items="displayItems"
-            :search-input.sync="search"
-            outlined
-            label="選択"
-          ></v-autocomplete>
-          <v-btn @click="submit" class="flex-col mb-9 mr-1">検索</v-btn>
-          <v-btn @click="addInput" class="flex-col mb-9 mr-1">条件追加</v-btn>
-          <v-btn @click="initialize" class="flex-col mb-9 mr-1">クリア</v-btn>
-        </div>
-        <v-card max-height="200" class="overflow-auto ma-0">
-          <div
-            v-for="(item, index) in queryCondition"
-            :key="index"
-            class="flex"
-            height="50px"
+  <v-card class="mx-auto">
+    <v-container fluid>
+      <v-card color="#fff" class="condition">
+        <v-row>
+          <v-card-title
+            class="d-flex justify-center"
+            :class="`text-${bkPoint.titleModel}`"
+            >検索条件</v-card-title
           >
-            <v-subheader class="flex-col mt-3">条件{{ index + 1 }}</v-subheader>
-            <v-select
-              v-model="item.text"
-              class="flex-col"
-              :items="shownHeaders"
-              label="項目"
-            ></v-select>
-            <!-- 各入力ボックス -->
-            <v-text-field
-              v-model="item.value"
-              class="flex-col ml-3 mr-3"
-              type="text"
-              label="条件"
-            />
-            <!-- 入力ボックスの削除ボタン -->
-            <v-btn class="flex-col" type="button" @click="removeInput(index)">
-              削除
-            </v-btn>
+        </v-row>
+        <v-card-text class="d-flex justify-center flex-column search">
+          <div class="flex">
+            <v-subheader class="flex-col" :class="`text-${bkPoint.model}`"
+              >台帳名</v-subheader
+            >
+            <v-autocomplete
+              v-model="selectedName"
+              class="flex-col mr-3"
+              :items="displayItems"
+              :search-input.sync="search"
+              outlined
+              label="選択"
+              :class="`text-${bkPoint.model}`"
+            ></v-autocomplete>
+            <v-btn
+              @click="submit"
+              class="flex-col mb-9 mr-1"
+              :class="`text-${bkPoint.model}`"
+              >検索</v-btn
+            >
+            <v-btn
+              @click="addInput"
+              class="flex-col mb-9 mr-1"
+              :class="`text-${bkPoint.model}`"
+              >条件追加</v-btn
+            >
+            <v-btn
+              @click="initialize"
+              class="flex-col mb-9 mr-1"
+              :class="`text-${bkPoint.model}`"
+              >クリア</v-btn
+            >
           </div>
-        </v-card>
-      </v-card-text>
-    </v-card>
-    <v-card>
-      <v-toolbar flat outlined>
-        <v-toolbar-title>テーブル表示</v-toolbar-title>
-        <v-divider class="mx-4" vertical></v-divider>
-        件数:{{ tblContents.length }}
-        <v-spacer />
-        <v-btn @click="getTemplateWorkbook()"> Excel出力 </v-btn>
-
-        <v-btn
-          @click="registerItem()"
-          v-if="selected.length > 0 && loginData.level >= 1"
-        >
-          地図連携
-        </v-btn>
-        <v-btn
-          @click="registerItem()"
-          v-if="selected.length > 0 && loginData.level >= 1"
-        >
-          ジオメトリ削除
-        </v-btn>
-        <v-divider class="mx-4" vertical></v-divider>
-        <v-btn @click="createItem()" v-if="loginData.level >= 1">
-          新規登録
-        </v-btn>
-        <v-btn @click="editItem(0)" v-if="selected.length > 0"> 閲覧 </v-btn>
-        <v-btn
-          @click="editItem(1)"
-          v-if="selected.length > 0 && loginData.level >= 1"
-        >
-          編集
-        </v-btn>
-        <v-btn
-          @click="editItem(2)"
-          v-if="selected.length > 0 && loginData.level >= 1"
-        >
-          削除
-        </v-btn>
-        <v-divider class="mx-4" vertical></v-divider>
-        <v-dialog v-model="dialog" max-width="700px" scrorable>
-          <DialogCard
-            :dialogType="editedIndex"
-            :content.sync="editedItem"
-            :loginType="loginData.level"
-            @clickSubmit="save"
-            @clickCancel="close"
-          />
-        </v-dialog>
-        <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
-          {{ snackbarText }}
-          <v-btn color="pink" text @click="snackbar = false">Close</v-btn>
-        </v-snackbar>
-      </v-toolbar>
-      <v-data-table
-        v-model="selected"
-        :headers="shownHeaders"
-        :items="tblContents"
-        :page.sync="page"
-        :items-per-page="25"
-        :footer-props="{ itemsPerPageOptions: [5, 25, 50, 100] }"
-        item-key="gid"
-        show-select
-        single-select
-        @page-count="pageCount = $event"
-        @click:row="clickRow"
-        class="display elevation-1 overflow-auto"
-        fixed-header
-        fixed-footer
-        height="400px"
-        calculate-widths
-        :header-props="{
-          'sort-icon': '▼',
-        }"
-      >
-        <template v-slot:top> </template>
-
-        <template v-slot:item="{ item, isSelected, select }">
-          <tr
-            :class="[{ 'v-data-table__selected': isSelected }]"
-            @click="select(!isSelected)"
-          >
-            <td>
-              <v-simple-checkbox
-                :value="isSelected"
-                :ripple="false"
-                @input="select($event)"
+          <v-card max-height="200" class="overflow-auto ma-0">
+            <div
+              v-for="(item, index) in queryCondition"
+              :key="index"
+              class="flex"
+              height="50px"
+            >
+              <v-subheader
+                class="flex-col mt-3"
+                :class="`text-${bkPoint.model}`"
+                >条件{{ index + 1 }}</v-subheader
+              >
+              <v-select
+                v-model="item.text"
+                class="flex-col"
+                :items="shownHeaders"
+                label="項目"
+                :class="`text-${bkPoint.model}`"
+              ></v-select>
+              <!-- 各入力ボックス -->
+              <v-text-field
+                v-model="item.value"
+                class="flex-col ml-3 mr-3"
+                type="text"
+                label="条件"
+                :class="`text-${bkPoint.model}`"
               />
-            </td>
-            <td v-for="header in shownHeaders" :key="header.value">
-              {{ item[header.value] }}
-            </td>
-          </tr>
-        </template>
-      </v-data-table>
-      <v-pagination
-        dense
-        v-model="page"
-        :length="pageCount"
-        :total-visible="7"
-      ></v-pagination>
-    </v-card>
-    <br />
-  </v-container>
+              <!-- 入力ボックスの削除ボタン -->
+              <v-btn
+                class="flex-col"
+                type="button"
+                @click="removeInput(index)"
+                :class="`text-${bkPoint.model}`"
+              >
+                削除
+              </v-btn>
+            </div>
+          </v-card>
+        </v-card-text>
+      </v-card>
+      <v-card>
+        <v-toolbar flat outlined>
+          <v-toolbar-title :class="`text-${bkPoint.model}`"
+            >テーブル表示</v-toolbar-title
+          >
+          <v-divider class="mx-4" vertical></v-divider>
+          <v-text :class="`text-${bkPoint.model}`">
+            件数:{{ tblContents.length }}
+          </v-text>
+          <v-spacer />
+          <v-btn
+            @click="getTemplateWorkbook()"
+            :class="`text-${bkPoint.model}`"
+          >
+            Excel出力
+          </v-btn>
+
+          <v-btn
+            @click="registerItem()"
+            v-if="selected.length > 0 && loginData.level >= 1"
+            :class="`text-${bkPoint.model}`"
+          >
+            地図連携
+          </v-btn>
+          <!--
+          <v-btn
+            @click="registerItem()"
+            v-if="selected.length > 0 && loginData.level >= 1"
+          >
+            ジオメトリ削除
+          </v-btn>
+          -->
+          <v-divider class="mx-4" vertical></v-divider>
+          <v-btn
+            @click="createItem()"
+            v-if="loginData.level >= 1"
+            :class="`text-${bkPoint.model}`"
+          >
+            新規登録
+          </v-btn>
+          <v-btn
+            @click="editItem(0)"
+            v-if="selected.length > 0"
+            :class="`text-${bkPoint.model}`"
+          >
+            閲覧
+          </v-btn>
+          <v-btn
+            @click="editItem(1)"
+            v-if="selected.length > 0 && loginData.level >= 1"
+            :class="`text-${bkPoint.model}`"
+          >
+            編集
+          </v-btn>
+          <v-btn
+            @click="editItem(2)"
+            v-if="selected.length > 0 && loginData.level >= 1"
+            :class="`text-${bkPoint.model}`"
+          >
+            削除
+          </v-btn>
+          <v-divider class="mx-4" vertical></v-divider>
+          <v-dialog v-model="dialog" max-width="700px" scrorable>
+            <DialogCard
+              :dialogType="editedIndex"
+              :content.sync="editedItem"
+              :loginType="loginData.level"
+              @clickSubmit="save"
+              @clickCancel="close"
+            />
+          </v-dialog>
+          <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
+            <v-text :class="`text-${bkPoint.model}`">{{ snackbarText }}</v-text>
+            <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
+          </v-snackbar>
+        </v-toolbar>
+        <v-data-table
+          v-model="selected"
+          :headers="shownHeaders"
+          :items="tblContents"
+          :page.sync="page"
+          :items-per-page="25"
+          :footer-props="{ itemsPerPageOptions: [5, 25, 50, 100] }"
+          item-key="gid"
+          show-select
+          single-select
+          @page-count="pageCount = $event"
+          @click:row="clickRow"
+          class="display elevation-1 overflow-auto"
+          fixed-header
+          fixed-footer
+          height="400px"
+          calculate-widths
+          :header-props="{
+            'sort-icon': '▼',
+          }"
+        >
+          <template v-slot:headers>
+            <tr>
+              <th v-for="header in shownHeaders" :key="header.value">
+                <span :class="`text-${bkPoint.model}`">{{ header.text }}</span>
+              </th>
+            </tr>
+          </template>
+
+          <template v-slot:item="{ item, isSelected, select }">
+            <tr
+              :class="[{ 'v-data-table__selected': isSelected }]"
+              @click="select(!isSelected)"
+            >
+              <td>
+                <v-simple-checkbox
+                  :value="isSelected"
+                  :ripple="false"
+                  @input="select($event)"
+                />
+              </td>
+              <td
+                v-for="header in shownHeaders"
+                :key="header.value"
+                :class="`text-${bkPoint.model}`"
+              >
+                {{ item[header.value] }}
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+        <v-pagination
+          dense
+          v-model="page"
+          :length="pageCount"
+          :total-visible="7"
+          :class="`text-${bkPoint.model}`"
+        ></v-pagination>
+      </v-card>
+      <br />
+    </v-container>
+  </v-card>
 </template>
 
 <script>
@@ -166,7 +238,8 @@ export default {
       isShown: true,
       snackbar: false,
       snackbarText: "成功",
-      timeout: 1500,
+      snackbarColor: "green",
+      timeout: 1000,
       isEditing: false,
       editedIndex: -1,
       dateRule: /^[0-9]{4}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/,
@@ -238,6 +311,58 @@ export default {
         data.push({ text: header[key].text, value: "" });
       }
       return data;
+    },
+    bkPoint() {
+      // $vuetify.breakpointでブレークポイントを取得
+      const bkPt = this.$vuetify.breakpoint;
+      const point = {
+        name: bkPt.name,
+        minHeight: 200,
+        titleModel: "",
+        model: "h6",
+        btnWidth: 350,
+        btnHeight: 50,
+      };
+      switch (bkPt.name) {
+        case "xl":
+          point.minHeight = 200;
+          point.titleModel = "h3";
+          point.model = "h5";
+          point.btnWidth = 600;
+          point.btnHeight = 150;
+          break;
+        case "lg":
+          point.minHeight = 200;
+          point.titleModel = "h4";
+          point.model = "h5";
+          point.btnWidth = 500;
+          point.btnHeight = 100;
+          break;
+        case "md":
+          point.minHeight = 200;
+          point.titleModel = "h6";
+          point.model = "subtitle-1";
+          point.btnWidth = 325;
+          point.btnHeight = 50;
+          break;
+        case "sm":
+          point.minHeight = 200;
+          point.titleModel = "subtitle-2";
+          point.model = "body-1";
+          point.btnWidth = 275;
+          point.btnHeight = 40;
+          break;
+        case "xs":
+          point.minHeight = 200;
+          point.titleModel = "body-2";
+          point.model = "button";
+          point.btnWidth = 250;
+          point.btnHeight = 30;
+          break;
+        default:
+          break;
+      }
+      return point;
     },
     loginData() {
       return this.$store.getters[`auth/login`];
@@ -420,9 +545,12 @@ export default {
         .post(url, cond, option)
         .then((response) => {
           console.log(response);
+          this.snackbarText = "地図システム検索データ登録 成功";
+          this.snackbar = true;
         })
         .catch((error) => {
-          alert("登録に失敗しました");
+          this.snackbarText = "地図システム検索データ登録 失敗";
+          this.snackbar = true;
           console.log(error);
         });
     },
@@ -582,10 +710,12 @@ export default {
         .then((response) => {
           console.log(response);
           this.submit();
+          this.snackbarText = "新規登録 成功";
           this.snackbar = true;
         })
         .catch((error) => {
-          alert("追加失敗");
+          this.snackbarText = "新規登録 失敗";
+          this.snackbar = true;
           console.log(error);
         });
       this.registerLog("追加", `${this.selectedName}?${this.insertEditedItem}`);
@@ -610,10 +740,12 @@ export default {
         .then((response) => {
           console.log(response);
           this.submit();
+          this.snackbarText = "更新 成功";
           this.snackbar = true;
         })
         .catch((error) => {
-          alert("更新失敗");
+          this.snackbarText = "更新 失敗";
+          this.snackbar = true;
           console.log(error);
         });
       this.registerLog("更新", `${this.selectedName}?${this.updateEditedItem}`);
@@ -632,10 +764,12 @@ export default {
         .then((response) => {
           console.log(response);
           this.submit();
+          this.snackbarText = "削除 成功";
           this.snackbar = true;
         })
         .catch((error) => {
-          alert("削除失敗");
+          this.snackbarText = "削除 失敗";
+          this.snackbar = true;
           console.log(error);
         });
       this.registerLog("削除", `${this.selectedName}?${cond}`);

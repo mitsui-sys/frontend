@@ -113,9 +113,13 @@ export default {
     files: [],
     uploadfiles: [],
     settings: [],
-    url: "http://harima-isk:50001",
+    // url: "http://harima-isk:50001",
   }),
-
+  computed: {
+    url() {
+      return this.$store.getters[`backend/url`];
+    },
+  },
   methods: {
     onSubmit(params) {
       this.dialog = false;

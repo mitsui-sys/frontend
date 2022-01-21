@@ -5,7 +5,7 @@ module.exports = {
     port: 50000,
     proxy: {
       "/api/": {
-        target: "http://localhost:50001",
+        target: "http://harima-isk:50001",
       },
     },
     disableHostCheck: true,
