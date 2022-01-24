@@ -1,18 +1,15 @@
 <template>
-  <v-card class="mx-auto" :min-height="bkPoint.minHeight">
-    <v-container fluid fill-height>
-      <v-row class="blue lighten-4">
-        <v-col cols="12" align="center">
-          <v-text :class="`text-${bkPoint.titleModel}`">
+  <v-container fluid fill-height>
+    <v-row>
+      <v-col cols="12" align="center">
+        <v-card :width="bkPoint.cardWidth" justify="center">
+          <v-card-title
+            :class="`text-${bkPoint.titleModel} justify-center cyan darken-1`"
+            outlind
+          >
             {{ title }}
-          </v-text>
-          <!--
-          <v-text :class="`text-${bkPoint.titleModel}`">
-            {{ bkPoint.name }}
-          </v-text>
-          -->
-          <v-divider></v-divider>
-          <v-container>
+          </v-card-title>
+          <v-card-text>
             <v-row v-for="(item, index) in items" :key="index">
               <v-col>
                 <v-btn
@@ -25,11 +22,11 @@
                 >
               </v-col>
             </v-row>
-          </v-container>
-        </v-col>
-      </v-row>
-    </v-container>
-  </v-card>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -64,7 +61,8 @@ export default {
       const bkPt = this.$vuetify.breakpoint;
       const point = {
         name: bkPt.name,
-        minHeight: 200,
+        cardHeight: 400,
+        cardWidth: 500,
         titleModel: "",
         model: "h6",
         btnWidth: 350,
@@ -73,6 +71,8 @@ export default {
       switch (bkPt.name) {
         case "xl":
           point.minHeight = 200;
+          point.cardHeight = 800;
+          point.cardWidth = 800;
           point.titleModel = "h2";
           point.model = "h3";
           point.btnWidth = 700;
@@ -80,6 +80,8 @@ export default {
           break;
         case "lg":
           point.minHeight = 200;
+          point.cardHeight = 800;
+          point.cardWidth = 800;
           point.titleModel = "h4";
           point.model = "h5";
           point.btnWidth = 500;
@@ -87,6 +89,8 @@ export default {
           break;
         case "md":
           point.minHeight = 200;
+          point.cardHeight = 800;
+          point.cardWidth = 800;
           point.titleModel = "h6";
           point.model = "subtitle-1";
           point.btnWidth = 325;
@@ -94,6 +98,8 @@ export default {
           break;
         case "sm":
           point.minHeight = 200;
+          point.cardHeight = 800;
+          point.cardWidth = 800;
           point.titleModel = "subtitle-2";
           point.model = "body-1";
           point.btnWidth = 275;
@@ -101,6 +107,8 @@ export default {
           break;
         case "xs":
           point.minHeight = 200;
+          point.cardHeight = 800;
+          point.cardWidth = 800;
           point.titleModel = "body-2";
           point.model = "button";
           point.btnWidth = 250;

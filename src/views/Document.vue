@@ -1,76 +1,96 @@
 <template>
-  <v-app>
-    <v-card>
-      <v-toolbar>
-        <v-toolbar-title>{{ title }}</v-toolbar-title>
-        <v-divider class="mx-4" vertical></v-divider>
-        件数：{{ contents.length }}
-        <v-spacer />
-        <v-divider class="mx-4" vertical></v-divider>
-        <v-btn @click="open(-1)" outlined>新規登録</v-btn>
-        <v-btn @click="open(0)" :disabled="!selectItem.length > 0" outlined
-          >閲覧</v-btn
-        >
-
-        <v-btn @click="open(1)" :disabled="!selectItem.length > 0" outlined
-          >編集</v-btn
-        >
-        <v-btn @click="open(2)" :disabled="!selectItem.length > 0" outlined
-          >削除</v-btn
-        >
-        <v-divider class="mx-4" vertical></v-divider>
-        <v-btn
-          class="primary"
-          @click="download"
-          :disabled="!selectItem.length > 0"
-          outlined
-          >ダウンロード</v-btn
-        >
-        <v-dialog v-model="dialog" max-width="700px" scrorable>
-          <DialogCard
-            :dialogType="selectIndex"
-            :content="editItem"
-            :loginType="loginData"
-            @clickSubmit="save"
-            @clickCancel="close"
-          />
-        </v-dialog>
-      </v-toolbar>
-      <v-data-table
-        v-model="selectItem"
-        :headers="shownHeaders"
-        :items="contents"
-        class="document elevation-1 overflow-auto"
-        show-select
-        single-select
-        fixed-header
-        fixed-footer
-        height="300px"
-        :header-props="{
-          'sort-icon': '▼',
-        }"
-        :items-per-page="5"
-      >
-        <template v-slot:item="{ item, isSelected, select }">
-          <tr
-            :class="[{ 'v-data-table__selected': isSelected }]"
-            @click="select(!isSelected)"
+  <v-card class="mx-auto">
+    <v-container fluid>
+      <v-row>
+        <v-toolbar>
+          <v-toolbar-title>{{ title }}</v-toolbar-title>
+          <v-divider class="mx-4" vertical></v-divider>
+          件数：{{ contents.length }}
+          <v-spacer />
+          <v-divider class="mx-4" vertical></v-divider>
+          <v-btn @click="open(-1)" outlined>新規登録</v-btn>
+          <v-btn @click="open(0)" :disabled="!selectItem.length > 0" outlined
+            >閲覧</v-btn
           >
-            <td>
-              <v-simple-checkbox
-                :value="isSelected"
-                :ripple="false"
-                @input="select($event)"
-              />
-            </td>
-            <td v-for="header in shownHeaders" :key="header.value">
-              {{ item[header.value] }}
-            </td>
-          </tr>
-        </template>
-      </v-data-table>
-    </v-card>
-  </v-app>
+
+          <v-btn @click="open(1)" :disabled="!selectItem.length > 0" outlined
+            >編集</v-btn
+          >
+          <v-btn @click="open(2)" :disabled="!selectItem.length > 0" outlined
+            >削除</v-btn
+          >
+          <v-divider class="mx-4" vertical></v-divider>
+          <v-btn
+            class="primary"
+            @click="download"
+            :disabled="!selectItem.length > 0"
+            outlined
+            >ダウンロード</v-btn
+          >
+          <v-dialog v-model="dialog" max-width="700px" scrorable>
+            <DialogCard
+              :dialogType="selectIndex"
+              :content="editItem"
+              :loginType="loginData"
+              @clickSubmit="save"
+              @clickCancel="close"
+            />
+          </v-dialog>
+          <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
+            <v-text :class="`text-${bkPoint.model}`">{{ snackbarText }}</v-text>
+            <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
+          </v-snackbar>
+        </v-toolbar>
+        <v-data-table
+          v-model="selectItem"
+          :headers="shownHeaders"
+          :items="contents"
+          class="document elevation-1 overflow-auto"
+          show-select
+          single-select
+          fixed-header
+          fixed-footer
+          height="300px"
+          :header-props="{
+            'sort-icon': '▼',
+          }"
+          :items-per-page="5"
+          hide-default-header
+        >
+          <template v-slot:header="{ props: { headers } }">
+            <thead>
+              <tr>
+                <th v-for="(h, index) in headers" :class="h.class" :key="index">
+                  <span :class="`text-${bkPoint.model}`">{{ h.text }}</span>
+                </th>
+              </tr>
+            </thead>
+          </template>
+          <template v-slot:item="{ item, isSelected, select }">
+            <tr
+              :class="[{ 'v-data-table__selected': isSelected }]"
+              @click="select(!isSelected)"
+            >
+              <td>
+                <v-simple-checkbox
+                  :value="isSelected"
+                  :ripple="false"
+                  @input="select($event)"
+                />
+              </td>
+              <td
+                v-for="header in shownHeaders"
+                :key="header.value"
+                :class="`text-${bkPoint.model}`"
+              >
+                {{ item[header.value] }}
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-row>
+    </v-container>
+  </v-card>
 </template>
 <script>
 import DialogCard from "@/components/DialogCard";
@@ -98,6 +118,9 @@ export default {
       defaultItem: [],
       url: "http://harima-isk:50001",
       dialog: false,
+      snackbar: false,
+      snackbarText: "",
+      timeout: 1000,
     };
   },
   watch: {
@@ -111,6 +134,47 @@ export default {
     },
     loginData() {
       return this.$store.getters[`auth/login`];
+    },
+    bkPoint() {
+      // $vuetify.breakpointでブレークポイントを取得
+      const bkPt = this.$vuetify.breakpoint;
+      const point = {
+        name: bkPt.name,
+        cardHeight: 800,
+        cardWidth: 800,
+        cardMinHeight: 300,
+        cardMinWidth: 400,
+        btnWidth: 350,
+        btnHeight: 50,
+        titleModel: "h3",
+        model: "h5",
+      };
+      switch (bkPt.name) {
+        case "xl":
+        case "lg":
+        case "md":
+          point.cardHeight = 800;
+          point.cardWidth = 800;
+          point.btnWidth = 350;
+          point.btnHeight = 50;
+          point.titleModel = "h4";
+          point.model = "h6";
+          break;
+        case "sm":
+        case "xs":
+          point.cardHeight = 800;
+          point.cardWidth = 800;
+          // point.cardMinHeight = 400;
+          // point.cardMinWidth = 400;
+          point.btnWidth = 350;
+          point.btnHeight = 50;
+          point.titleModel = "h5";
+          point.model = "subtitle1";
+          break;
+        default:
+          break;
+      }
+      return point;
     },
   },
   methods: {
@@ -136,7 +200,7 @@ export default {
       //update
       const origin = this.originItem;
       const id = origin.id;
-      console.log(origin, item);
+      console.log("origin", id, item);
       data = {};
       for (const i in item) {
         const text = item[i].text;
@@ -159,21 +223,27 @@ export default {
 
     open(index) {
       this.selectIndex = index;
-      this.editItem = Object.assign(this.defaultItem);
+
       if (this.selectIndex != -1) {
         if (this.selectItem.length <= 0) {
           alert("選択されていません");
           return;
         }
-        let item = this.selectItem[0];
-        console.log(item);
-        this.originItem = Object.assign(this.selectItem[0]);
-        let edit = this.editItem;
+        const item = this.selectItem[0];
+        //元データを残す
+        this.originItem = Object.assign(item);
+        let edit = Object.assign(this.defaultItem);
+
+        let data = [];
         for (const i in edit) {
-          const text = edit[i].text;
-          edit[i].value = item[text];
+          const text = Object.assign(edit[i].text);
+          data.push({ text: text, value: item[text] });
         }
+        this.editItem = Object.assign(data);
+      } else {
+        this.editItem = Object.assign(this.defaultItem);
       }
+
       this.dialog = true;
     },
     download() {
@@ -234,7 +304,6 @@ export default {
     },
     getDocumentData() {
       const url = `${this.url}/document`;
-      console.log("get all document", url);
       this.axios
         .get(url)
         .then((res) => {
@@ -280,8 +349,8 @@ export default {
 
           this.headers = columns;
           this.contents = rows;
-          this.defaultItem = defaultItem;
-          this.editItem = Object.assign({}, this.defaultItem);
+          this.defaultItem = Object.assign(defaultItem);
+          this.editItem = Object.assign(defaultItem);
           // console.log(defaultItem);
         })
         .catch((err) => {
@@ -313,7 +382,7 @@ export default {
           "Content-Type": "application/json",
         },
       };
-      console.log("insert document", url, data, option);
+      console.log("update document", url, data, option);
       this.axios
         .put(url, data, option)
         .then((res) => {

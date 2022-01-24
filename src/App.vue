@@ -60,42 +60,42 @@
       <v-btn
         v-if="development"
         @click="$router.go(-1)"
-        :class="`text-${bkPoint.titleModel}`"
+        :class="`text-${bkPoint.btnSize}`"
         >戻る<v-icon>mdi-arrow-left-bold-circle-outline</v-icon></v-btn
       >
       <v-btn
         v-if="development"
         @click="$router.go(1)"
-        :class="`text-${bkPoint.titleModel}`"
+        :class="`text-${bkPoint.btnSize}`"
         >進む<v-icon>mdi-arrow-right-bold-circle-outline</v-icon></v-btn
       >
       <v-spacer></v-spacer>
       <v-toolbar-items v-if="!$vuetify.breakpoint.xs">
-        <v-btn text to="/" :class="`text-${bkPoint.titleModel}`">{{
+        <v-btn text to="/" :class="`text-${bkPoint.btnSize}`">{{
           btn_title.home
         }}</v-btn>
         <v-btn
           text
           to="/login"
           v-if="!loginData.token"
-          :class="`text-${bkPoint.titleModel}`"
+          :class="`text-${bkPoint.btnSize}`"
           >{{ btn_title.login }}</v-btn
         >
         <v-menu
           bottom
           offset-y
           v-if="loginData.token"
-          :class="`text-${bkPoint.titleModel}`"
+          :class="`text-${bkPoint.btnSize}`"
         >
           <template v-slot:activator="{ on }">
-            <v-btn v-on="on" :class="`text-${bkPoint.titleModel}`"
+            <v-btn v-on="on" :class="`text-${bkPoint.btnSize}`"
               >{{ loginData.name }}<v-icon>mdi-account</v-icon></v-btn
             >
           </template>
           <v-list>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title :class="`text-${bkPoint.titleModel}`">{{
+                <v-list-item-title :class="`text-${bkPoint.btnSize}`">{{
                   loginLevel
                 }}</v-list-item-title>
               </v-list-item-content>
@@ -105,7 +105,7 @@
               <v-list-item-content>
                 <v-list-item-title
                   class="primary--text"
-                  :class="`text-${bkPoint.titleModel}`"
+                  :class="`text-${bkPoint.btnSize}`"
                   >設定</v-list-item-title
                 >
               </v-list-item-content>
@@ -115,7 +115,7 @@
               <v-list-item-content>
                 <v-list-item-title
                   class="primary--text"
-                  :class="`text-${bkPoint.titleModel}`"
+                  :class="`text-${bkPoint.btnSize}`"
                   >ログアウト</v-list-item-title
                 >
               </v-list-item-content>
@@ -125,10 +125,10 @@
         <v-menu
           offset-y
           v-if="development && loginData.level >= 1"
-          :class="`text-${bkPoint.titleModel}`"
+          :class="`text-${bkPoint.btnSize}`"
         >
           <template v-slot:activator="{ on }">
-            <v-btn v-on="on" text :class="`text-${bkPoint.titleModel}`"
+            <v-btn v-on="on" text :class="`text-${bkPoint.btnSize}`"
               >{{ btn_title.support }}<v-icon>mdi-menu-down</v-icon></v-btn
             >
           </template>
@@ -152,7 +152,7 @@
           text
           v-if="development"
           to="/help"
-          :class="`text-${bkPoint.titleModel}`"
+          :class="`text-${bkPoint.btnSize}`"
           >{{ btn_title.help }}<v-icon>mdi-help</v-icon></v-btn
         >
       </v-toolbar-items>
@@ -302,8 +302,8 @@ export default {
       const point = {
         name: bkPt.name,
         minHeight: 200,
-        titleModel: "",
-        model: "h6",
+        titleModel: "h4",
+        btnSize: "h6",
         btnWidth: 350,
         btnHeight: 50,
       };
@@ -311,35 +311,35 @@ export default {
         case "xl":
           point.minHeight = 200;
           point.titleModel = "h4";
-          point.model = "h2";
+          point.btnSize = "h6";
           point.btnWidth = 600;
           point.btnHeight = 150;
           break;
         case "lg":
           point.minHeight = 200;
           point.titleModel = "h4";
-          point.model = "h5";
+          point.btnSize = "h6";
           point.btnWidth = 500;
           point.btnHeight = 100;
           break;
         case "md":
           point.minHeight = 200;
           point.titleModel = "h4";
-          point.model = "subtitle-1";
+          point.btnSize = "h6";
           point.btnWidth = 325;
           point.btnHeight = 50;
           break;
         case "sm":
           point.minHeight = 200;
           point.titleModel = "h4";
-          point.model = "h4";
+          point.btnSize = "h6";
           point.btnWidth = 275;
           point.btnHeight = 40;
           break;
         case "xs":
           point.minHeight = 200;
           point.titleModel = "h4";
-          point.model = "button";
+          point.btnSize = "h6";
           point.btnWidth = 250;
           point.btnHeight = 30;
           break;
@@ -383,7 +383,6 @@ export default {
 
 .display.v-data-table tr th {
   background: #fdfcaa !important;
-  font-size: 24px !important;
 }
 .display.v-data-table tr.v-data-table__selected td {
   background: #aadaff;
@@ -428,12 +427,13 @@ export default {
   border: 1px solid;
 }
 .document.v-data-table tr.v-data-table__selected td {
-  background: #d4987e;
+  background: #aadaff;
 }
 
 .document.v-data-table tr:hover td {
-  background: #ffff3f;
+  background: #aafcff;
 }
+
 .document.v-data-table td {
   background: #dddddd;
   border: 1px solid;

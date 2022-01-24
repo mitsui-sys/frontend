@@ -88,9 +88,9 @@
             >テーブル表示</v-toolbar-title
           >
           <v-divider class="mx-4" vertical></v-divider>
-          <v-text :class="`text-${bkPoint.model}`">
+          <span :class="`text-${bkPoint.model}`">
             件数:{{ tblContents.length }}
-          </v-text>
+          </span>
           <v-spacer />
           <v-btn
             @click="getTemplateWorkbook()"
@@ -154,7 +154,7 @@
             />
           </v-dialog>
           <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
-            <v-text :class="`text-${bkPoint.model}`">{{ snackbarText }}</v-text>
+            <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
             <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
           </v-snackbar>
         </v-toolbar>
@@ -174,17 +174,19 @@
           fixed-header
           fixed-footer
           height="400px"
-          calculate-widths
           :header-props="{
             'sort-icon': '▼',
           }"
+          hide-default-header
         >
-          <template v-slot:headers>
-            <tr>
-              <th v-for="header in shownHeaders" :key="header.value">
-                <span :class="`text-${bkPoint.model}`">{{ header.text }}</span>
-              </th>
-            </tr>
+          <template v-slot:header="{ props: { headers } }">
+            <thead>
+              <tr>
+                <th v-for="(h, index) in headers" :class="h.class" :key="index">
+                  <span :class="`text-${bkPoint.model}`">{{ h.text }}</span>
+                </th>
+              </tr>
+            </thead>
           </template>
 
           <template v-slot:item="{ item, isSelected, select }">
@@ -681,15 +683,16 @@ export default {
         .get(url, body, option)
         .then((res) => {
           const data = res.data;
-          const columns = data.columns;
-          let rows = data.rows;
-          const columnNames = columns.map((x) => x.columnName);
-          let headers = [];
-          for (const i in columnNames) {
-            const name = columnNames[i];
-            headers.push({ text: name, value: name, shown: true });
-          }
+          const rows = data.rows;
           this.tblContents = rows.length > 0 ? rows : [];
+          // const columns = data.columns;
+
+          // conklst columnNames = columns.map((x) => x.columnName);
+          // let headers = [];
+          // for (const i in columnNames) {
+          //   const name = columnNames[i];
+          //   headers.push({ text: name, value: name, shown: true });
+          // }
         })
         .catch((error) => {
           console.log(error);
