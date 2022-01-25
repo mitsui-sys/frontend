@@ -37,7 +37,7 @@
             />
           </v-dialog>
           <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
-            <v-text :class="`text-${bkPoint.model}`">{{ snackbarText }}</v-text>
+            <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
             <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
           </v-snackbar>
         </v-toolbar>
@@ -51,6 +51,7 @@
           fixed-header
           fixed-footer
           height="300px"
+          width="400px"
           :header-props="{
             'sort-icon': '▼',
           }"
@@ -230,7 +231,7 @@ export default {
           return;
         }
         const item = this.selectItem[0];
-        //元データを残す
+
         this.originItem = Object.assign(item);
         let edit = Object.assign(this.defaultItem);
 

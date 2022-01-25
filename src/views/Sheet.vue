@@ -184,6 +184,9 @@
               <tr>
                 <th v-for="(h, index) in headers" :class="h.class" :key="index">
                   <span :class="`text-${bkPoint.model}`">{{ h.text }}</span>
+                  <v-btn v-if="h.text != ''" icon
+                    ><v-icon>mdi-arrow-up</v-icon></v-btn
+                  >
                 </th>
               </tr>
             </thead>

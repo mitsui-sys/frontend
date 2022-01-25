@@ -15,6 +15,7 @@
               ></v-col
             >
           </v-row>
+          <!--
           <v-row>
             <v-col>
               <v-slider
@@ -36,6 +37,7 @@
               </v-slider>
             </v-col>
           </v-row>
+          -->
           <v-row v-resize="onResize" align="center">
             <v-subheader :class="`text-${bkPoint.model}`"
               >Window Size</v-subheader

@@ -163,7 +163,7 @@
       <router-view></router-view>
     </v-main>
     <!-- フッター -->
-    <v-footer app clippedLeft color="primary" dark align="right">
+    <v-footer app color="primary">
       <v-spacer></v-spacer>
       <img
         src="/resources/kanko.svg"
@@ -409,17 +409,28 @@ export default {
 .resizable-column /deep/ th + th {
   border-left: 1px solid grey;
 }
-.userinfo.v-data-table th {
-  background: #55cccc !important;
-  border: 1px solid;
-}
 .userlog.v-data-table th {
   background: #55cc55 !important;
   border: 1px solid;
 }
+.userlog.v-data-table tr.v-data-table__selected td {
+  background: #aadaff;
+}
+
+.userlog.v-data-table tr:hover td {
+  background: #aafcff;
+}
+
 .userdata.v-data-table th {
   background: #cccc55 !important;
   border: 1px solid;
+}
+.userdata.v-data-table tr.v-data-table__selected td {
+  background: #aadaff;
+}
+
+.userdata.v-data-table tr:hover td {
+  background: #aafcff;
 }
 
 .document.v-data-table th {
@@ -471,32 +482,5 @@ ul {
   align-items: center;
   margin: 0.5em;
   font-size: 10px;
-}
-
-.us {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto;
-  grid-template-areas:
-    "header header"
-    "nav content"
-    "nav helper";
-}
-
-h2 {
-  grid-area: header;
-}
-
-.us__nav {
-  grid-area: nav;
-  border: 1px dotted;
-  margin-right: 0.75rem;
-  padding: 0.3rem;
-}
-.us__content {
-  grid-area: content;
-}
-.us__content--helper {
-  grid-area: helper;
 }
 </style>

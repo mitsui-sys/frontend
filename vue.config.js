@@ -4,7 +4,7 @@ module.exports = {
   devServer: {
     port: 50000,
     proxy: {
-      "/api/": {
+      "^/api/": {
         target: "http://harima-isk:50001",
       },
     },
