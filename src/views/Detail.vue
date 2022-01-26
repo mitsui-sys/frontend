@@ -1,120 +1,25 @@
 <template>
   <v-card class="mx-auto">
-    <v-container fluid>
-      <v-card>
-        <v-card-title>
-          <v-row align="center">
-            <v-col cols="12" :class="`text-${bkPoint.titleModel}`"
-              >{{ title }}
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col
-              ><a @click="windowClose" :class="`text-${bkPoint.model}`"
-                >詳細画面を閉じる</a
-              ></v-col
-            >
-          </v-row>
-          <!--
-          <v-row>
-            <v-col>
-              <v-slider
-                v-model="slider"
-                :class="`text-${bkPoint.model}`"
-                :max="max"
-                :min="min"
-                hide-details
-              >
-                <template v-slot:append>
-                  <v-text-field
-                    v-model="slider"
-                    class="mt-0 pt-0"
-                    hide-details
-                    single-line
-                    type="number"
-                  ></v-text-field>
-                </template>
-              </v-slider>
-            </v-col>
-          </v-row>
-          -->
-          <v-row v-resize="onResize" align="center">
-            <v-subheader :class="`text-${bkPoint.model}`"
-              >Window Size</v-subheader
-            >
-            {{ windowSize }}
-          </v-row>
-
-          <!--
-      <v-btn v-if="level >= 1" @click="isEditing = !isEditing">
-        <v-icon v-if="isEditing"> mdi-close </v-icon>
-        <v-icon v-else> mdi-pencil </v-icon>
-        {{ "編集" }}</v-btn
-      >
-      <v-btn v-if="level >= 1" @click="deleteRows">
-        <v-icon> mdi-delete </v-icon>
-        {{ "削除" }}</v-btn
-      >
-      -->
-        </v-card-title>
-
-        <v-divider></v-divider>
-        <v-card-text>
-          <v-container style="max-height: 600px" class="overflow-y">
-            <v-row
-              v-for="(item, index) in items"
-              :key="index"
-              no-gutters
-              class="pa-0 ma-0"
-            >
-              <v-col cols="4">
-                <v-subheader :class="`text-${bkPoint.model}`">{{
-                  item.text
-                }}</v-subheader>
-              </v-col>
-              <v-col>
-                <v-text-field
-                  v-model="item.value"
-                  placeholder="値を入力"
-                  outlined
-                  hide-details
-                  :disabled="!isEditing"
-                  :class="`text-${bkPoint.model} ma-2`"
-                />
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions v-if="level >= 1">
-          <v-spacer></v-spacer>
-          <v-btn
-            outlined
-            color="blue darken-1"
-            text
-            :disabled="!isEditing"
-            @click="updateRows"
-            :class="`text-${bkPoint.model}`"
-          >
-            更新
-          </v-btn>
-          <v-btn
-            outlined
-            color="blue darken-1"
-            text
-            :class="`text-${bkPoint.model}`"
-          >
-            閉じる
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-container>
+    <!--
+    <v-subheader :class="`text-${bkPoint.model}`">Window Size</v-subheader>
+    {{ windowSize }}
+  -->
+    <DialogCard
+      :dialogType="dialogType"
+      :content.sync="items"
+      :loginType="loginData.level"
+      :bkPoint="bkPoint"
+      @clickSubmit="save"
+      @clickCancel="close"
+    />
   </v-card>
 </template>
 
 <script>
+import DialogCard from "@/components/DialogCard";
 export default {
   name: "detailPage",
+  components: { DialogCard },
   filter: {
     /**
      * 文字を切り捨てる [色んな所で使うので共通化するといいよ！]
@@ -135,53 +40,21 @@ export default {
     return {
       title: "台帳システム",
       text: "テキストは改行ありだとcssだけで対処しきれないのでtrancate関数を作って対応する",
-      url: "http://harima-isk:50001",
       detailData: { columns: [], rows: [] },
       items: {},
-      user: null,
-      loading: false,
-      level: -1,
-      hasSaved: false,
-      isEditing: null,
-      window: this.$root,
-      dialog: false,
-      location: "no",
       windowSize: {
         x: 0,
         y: 0,
       },
-      min: 0,
-      max: 80,
-      slider: 24,
-      iconSize: 0,
-      menus: [
-        { title: "home", icon: "mdi-home" },
-        { title: "currency", icon: "mdi-currency-cny" },
-        { title: "gift", icon: "mdi-gift" },
-        { title: "kaji", icon: "mdi-washing-machine" },
-      ],
+      dialogType: 0,
     };
   },
   computed: {
     loginData() {
       return this.$store.getters[`auth/login`];
     },
-    imageHeight() {
-      // 画面サイズに合わせた高さを返却します。
-      switch (this.$vuetify.breakpoint.name) {
-        case "xs":
-          return "220px";
-        case "sm":
-          return "400px";
-        case "md":
-          return "500px";
-        case "lg":
-          return "600px";
-        case "xl":
-          return "800px";
-        default:
-          return "600px";
-      }
+    url() {
+      return this.$store.getters[`backend/url`];
     },
     style() {
       return "height: " + this.windowSize.y * 0.8 + "px;";
@@ -294,27 +167,21 @@ export default {
         .get(url, body, option)
         .then((res) => {
           console.log("user", res.data);
-          this.detailData.columns = res.data.columns;
-          this.detailData.rows = res.data.rows;
           const rows = res.data.rows;
           for (const i in rows) {
             if (user == rows[i]["user_name"]) {
-              this.user = rows[i]["user_name"];
-              this.level = rows[i]["level"];
-              if (this.level >= 1) this.isEditing = true;
+              const level = rows[i]["level"];
+              if (level >= 1) this.dialogType = 1;
               break;
             }
           }
         })
         .catch((error) => {
           console.log(error);
-        })
-        .finally(() => {
-          this.loading = false;
         });
     },
     getLayerData(layer, content) {
-      const url = `http://harima-isk:50001/db/${layer}?${content}`;
+      const url = `${this.url}/db/${layer}?${content}`;
       const body = {};
       const option = {
         headers: {
@@ -359,7 +226,6 @@ export default {
     deleteRows() {},
   },
   mounted() {
-    console.log(this.imageHeight);
     this.onResize();
     //クエリパラメータがあれば
     let query = this.$route.query;

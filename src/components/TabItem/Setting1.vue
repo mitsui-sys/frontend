@@ -9,10 +9,10 @@
       />
       <v-card class="pa-5">
         <v-container fluid>
-          <v-row v-if="false">
+          <v-row v-if="true">
             <v-subheader>テーブル名</v-subheader>
             <v-autocomplete
-              v-model="selectedTable"
+              v-model="selectTable"
               :items="tableNameList"
               dense
               filled
@@ -29,13 +29,14 @@
               dense
               filled
             />
+            <v-btn @click="registerGetColumns">属性初期化</v-btn>
           </v-row>
           <v-row>
             <v-switch
               v-for="col in headers"
               :key="col.value"
               v-model="col.shown"
-              :label="`${col.text}`"
+              :label="`${col.text} : ${col.type}`"
               @change="changeTableShown"
             ></v-switch>
           </v-row>
@@ -50,13 +51,15 @@
 // import PasswordField from "@/components/TextField/PasswordField.vue";
 export default {
   name: "setting1",
+  props: ["bkPoint"],
   data() {
     return {
+      selectTable: "",
       selectedDisplay: "",
       development: false,
       tableItems: [],
-      selectedTable: "",
       displayItems: [],
+      headers: [],
     };
   },
   //   components: { UserField, PasswordField },
@@ -66,47 +69,6 @@ export default {
     },
     tableNameList() {
       return this.$store.getters[`table/tableNameList`];
-    },
-    bkPoint() {
-      // $vuetify.breakpointでブレークポイントを取得
-      const bkPt = this.$vuetify.breakpoint;
-      const point = {
-        name: bkPt.name,
-        cardHeight: 800,
-        cardWidth: 800,
-        cardMinHeight: 300,
-        cardMinWidth: 400,
-        btnWidth: 350,
-        btnHeight: 50,
-        titleModel: "h3",
-        model: "h5",
-      };
-      switch (bkPt.name) {
-        case "xl":
-        case "lg":
-        case "md":
-          point.cardHeight = 800;
-          point.cardWidth = 800;
-          point.btnWidth = 350;
-          point.btnHeight = 50;
-          point.titleModel = "h4";
-          point.model = "h6";
-          break;
-        case "sm":
-        case "xs":
-          point.cardHeight = 800;
-          point.cardWidth = 800;
-          // point.cardMinHeight = 400;
-          // point.cardMinWidth = 400;
-          point.btnWidth = 350;
-          point.btnHeight = 50;
-          point.titleModel = "h5";
-          point.model = "subtitle1";
-          break;
-        default:
-          break;
-      }
-      return point;
     },
   },
   methods: {
@@ -156,6 +118,29 @@ export default {
           }
           const json = JSON.parse(rows[0].display);
           this.headers = json;
+          console.log(json);
+        })
+        .catch((err) => {
+          console.log("失敗", err);
+        });
+    },
+    registerGetColumns() {
+      const table = this.selectedDisplay;
+      const url = `${this.url}/db/${table}`;
+      this.axios
+        .get(url)
+        .then((res) => {
+          console.log("成功", res);
+          const columns = res.data.columns;
+          let headers = [];
+          for (const i in columns) {
+            const c = columns[i];
+            const name = c.columnName;
+            const shown = c.shown;
+            const type = c.type;
+            headers.push({ text: name, value: name, shown: shown, type: type });
+          }
+          this.headers = Object.assign(headers);
         })
         .catch((err) => {
           console.log("失敗", err);
@@ -165,7 +150,7 @@ export default {
       const url = `${this.url}/display`;
       const data = {
         data: {
-          name: this.selectedTable,
+          name: this.selectTable,
           display: JSON.stringify(this.headers),
         },
       };
@@ -211,7 +196,7 @@ export default {
         });
     },
     deleteTableShown() {
-      const table = this.selectedTable;
+      const table = this.selectTable;
       const url = `${this.url}/display`;
       const data = {
         data: {

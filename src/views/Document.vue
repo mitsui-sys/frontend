@@ -1,107 +1,70 @@
 <template>
   <v-card class="mx-auto">
     <v-container fluid>
-      <v-row>
-        <v-toolbar>
-          <v-toolbar-title>{{ title }}</v-toolbar-title>
-          <v-divider class="mx-4" vertical></v-divider>
-          件数：{{ contents.length }}
-          <v-spacer />
-          <v-divider class="mx-4" vertical></v-divider>
-          <v-btn @click="open(-1)" outlined>新規登録</v-btn>
-          <v-btn @click="open(0)" :disabled="!selectItem.length > 0" outlined
-            >閲覧</v-btn
-          >
-
-          <v-btn @click="open(1)" :disabled="!selectItem.length > 0" outlined
-            >編集</v-btn
-          >
-          <v-btn @click="open(2)" :disabled="!selectItem.length > 0" outlined
-            >削除</v-btn
-          >
-          <v-divider class="mx-4" vertical></v-divider>
-          <v-btn
-            class="primary"
-            @click="download"
-            :disabled="!selectItem.length > 0"
-            outlined
-            >ダウンロード</v-btn
-          >
-          <v-dialog v-model="dialog" max-width="700px" scrorable>
-            <DialogCard
-              :dialogType="selectIndex"
-              :content="editItem"
-              :loginType="loginData"
-              @clickSubmit="save"
-              @clickCancel="close"
-            />
-          </v-dialog>
-          <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
-            <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
-            <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
-          </v-snackbar>
-        </v-toolbar>
-        <v-data-table
-          v-model="selectItem"
-          :headers="shownHeaders"
-          :items="contents"
-          class="document elevation-1 overflow-auto"
-          show-select
-          single-select
-          fixed-header
-          fixed-footer
-          height="300px"
-          width="400px"
-          :header-props="{
-            'sort-icon': '▼',
-          }"
-          :items-per-page="5"
-          hide-default-header
-        >
-          <template v-slot:header="{ props: { headers } }">
-            <thead>
-              <tr>
-                <th v-for="(h, index) in headers" :class="h.class" :key="index">
-                  <span :class="`text-${bkPoint.model}`">{{ h.text }}</span>
-                </th>
-              </tr>
-            </thead>
-          </template>
-          <template v-slot:item="{ item, isSelected, select }">
-            <tr
-              :class="[{ 'v-data-table__selected': isSelected }]"
-              @click="select(!isSelected)"
+      <v-card>
+        <v-row>
+          <v-toolbar>
+            <v-toolbar-title>{{ title }}</v-toolbar-title>
+            <v-divider class="mx-4" vertical></v-divider>
+            件数：{{ contents.length }}
+            <v-spacer />
+            <v-divider class="mx-4" vertical></v-divider>
+            <v-btn @click="open(-1)" outlined>新規登録</v-btn>
+            <v-btn @click="open(0)" :disabled="!select.length > 0" outlined
+              >閲覧</v-btn
             >
-              <td>
-                <v-simple-checkbox
-                  :value="isSelected"
-                  :ripple="false"
-                  @input="select($event)"
-                />
-              </td>
-              <td
-                v-for="header in shownHeaders"
-                :key="header.value"
-                :class="`text-${bkPoint.model}`"
-              >
-                {{ item[header.value] }}
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-row>
+
+            <v-btn @click="open(1)" :disabled="!select.length > 0" outlined
+              >編集</v-btn
+            >
+            <v-btn @click="open(2)" :disabled="!select.length > 0" outlined
+              >削除</v-btn
+            >
+            <v-divider class="mx-4" vertical></v-divider>
+            <v-btn
+              class="primary"
+              @click="download"
+              :disabled="!select.length > 0"
+              outlined
+              >ダウンロード</v-btn
+            >
+            <v-dialog v-model="dialog" max-width="700px" scrorable>
+              <DialogCard
+                :dialogType="selectIndex"
+                :content="editItem"
+                :loginType="loginData"
+                :bkPoint="bkPoint"
+                @clickSubmit="save"
+                @clickCancel="close"
+              />
+            </v-dialog>
+            <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
+              <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
+              <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
+            </v-snackbar>
+          </v-toolbar>
+          <MyTable
+            :headers="shownHeaders"
+            :items="contents"
+            :itemkey="table.itemkey"
+            :bkPoint="bkPoint"
+            @childChange="applyChanges"
+          />
+        </v-row>
+      </v-card>
     </v-container>
   </v-card>
 </template>
 <script>
 import DialogCard from "@/components/DialogCard";
+import MyTable from "@/components/DataTable/MyTable";
 import MyXlsx from "@/modules/myXlsx";
 
 import Moment from "moment";
 
 export default {
   name: "document",
-  components: { DialogCard },
+  components: { DialogCard, MyTable },
   data() {
     return {
       title: "埋蔵文化財発掘届出・通知書",
@@ -112,12 +75,17 @@ export default {
       },
       headers: [],
       contents: [],
+      itemkey: "書類番号",
+      table: {
+        header: this.shownHeaders,
+        items: this.contents,
+        itemkey: "id",
+      },
       selectIndex: -1,
-      selectItem: [],
+      select: [],
       editItem: [],
       originItem: [],
       defaultItem: [],
-      url: "http://harima-isk:50001",
       dialog: false,
       snackbar: false,
       snackbarText: "",
@@ -130,6 +98,9 @@ export default {
     },
   },
   computed: {
+    url() {
+      return this.$store.getters[`backend/url`];
+    },
     shownHeaders() {
       return this.headers.filter((x) => x.shown);
     },
@@ -179,6 +150,10 @@ export default {
     },
   },
   methods: {
+    applyChanges(select) {
+      // console.log("parentChange", select);
+      this.select = select;
+    },
     close() {
       this.dialog = false;
       this.$nextTick(() => {
@@ -226,11 +201,11 @@ export default {
       this.selectIndex = index;
 
       if (this.selectIndex != -1) {
-        if (this.selectItem.length <= 0) {
+        if (this.select.length <= 0) {
           alert("選択されていません");
           return;
         }
-        const item = this.selectItem[0];
+        const item = this.select[0];
 
         this.originItem = Object.assign(item);
         let edit = Object.assign(this.defaultItem);
@@ -248,7 +223,7 @@ export default {
       this.dialog = true;
     },
     download() {
-      if (this.selectItem.length <= 0) {
+      if (this.select.length <= 0) {
         alert("選択されていません");
         return;
       }
@@ -282,7 +257,7 @@ export default {
       //テーブル情報を読み込む
       let datas = [];
 
-      const content = this.selectItem;
+      const content = this.select;
       console.log(content);
       for (let i in content) {
         let data = Object.assign(assigns);
@@ -309,7 +284,7 @@ export default {
         .get(url)
         .then((res) => {
           //成功時
-          console.log("success", res.data);
+          // console.log("success", res.data);
           let columns = Object.assign(res.data.columns);
           let defaultItem = [];
           for (const i in columns) {
@@ -371,9 +346,13 @@ export default {
         .then((res) => {
           //成功時
           console.log("success", res.data);
+          this.snackbarText = "新規登録 成功";
+          this.snackbar = true;
         })
         .catch((err) => {
           console.log(err);
+          this.snackbarText = "新規登録 失敗";
+          this.snackbar = true;
         });
     },
     update(data) {
@@ -389,9 +368,13 @@ export default {
         .then((res) => {
           //成功時
           console.log("success", res.data);
+          this.snackbarText = "更新 成功";
+          this.snackbar = true;
         })
         .catch((err) => {
           console.log(err);
+          this.snackbarText = "更新 失敗";
+          this.snackbar = true;
         });
     },
     delete(data) {
@@ -407,9 +390,13 @@ export default {
         .then((res) => {
           //成功時
           console.log("success", res.data);
+          this.snackbarText = "削除 成功";
+          this.snackbar = true;
         })
         .catch((err) => {
           console.log(err);
+          this.snackbarText = "削除 失敗";
+          this.snackbar = true;
         });
     },
     reflesh() {

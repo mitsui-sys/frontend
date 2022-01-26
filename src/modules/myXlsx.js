@@ -128,8 +128,15 @@ const getTemplateWorkbook = (datas) => {
     .then((wb) => {
       // シート名の一覧を取得
       // console.log("Sheet Name", wb.sheets);
-      let copy = wb.sheet("Sheet1").usedRange();
-      console.log(copy.width, copy.height);
+      let copy = wb.sheet("Sheet1").usedRange().value();
+      console.log(copy);
+      const list = copy.reduce((pre, current) => {
+        pre.push(...current);
+        return pre;
+      }, []);
+      console.log(list);
+      const f = list.filter((x) => x !== undefined);
+      console.log(f);
 
       // resultというSheetを作成
       // resultシートが既にある場合エラーとなるので、存在した場合は削除し、新しく作成する
@@ -142,38 +149,6 @@ const getTemplateWorkbook = (datas) => {
       }
       // const newSheet = wb.sheet(newSheetName);
       const newSheet = wb.sheet("Sheet1");
-      //テンプレートへの書き込み
-      // let count = 0;
-      // for (let i in datas) {
-      //   // this.writeCell(newSheet, "A" + (count * 24 + 1), style);
-      //   let rangeStr = "A" + (count * 24 + 1) + ":C" + (count * 24 + 24);
-      //   let destRange = newSheet.range(rangeStr);
-      //   copyRanges(copy, destRange);
-      //   writeCell(newSheet, "A" + (count * 24 + 2), datas[i]);
-      //   count += 1;
-      // }
-      // const assigns = {
-      //   __date__: "令和4年1月14日",
-      //   __name__: "播磨太郎", // エクセル内の__name__という文字列を置換
-      //   __address__: "加古郡播磨町東本荘1丁目5番30番",
-      //   __doc_number__: 5,
-      //   __doc_date__: "令和  年  月  日",
-      //   __city_date__: "令和  年  月  日",
-      //   __place__: "加古郡播磨町大中1丁目1番2号",
-      //   __area__: "約500㎡",
-      //   __owner_name__: "播磨太郎",
-      //   __owner_address__: "加古郡播磨町東本荘1丁目5番30番",
-      //   __iseki_name__: "大中遺跡",
-      //   __work_content__: "木造2階建個人住宅",
-      //   __worker_name__: "播磨太郎",
-      //   __worker_address__: "加古郡播磨町東本荘1丁目5番30番",
-      //   __producter_name__: "未定",
-      //   __producter_address__: "",
-      //   __start__: "令和4年7月1日（予定）",
-      //   __end__: "令和4年12月末",
-      //   __option__: "",
-      // };
-      // console.log(assigns);
       for (const i in datas) {
         const d = datas[i];
         newSheet._rows.forEach((row) => {

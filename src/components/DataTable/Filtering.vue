@@ -13,16 +13,14 @@
           >台帳名</v-subheader
         >
         <v-autocomplete
-          v-model="selectedName"
-          class="flex-col mr-3"
-          :items="displayItems"
-          :search-input.sync="search"
+          v-model="select"
+          :items="tables"
+          :class="`text-${bkPoint.model}`"
           outlined
           label="選択"
-          :class="`text-${bkPoint.model}`"
         ></v-autocomplete>
         <v-btn
-          @click="submit"
+          @click="onSubmit"
           class="flex-col mb-9 mr-1"
           :class="`text-${bkPoint.model}`"
           >検索</v-btn
@@ -34,7 +32,7 @@
           >条件追加</v-btn
         >
         <v-btn
-          @click="initialize"
+          @click="onClear"
           class="flex-col mb-9 mr-1"
           :class="`text-${bkPoint.model}`"
           >クリア</v-btn
@@ -83,10 +81,35 @@
 <script>
 export default {
   name: "filterling",
+  prop: ["bkPoint", "tables", "items"],
   data() {
     return {
       title: "",
+      select: "",
+      queryCondition: [],
     };
+  },
+  computed: {
+    columns() {
+      return this.items[this.select];
+    },
+  },
+  methods: {
+    addInput() {
+      this.queryCondition.push({ text: "", rule: "", value: "" }); // 配列に１つ空データを追加する
+    },
+    // ボタンをクリックしたときのイベント ③
+    removeInput(index) {
+      this.queryCondition.splice(index, 1); // 👈 該当するデータを削除
+    },
+    onSearch() {
+      this.$emit("search");
+    },
+    onClear() {
+      this.selectedName = "";
+      this.queryCondition = [];
+      this.$emit("clear");
+    },
   },
 };
 </script>

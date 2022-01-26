@@ -59,6 +59,8 @@
                 <v-dialog v-model="filedialog" max-width="700px" scrorable>
                   <DialogCardFile
                     :param.sync="content[index].value"
+                    :dataType="2"
+                    :filepath="content[index].value"
                     @clickSubmit="onSubmit"
                     @clickCancel="onCancel"
                   />
@@ -109,7 +111,7 @@ import DialogCardFile from "@/components/DialogCardFile";
 export default {
   name: "DialogCard",
   components: { DialogCardFile },
-  props: ["dialogType", "content", "loginType", "dialog"],
+  props: ["dialogType", "content", "loginType", "dialog", "bkPoint"],
   data() {
     return {
       pathname: "ファイルパス",
@@ -120,6 +122,7 @@ export default {
       checkJP: false,
       valid: false,
       singleSelect: false,
+      fileType: 2,
       date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
         .toISOString()
         .substr(0, 10),
@@ -160,7 +163,11 @@ export default {
       inputType: "",
     };
   },
-
+  watch: {
+    filedialog: (v) => {
+      console.log(v);
+    },
+  },
   computed: {
     dialogTitle() {
       const type = this.dialogType;
@@ -190,64 +197,11 @@ export default {
       const type = this.dialogType;
       return type !== 0 && type !== 2;
     },
-    bkPoint() {
-      // $vuetify.breakpointでブレークポイントを取得
-      const bkPt = this.$vuetify.breakpoint;
-      const point = {
-        name: bkPt.name,
-        minHeight: 200,
-        titleModel: "",
-        model: "h6",
-        btnWidth: 350,
-        btnHeight: 50,
-      };
-      switch (bkPt.name) {
-        case "xl":
-          point.minHeight = 200;
-          point.titleModel = "h3";
-          point.model = "h5";
-          point.btnWidth = 600;
-          point.btnHeight = 150;
-          break;
-        case "lg":
-          point.minHeight = 200;
-          point.titleModel = "h4";
-          point.model = "h5";
-          point.btnWidth = 500;
-          point.btnHeight = 100;
-          break;
-        case "md":
-          point.minHeight = 200;
-          point.titleModel = "h6";
-          point.model = "subtitle-1";
-          point.btnWidth = 325;
-          point.btnHeight = 50;
-          break;
-        case "sm":
-          point.minHeight = 200;
-          point.titleModel = "subtitle-2";
-          point.model = "body-1";
-          point.btnWidth = 275;
-          point.btnHeight = 40;
-          break;
-        case "xs":
-          point.minHeight = 200;
-          point.titleModel = "body-2";
-          point.model = "button";
-          point.btnWidth = 250;
-          point.btnHeight = 30;
-          break;
-        default:
-          break;
-      }
-      return point;
-    },
   },
   methods: {
     onSubmit(params) {
       this.filedialog = false;
       this.filepath = params.filepath;
-      console.log(this.returnData.content);
     },
     onCancel() {
       this.filedialog = false;
@@ -267,7 +221,7 @@ export default {
     },
     //親コンポーネントへ送信
     submit() {
-      this.$emit("clickSubmit", this.returnData);
+      this.$emit("clickSubmit", this.content);
     },
     cancel() {
       this.$emit("clickCancel");

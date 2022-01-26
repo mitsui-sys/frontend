@@ -409,46 +409,6 @@ export default {
 .resizable-column /deep/ th + th {
   border-left: 1px solid grey;
 }
-.userlog.v-data-table th {
-  background: #55cc55 !important;
-  border: 1px solid;
-}
-.userlog.v-data-table tr.v-data-table__selected td {
-  background: #aadaff;
-}
-
-.userlog.v-data-table tr:hover td {
-  background: #aafcff;
-}
-
-.userdata.v-data-table th {
-  background: #cccc55 !important;
-  border: 1px solid;
-}
-.userdata.v-data-table tr.v-data-table__selected td {
-  background: #aadaff;
-}
-
-.userdata.v-data-table tr:hover td {
-  background: #aafcff;
-}
-
-.document.v-data-table th {
-  background: #55cc55 !important;
-  border: 1px solid;
-}
-.document.v-data-table tr.v-data-table__selected td {
-  background: #aadaff;
-}
-
-.document.v-data-table tr:hover td {
-  background: #aafcff;
-}
-
-.document.v-data-table td {
-  background: #dddddd;
-  border: 1px solid;
-}
 
 .drop_area {
   color: gray;

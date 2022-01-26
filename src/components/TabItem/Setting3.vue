@@ -2,30 +2,31 @@
   <v-card color="#fff">
     <v-toolbar> ログ </v-toolbar>
     <v-card-text>
-      <v-data-table
+      <MyTable
         :headers="log.headers"
         :items="log.items"
-        class="elevation-1 overflow-auto"
-        show-select
-        single-select
-        fixed-header
-        fixed-footer
-        height="300px"
-      >
-      </v-data-table>
+        :itemkey="log.itemkey"
+        :bkPoint="bkPoint"
+        @childChange="applyChanges"
+      />
     </v-card-text>
   </v-card>
 </template>
 
 <script>
 // import Moment from "moment";
+import MyTable from "@/components/DataTable/MyTable";
 export default {
-  name: "setting3",
+  name: "setting2",
+  components: { MyTable },
+  props: ["bkPoint"],
   data() {
     return {
+      select: [],
       log: {
         headers: [],
         items: [],
+        itemkey: "id",
       },
     };
   },
@@ -35,6 +36,10 @@ export default {
     },
   },
   methods: {
+    applyChanges(select) {
+      // console.log("parentChange", select);
+      this.select = select;
+    },
     getLogData() {
       const url = `${this.url}/system/log`;
       this.loading = true;

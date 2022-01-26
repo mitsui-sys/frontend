@@ -5,13 +5,13 @@
       <v-tab>ユーザー設定</v-tab>
       <v-tab>ログ設定</v-tab>
       <v-tab-item>
-        <Setting1 />
+        <Setting1 :bkPoint="bkPoint" />
       </v-tab-item>
       <v-tab-item>
-        <Setting2 />
+        <Setting2 :bkPoint="bkPoint" />
       </v-tab-item>
       <v-tab-item>
-        <Setting3 />
+        <Setting3 :bkPoint="bkPoint" />
       </v-tab-item>
     </v-tabs>
   </v-card>

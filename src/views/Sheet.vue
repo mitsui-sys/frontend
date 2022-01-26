@@ -101,7 +101,7 @@
 
           <v-btn
             @click="registerItem()"
-            v-if="selected.length > 0 && loginData.level >= 1"
+            v-if="select.length > 0 && loginData.level >= 1"
             :class="`text-${bkPoint.model}`"
           >
             地図連携
@@ -109,7 +109,7 @@
           <!--
           <v-btn
             @click="registerItem()"
-            v-if="selected.length > 0 && loginData.level >= 1"
+            v-if="select.length > 0 && loginData.level >= 1"
           >
             ジオメトリ削除
           </v-btn>
@@ -124,21 +124,21 @@
           </v-btn>
           <v-btn
             @click="editItem(0)"
-            v-if="selected.length > 0"
+            v-if="select.length > 0"
             :class="`text-${bkPoint.model}`"
           >
             閲覧
           </v-btn>
           <v-btn
             @click="editItem(1)"
-            v-if="selected.length > 0 && loginData.level >= 1"
+            v-if="select.length > 0 && loginData.level >= 1"
             :class="`text-${bkPoint.model}`"
           >
             編集
           </v-btn>
           <v-btn
             @click="editItem(2)"
-            v-if="selected.length > 0 && loginData.level >= 1"
+            v-if="select.length > 0 && loginData.level >= 1"
             :class="`text-${bkPoint.model}`"
           >
             削除
@@ -149,6 +149,7 @@
               :dialogType="editedIndex"
               :content.sync="editedItem"
               :loginType="loginData.level"
+              :bkPoint="bkPoint"
               @clickSubmit="save"
               @clickCancel="close"
             />
@@ -158,71 +159,23 @@
             <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
           </v-snackbar>
         </v-toolbar>
-        <v-data-table
-          v-model="selected"
+        <MyTable
           :headers="shownHeaders"
           :items="tblContents"
-          :page.sync="page"
-          :items-per-page="25"
-          :footer-props="{ itemsPerPageOptions: [5, 25, 50, 100] }"
-          item-key="gid"
-          show-select
-          single-select
-          @page-count="pageCount = $event"
-          @click:row="clickRow"
-          class="display elevation-1 overflow-auto"
-          fixed-header
-          fixed-footer
-          height="400px"
-          :header-props="{
-            'sort-icon': '▼',
-          }"
-          hide-default-header
-        >
-          <template v-slot:header="{ props: { headers } }">
-            <thead>
-              <tr>
-                <th v-for="(h, index) in headers" :class="h.class" :key="index">
-                  <span :class="`text-${bkPoint.model}`">{{ h.text }}</span>
-                  <v-btn v-if="h.text != ''" icon
-                    ><v-icon>mdi-arrow-up</v-icon></v-btn
-                  >
-                </th>
-              </tr>
-            </thead>
-          </template>
-
-          <template v-slot:item="{ item, isSelected, select }">
-            <tr
-              :class="[{ 'v-data-table__selected': isSelected }]"
-              @click="select(!isSelected)"
-            >
-              <td>
-                <v-simple-checkbox
-                  :value="isSelected"
-                  :ripple="false"
-                  @input="select($event)"
-                />
-              </td>
-              <td
-                v-for="header in shownHeaders"
-                :key="header.value"
-                :class="`text-${bkPoint.model}`"
-              >
-                {{ item[header.value] }}
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-        <v-pagination
-          dense
-          v-model="page"
-          :length="pageCount"
-          :total-visible="7"
-          :class="`text-${bkPoint.model}`"
-        ></v-pagination>
+          :itemkey="itemkey"
+          :bkPoint="bkPoint"
+          @childChange="applyChanges"
+        />
+        <v-dialog v-model="filedialog" max-width="700px" scrorable>
+          <DialogCardFile
+            :filepath="filepath"
+            :dataType="0"
+            :download="true"
+            @clickSubmit="filedialog = false"
+            @clickCancel="filedialog = false"
+          />
+        </v-dialog>
       </v-card>
-      <br />
     </v-container>
   </v-card>
 </template>
@@ -230,13 +183,17 @@
 <script>
 import MyXlsx from "@/modules/myXlsx";
 import DialogCard from "@/components/DialogCard";
+import DialogCardFile from "@/components/DialogCardFile";
+import MyTable from "@/components/DataTable/MyTable";
+// import Filtering from "@/components/DataTable/Filtering";
 import Moment from "moment";
 
 export default {
   name: "Sheet",
-  components: { DialogCard },
+  components: { DialogCard, MyTable, DialogCardFile },
   data() {
     return {
+      itemkey: "gid",
       displayItems: [],
       tblHeaders: [],
       tblContents: [],
@@ -245,6 +202,8 @@ export default {
       snackbarText: "成功",
       snackbarColor: "green",
       timeout: 1000,
+      filedialog: false,
+      filepath: "",
       isEditing: false,
       editedIndex: -1,
       dateRule: /^[0-9]{4}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/,
@@ -253,7 +212,7 @@ export default {
       fileDialogPath: "",
       dialog: false,
       selectedName: "",
-      selected: [],
+      select: [],
       selectedId: -1,
       valid: false,
       singleSelect: true,
@@ -283,7 +242,7 @@ export default {
 
       this.isLoading = true;
       if (val == null) return;
-      let url = `${this.backend_url}/columns/${val}`;
+      let url = `${this.url}/columns/${val}`;
       let cond = {};
       let option = {
         headers: {
@@ -323,7 +282,7 @@ export default {
       const point = {
         name: bkPt.name,
         minHeight: 200,
-        titleModel: "",
+        titleModel: "h3",
         model: "h6",
         btnWidth: 350,
         btnHeight: 50,
@@ -372,56 +331,7 @@ export default {
     loginData() {
       return this.$store.getters[`auth/login`];
     },
-    host() {
-      return this.$store.getters[`table/host`];
-    },
-    port() {
-      return this.$store.getters[`table/port`];
-    },
-    user() {
-      return this.$store.getters[`table/user`];
-    },
-    password() {
-      return this.$store.getters[`table/password`];
-    },
-    tableName() {
-      return this.$store.getters[`table/tableName`];
-    },
-    tableNameList() {
-      return this.$store.getters[`table/tableNameList`];
-    },
-    // tblHeaders() {
-    //   return this.isShown
-    //     ? this.$store.getters[`table/shownHeaders`]
-    //     : this.$store.getters[`table/header`];
-    // },
-    // shownHeaders() {
-    //   return this.$store.getters[`table/shownHeaders`];
-    // },
-    // tblContents() {
-    //   // return this.$store.getters[`table/content`];
-    //   //1214 idを
-    //   return this.$store.getters[`table/content`].map((item, index) => ({
-    //     unique_id: index,
-    //     ...item,
-    //   }));
-    // },
-    db_ip() {
-      return this.$store.getters[`db/ip`];
-    },
-    db_port() {
-      return this.$store.getters[`db/port`];
-    },
-    db_ipaddress() {
-      return this.$store.getters[`db/ipaddress`];
-    },
-    backend_ip() {
-      return this.$store.getters[`backend/ip`];
-    },
-    backend_port() {
-      return this.$store.getters[`backend/port`];
-    },
-    backend_url() {
+    url() {
       return this.$store.getters[`backend/url`];
     },
     updateEditedItem() {
@@ -436,9 +346,9 @@ export default {
         data[text] = value;
       }
 
-      let selected = Object.assign(this.selected[0]);
-      for (let key in selected) {
-        if (data[key] == selected[key]) {
+      let select = Object.assign(this.select[0]);
+      for (let key in select) {
+        if (data[key] == select[key]) {
           delete data[key];
         }
       }
@@ -464,6 +374,10 @@ export default {
     },
   },
   methods: {
+    applyChanges(select) {
+      // console.log("parentChange", select);
+      this.select = select;
+    },
     onSubmit(path) {
       console.log("onSubmit", path);
       this.dialog = false;
@@ -475,7 +389,7 @@ export default {
       this.selectedName = "";
       this.queryCondition = [];
       this.tblContents = [];
-      const url = `${this.backend_url}/display`;
+      const url = `${this.url}/display`;
       console.log("get all display", url);
       this.axios
         .get(url)
@@ -491,10 +405,6 @@ export default {
         .catch((err) => {
           console.log(err);
         });
-    },
-    fileClose() {},
-    logout() {
-      this.$store.dispatch("auth/destoroy");
     },
     formatToDateString() {
       // 空文字の場合、変換しない
@@ -515,7 +425,7 @@ export default {
       this.isEdit = false;
     },
     clickRow() {
-      console.log(this.selected);
+      console.log(this.select);
     },
     createItem() {
       this.isEditing = true;
@@ -524,11 +434,11 @@ export default {
       this.dialog = true;
     },
     registerItem() {
-      // let url = `${this.backend_url}/db/${this.selectedName}`;
-      const url = `${this.backend_url}/system/search/register`;
+      // let url = `${this.url}/db/${this.selectedName}`;
+      const url = `${this.url}/system/search/register`;
       const layer = this.selectedName;
-      const selected = this.selected;
-      if (selected == "") {
+      const select = this.select;
+      if (select == "") {
         alert("テーブル名が選択されていません");
         return;
       }
@@ -538,8 +448,8 @@ export default {
         },
       };
       let rows = [];
-      for (const i in selected) {
-        const num = selected[i]["番号"];
+      for (const i in select) {
+        const num = select[i]["番号"];
         // rows.push({ user_name: this.loginData.name, layer: layer, id: num });
         rows.push(`${layer}:${num}`);
       }
@@ -562,12 +472,12 @@ export default {
     editItem(id = 0) {
       this.editedIndex = id;
       this.isEditing = id == 1;
-      let selected = this.selected;
-      if (selected.length <= 0) {
+      let select = this.select;
+      if (select.length <= 0) {
         return;
       }
 
-      const selected1 = Object.assign(selected[0]);
+      const selected1 = Object.assign(select[0]);
 
       this.editedNumber = selected1["番号"];
       const data = Object.assign(this.defaultItem);
@@ -592,13 +502,17 @@ export default {
       });
     },
     save(params) {
-      const content = params.content || [];
       const index = this.editedIndex;
-      console.log("ダイアログ処理", content, index);
       if (index == 0) {
         console.log("pdfを開く");
-        let filepath = "resources/test.pdf";
-        window.open(filepath);
+        const filepaths = params.filter((x) => x.text == "ファイルパス");
+        const filepath = filepaths[0].value || "付属図書";
+        this.filepath = filepath;
+
+        console.log("ファイルパス", this.filepath, params);
+        this.filedialog = true;
+        // let filepath = "resources/test.pdf";
+        // window.open(filepath);
       } else {
         if (index == 1) {
           this.updateRows();
@@ -621,7 +535,7 @@ export default {
       this.queryCondition.splice(index, 1); // 👈 該当するデータを削除
     },
     registerLog(action, content) {
-      let url = `${this.backend_url}/system/log/register`;
+      let url = `${this.url}/system/log/register`;
       let now = Moment().format("YYYY/MM/DD HH:mm:ss dddd");
       let cond = {
         data: {
@@ -675,7 +589,7 @@ export default {
       }
       let content = contents.join("&");
 
-      let url = `${this.backend_url}/db/${name}?${content}`;
+      let url = `${this.url}/db/${name}?${content}`;
       let body = {};
       let option = {
         headers: {
@@ -703,7 +617,7 @@ export default {
       this.registerLog("表示", `${this.selectedName}?${content}`);
     },
     insertRows() {
-      let url = `${this.backend_url}/db/${this.selectedName}`;
+      let url = `${this.url}/db/${this.selectedName}`;
       let cond = this.insertEditedItem;
       let option = {
         headers: {
@@ -727,7 +641,7 @@ export default {
       this.registerLog("追加", `${this.selectedName}?${this.insertEditedItem}`);
     },
     updateRows() {
-      let url = `${this.backend_url}/db/${this.selectedName}`;
+      let url = `${this.url}/db/${this.selectedName}`;
       let cond = {
         data: {
           key: "番号",
@@ -757,8 +671,8 @@ export default {
       this.registerLog("更新", `${this.selectedName}?${this.updateEditedItem}`);
     },
     deleteRows() {
-      let url = `${this.backend_url}/db/${this.selectedName}`;
-      let cond = { data: { deleteKey: "番号", selectedItem: this.selected } };
+      let url = `${this.url}/db/${this.selectedName}`;
+      let cond = { data: { deleteKey: "番号", selectedItem: this.select } };
       let option = {
         headers: {
           "Content-Type": "application/json",
@@ -810,7 +724,7 @@ export default {
 
       //テーブル情報を読み込む
       let datas = [];
-      const content = this.selected;
+      const content = this.select;
       for (let i in content) {
         let data = Object.assign(assigns);
         const rowC = content[i];
@@ -824,116 +738,6 @@ export default {
         datas.push(data);
       }
       MyXlsx.getTemplateWorkbook(datas);
-    },
-    //テーブル幅設定
-    // このページのテーブルというテーブル全てリサイズ可にする
-    getResizableTable() {
-      var tables = document.getElementsByTagName("table");
-      for (var i = 0; i < tables.length; i++) {
-        this.resizableGrid(tables[i]);
-      }
-    },
-
-    // テーブルごとにリサイズ用の設定を追加
-    resizableGrid(table) {
-      var row = table.getElementsByTagName("tr")[0],
-        cols = row ? row.children : undefined;
-      if (!cols) return;
-
-      table.style.overflow = "hidden";
-
-      var tableHeight = table.offsetHeight;
-
-      // テーブルのカラムとカラムの間にドラッグできるdivを挿入
-      for (var i = 0; i < cols.length; i++) {
-        var div = createDiv(tableHeight);
-        cols[i].appendChild(div);
-        cols[i].style.position = "relative";
-        setListeners(div);
-      }
-
-      // 挿入したdivとdocument全体にイベントリスナーを付与
-      function setListeners(div) {
-        var pageX, curCol, nxtCol, curColWidth, nxtColWidth;
-
-        /* <div> */
-        // マウス押下時
-        div.addEventListener("mousedown", (e) => {
-          curCol = e.target.parentElement;
-          nxtCol = curCol.nextElementSibling;
-          pageX = e.pageX;
-
-          var padding = paddingDiff(curCol);
-
-          curColWidth = curCol.offsetWidth - padding;
-          if (nxtCol) nxtColWidth = nxtCol.offsetWidth - padding;
-        });
-
-        // マウスホバー時
-        div.addEventListener("mouseover", (e) => {
-          e.target.style.borderRight = "2px solid #0000ff";
-        });
-
-        // マウスホバー解除時
-        div.addEventListener("mouseout", (e) => {
-          e.target.style.borderRight = "";
-        });
-
-        /* document */
-        // マウスカーソル移動時
-        document.addEventListener("mousemove", (e) => {
-          if (curCol) {
-            var diffX = e.pageX - pageX;
-
-            if (nxtCol) nxtCol.style.width = nxtColWidth - diffX + "px";
-
-            curCol.style.width = curColWidth + diffX + "px";
-          }
-        });
-
-        // バブリング抑止
-        div.addEventListener("click", function (e) {
-          e.stopPropagation();
-        });
-
-        // マウス押下解除時
-        document.addEventListener("mouseup", (e) => {
-          console.log(e);
-          curCol = undefined;
-          nxtCol = undefined;
-          pageX = undefined;
-          nxtColWidth = undefined;
-          curColWidth = undefined;
-        });
-      }
-
-      // リサイズ用divの実体を作成
-      function createDiv(height) {
-        var div = document.createElement("div");
-        div.style.top = 0;
-        div.style.right = 0;
-        div.style.width = "5px";
-        div.style.position = "absolute";
-        div.style.cursor = "col-resize";
-        div.style.userSelect = "none";
-        div.style.height = height + "px";
-        return div;
-      }
-
-      // この辺はよくわからん
-      function paddingDiff(col) {
-        if (getStyleVal(col, "box-sizing") == "border-box") {
-          return 0;
-        }
-
-        var padLeft = getStyleVal(col, "padding-left");
-        var padRight = getStyleVal(col, "padding-right");
-        return parseInt(padLeft) + parseInt(padRight);
-      }
-
-      function getStyleVal(elm, css) {
-        return window.getComputedStyle(elm, null).getPropertyValue(css);
-      }
     },
   },
   async mounted() {

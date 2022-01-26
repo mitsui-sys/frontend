@@ -8,10 +8,12 @@
     <v-container block>
       <v-row justify="center">
         <v-col cols="1">
-          <v-btn icon @click="moveUpDir"><v-icon>mdi-arrow-up</v-icon></v-btn>
+          <v-btn icon @click="moveUpDir" :disabled="downloadType"
+            ><v-icon>mdi-arrow-up</v-icon></v-btn
+          >
         </v-col>
         <v-col cols="1"
-          ><v-btn icon @click="reflesh"
+          ><v-btn icon @click="reflesh" :disabled="downloadType"
             ><v-icon>mdi-refresh</v-icon></v-btn
           ></v-col
         >
@@ -20,6 +22,7 @@
             v-model="dirpath"
             hide-details
             outlined
+            disabled
             :class="`text-${bkPoint.model}`"
         /></v-col>
       </v-row>
@@ -29,7 +32,11 @@
       <v-container>
         <v-row>
           <v-col cols="12" style="height: 400px" class="overflow-auto">
-            <v-list flat subheader v-if="dirs.length > 0">
+            <v-list
+              flat
+              subheader
+              v-if="dirs.length > 0 && displayDataType != 1"
+            >
               <v-subheader :class="`text-${bkPoint.model}`"
                 >フォルダ</v-subheader
               >
@@ -52,7 +59,12 @@
               </v-list-item-group>
             </v-list>
             <v-divider v-if="dirs.length > 0 && files.length > 0" />
-            <v-list flat subheader two-line v-if="files.length > 0">
+            <v-list
+              flat
+              subheader
+              two-line
+              v-if="files.length > 0 && displayDataType != 2"
+            >
               <v-list-item-group v-model="fileId">
                 <v-subheader :class="`text-${bkPoint.model}`"
                   >ファイル</v-subheader
@@ -97,11 +109,11 @@
     <v-divider></v-divider>
     <v-card-actions>
       <v-container>
-        <v-row>
-          <v-col cols="4">
-            <v-subheader :class="`text-${bkPoint.model}`"
-              >ファイル名</v-subheader
-            >
+        <v-row v-if="!downloadType">
+          <v-col cols="2">
+            <v-subheader :class="`text-${bkPoint.model}`">{{
+              selectedHeader
+            }}</v-subheader>
           </v-col>
           <v-col>
             <v-text-field
@@ -119,6 +131,7 @@
             text
             @click="submit"
             :class="`text-${bkPoint.model}`"
+            v-if="!downloadType"
           >
             {{ dialogYesText }}
           </v-btn>
@@ -140,18 +153,20 @@
 <script>
 export default {
   name: "DialogCardFile",
-  props: ["filepath"],
+  props: ["filepath", "dataType", "download"],
   data() {
     return {
       isNew: false,
       columns: [],
       defaultDir: "付属図書",
       selectDir: "付属図書",
+      selectedHeader: "選択",
       selectedPath: "",
       dialogYesText: "選択",
       dialogNoText: "キャンセル",
-      // url: "http://harima-isk:50001",
+      dirpath: "",
       dirs: [],
+      currentDirs: [],
       files: [],
 
       file: [],
@@ -165,6 +180,8 @@ export default {
         { text: "Audience", icon: "mdi-account" },
         { text: "Conversions", icon: "mdi-flag" },
       ],
+      displayDataType: this.dataType || 0,
+      downloadType: this.download || false,
     };
   },
   computed: {
@@ -230,11 +247,15 @@ export default {
       this.getFilePath(dir);
     },
     clickDirectory(dir) {
-      this.selectDir = Object.assign(dir);
       this.getFilePath(dir);
+      this.selectedPath = dir;
+      this.selectDir = dir;
     },
     clickFile(file) {
       this.selectedPath = Object.assign(file);
+      if (this.downloadType) {
+        this.getFile(file);
+      }
     },
     submit() {
       this.$emit("update:param", this.selectedPath);
@@ -244,14 +265,17 @@ export default {
       this.$emit("clickCancel");
     },
     moveUpDir() {
-      console.log(this.selectDir, this.defaultDir);
-      if (this.selectDir == this.defaultDir) return;
+      if (this.selectDir == this.defaultDir) {
+        console.log("ルートディレクトリです");
+        return;
+      }
       const dir = this.selectDir
         .split("/")
         .reverse()
         .slice(1)
         .reverse()
         .join("/");
+      this.selectDir = dir;
       this.getFilePath(dir);
     },
     async getFile(filepath) {
@@ -287,14 +311,22 @@ export default {
     },
     getFilePath(dir) {
       const url = `${this.url}/upload?path=${dir}/*`;
-      this.dirpath = Object.assign(dir);
+
       // ファイルをアップロードします。
       this.axios
         .get(url)
         .then((res) => {
           // 成功した場合
-          this.dirs = res.data.dirs;
-          this.files = res.data.files;
+          const dirs = res.data.dirs;
+          const files = res.data.files;
+          this.currentDirs = dirs;
+          if (this.displayDataType == 2 && dirs.length <= 0) {
+            console.log("フォルダは存在しません");
+            return;
+          }
+          this.dirs = dirs;
+          this.files = files;
+          this.dirpath = dir;
         })
         .catch((e) => {
           // エラーの場合
@@ -370,7 +402,12 @@ export default {
     },
   },
   created() {
-    this.getFilePath(this.defaultDir);
+    if (this.downloadType) {
+      console.log(this.filepath);
+      this.getFilePath(this.filepath);
+    } else {
+      this.getFilePath(this.defaultDir);
+    }
   },
 };
 </script>
