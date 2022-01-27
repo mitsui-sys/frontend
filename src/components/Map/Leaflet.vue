@@ -1,7 +1,5 @@
 <template>
-  <v-card width="400px">
-    <div id="mapid"></div>
-  </v-card>
+  <div id="mapid" style="height: 600px"></div>
 </template>
 
 <script>

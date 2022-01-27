@@ -10,18 +10,20 @@
             {{ title }}
           </v-card-title>
           <v-card-text>
-            <v-row v-for="(item, index) in items" :key="index">
-              <v-col>
-                <v-btn
-                  :color="item.color"
-                  @click="setKind(item)"
-                  :width="bkPoint.btnWidth"
-                  :height="bkPoint.btnHeight"
-                  :class="`text-${bkPoint.model}`"
-                  >{{ item.text }}</v-btn
-                >
-              </v-col>
-            </v-row>
+            <v-container>
+              <v-row>
+                <v-col v-for="(item, index) in items" :key="index" cols="12">
+                  <v-btn
+                    :color="item.color"
+                    @click="setKind(item)"
+                    :width="bkPoint.btnWidth"
+                    :height="bkPoint.btnHeight"
+                    :class="`text-${bkPoint.model}`"
+                    >{{ item.text }}</v-btn
+                  >
+                </v-col>
+              </v-row>
+            </v-container>
           </v-card-text>
         </v-card>
       </v-col>

@@ -58,7 +58,6 @@
                 >
                 <v-dialog v-model="filedialog" max-width="700px" scrorable>
                   <DialogCardFile
-                    :param.sync="content[index].value"
                     :dataType="2"
                     :filepath="content[index].value"
                     @clickSubmit="onSubmit"

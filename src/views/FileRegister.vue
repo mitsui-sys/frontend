@@ -143,7 +143,7 @@ export default {
       console.log(event.dataTransfer.files);
       this.uploadfiles = [...event.dataTransfer.files];
 
-      const url = `${this.url}/upload`;
+      const url = `http://localhost:8000/data/upload`;
       this.uploadfiles.forEach((file) => {
         console.log(file);
         let form = new FormData();
@@ -156,7 +156,16 @@ export default {
         this.axios
           .post(url, form, option)
           .then((response) => {
-            console.log(response.data);
+            console.log("success", response);
+            const blob = new Blob([response.data]);
+            const fileURL = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = fileURL;
+            const filepath = "test.pdf";
+            const filename = filepath.split("/").reverse()[0];
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
           })
           .catch((error) => {
             console.log(error);

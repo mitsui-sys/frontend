@@ -14,6 +14,12 @@
         <Setting3 :bkPoint="bkPoint" />
       </v-tab-item>
     </v-tabs>
+    <!----------------
+    <v-btn @click="dialog = true">プレビュー表示</v-btn>
+    <v-dialog v-model="dialog" max-width="700px">
+      <PDF :path="filepath" />
+    </v-dialog>
+    -->
   </v-card>
 </template>
 
@@ -21,12 +27,14 @@
 import Setting1 from "@/components/TabItem/Setting1";
 import Setting2 from "@/components/TabItem/Setting2";
 import Setting3 from "@/components/TabItem/Setting3";
+// import PDF from "@/components/PDF/PDF";
 export default {
   name: "Setting",
   components: { Setting1, Setting2, Setting3 },
   data() {
     return {
-      url: "http://harima-isk:50001",
+      dialog: false,
+      filepath: "resources/台帳システム進捗_第5回.pdf",
     };
   },
   computed: {
