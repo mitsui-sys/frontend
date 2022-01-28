@@ -99,7 +99,7 @@
 <script>
 // ライブラリを使用します。
 import FormData from "form-data";
-import DialogCardFile from "@/components/DialogCardFile";
+import DialogCardFile from "@/components/Card/CardFile";
 
 export default {
   name: "FileRegister",

@@ -2,68 +2,68 @@
   <v-card class="mx-auto">
     <v-container fluid>
       <v-card>
-        <v-row>
-          <v-toolbar>
-            <v-toolbar-title>{{ title }}</v-toolbar-title>
-            <v-divider class="mx-4" vertical></v-divider>
-            件数：{{ contents.length }}
-            <v-spacer />
-            <v-divider class="mx-4" vertical></v-divider>
-            <v-btn @click="open(-1)" outlined>新規登録</v-btn>
-            <v-btn @click="open(0)" :disabled="!select.length > 0" outlined
-              >閲覧</v-btn
-            >
+        <v-toolbar>
+          <v-toolbar-title>{{ title }}</v-toolbar-title>
+          <v-divider class="mx-4" vertical></v-divider>
+          件数：{{ contents.length }}
+          <v-spacer />
+          <v-divider class="mx-4" vertical></v-divider>
+          <v-btn @click="open(-1)" outlined>新規登録</v-btn>
+          <v-btn @click="open(0)" :disabled="!select.length > 0" outlined
+            >閲覧</v-btn
+          >
 
-            <v-btn @click="open(1)" :disabled="!select.length > 0" outlined
-              >編集</v-btn
-            >
-            <v-btn @click="open(2)" :disabled="!select.length > 0" outlined
-              >削除</v-btn
-            >
-            <v-divider class="mx-4" vertical></v-divider>
-            <v-btn
-              class="primary"
-              @click="download"
-              :disabled="!select.length > 0"
-              outlined
-              >ダウンロード</v-btn
-            >
-            <v-dialog v-model="dialog" max-width="700px" scrorable>
-              <DialogCard
-                :dialogType="selectIndex"
-                :content="editItem"
-                :loginType="loginData"
-                :bkPoint="bkPoint"
-                @clickSubmit="save"
-                @clickCancel="close"
-              />
-            </v-dialog>
-            <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
-              <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
-              <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
-            </v-snackbar>
-          </v-toolbar>
-          <MyTable
-            :headers="shownHeaders"
-            :items="contents"
-            :itemkey="table.itemkey"
-            :bkPoint="bkPoint"
-            @childChange="applyChanges"
-          />
-        </v-row>
+          <v-btn @click="open(1)" :disabled="!select.length > 0" outlined
+            >編集</v-btn
+          >
+          <v-btn @click="open(2)" :disabled="!select.length > 0" outlined
+            >削除</v-btn
+          >
+          <v-divider class="mx-4" vertical></v-divider>
+          <v-btn
+            class="primary"
+            @click="download"
+            :disabled="!select.length > 0"
+            outlined
+            >ダウンロード</v-btn
+          >
+
+          <v-dialog v-model="dialog" max-width="700px" scrorable>
+            <CardInput
+              :dialogType="selectIndex"
+              :content="editItem"
+              :loginType="loginData"
+              :bkPoint="bkPoint"
+              @clickSubmit="save"
+              @clickCancel="close"
+            />
+          </v-dialog>
+          <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
+            <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
+            <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
+          </v-snackbar>
+        </v-toolbar>
+        <MyTable
+          :headers="shownHeaders"
+          :items="contents"
+          :itemkey="table.itemkey"
+          :bkPoint="bkPoint"
+          @childChange="applyChanges"
+        />
       </v-card>
     </v-container>
   </v-card>
 </template>
+
 <script>
-import DialogCard from "@/components/DialogCard";
+import CardInput from "@/components/Card/CardInput";
 import MyTable from "@/components/DataTable/MyTable";
 import MyXlsx from "@/modules/myXlsx";
 import Moment from "moment";
 
 export default {
   name: "document",
-  components: { DialogCard, MyTable },
+  components: { CardInput, MyTable },
   data() {
     return {
       title: "埋蔵文化財発掘届出・通知書",
@@ -168,7 +168,7 @@ export default {
       for (const i in item) {
         const text = item[i].text;
         const value = item[i].value;
-        if (value != null) data[text] = value;
+        if (value != null && value != "") data[text] = value;
       }
       const content1 = { data: data };
 
@@ -187,15 +187,13 @@ export default {
       const content2 = { data: { key: { id: id }, update: data } };
 
       //delete
-      const content3 = { data: { key: { id: id } } };
-      console.log(content3);
+      const content3 = { id: id };
 
       if (this.selectIndex == -1) this.insert(content1);
       if (this.selectIndex == 1) this.update(content2);
       if (this.selectIndex == 2) this.delete(content3);
       this.close();
     },
-
     open(index) {
       this.selectIndex = index;
 
@@ -273,10 +271,6 @@ export default {
       }
       MyXlsx.getTemplateWorkbook(datas);
     },
-    paint() {
-      this.mouse.x = event.clientX;
-      this.mouse.y = event.clientY;
-    },
     getDocumentData() {
       const url = `${this.url}/document`;
       this.axios
@@ -333,6 +327,7 @@ export default {
         });
     },
     insert(data) {
+      // const url = `${this.url}/document`;
       const url = `${this.url}/document`;
       const option = {
         headers: {
@@ -377,7 +372,11 @@ export default {
         });
     },
     delete(data) {
-      const url = `${this.url}/document`;
+      // const url = `${this.url}/document`;
+      console.log(data);
+      const key = Object.keys(data)[0];
+      const value = data[key];
+      const url = `http://localhost:50001/document?${key}=${value}`;
       const option = {
         headers: {
           "Content-Type": "application/json",
@@ -396,6 +395,17 @@ export default {
           console.log(err);
           this.snackbarText = "削除 失敗";
           this.snackbar = true;
+        });
+    },
+    getData() {
+      const url = `${this.url}/system`;
+      this.axios
+        .get(url)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
         });
     },
     reflesh() {

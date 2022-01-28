@@ -4,7 +4,7 @@
     <v-subheader :class="`text-${bkPoint.model}`">Window Size</v-subheader>
     {{ windowSize }}
   -->
-    <DialogCard
+    <CardInput
       :dialogType="dialogType"
       :content.sync="items"
       :loginType="loginData.level"
@@ -16,10 +16,10 @@
 </template>
 
 <script>
-import DialogCard from "@/components/DialogCard";
+import CardInput from "@/components/Card/CardInput";
 export default {
   name: "detailPage",
-  components: { DialogCard },
+  components: { CardInput },
   filter: {
     /**
      * 文字を切り捨てる [色んな所で使うので共通化するといいよ！]

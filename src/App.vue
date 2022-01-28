@@ -185,6 +185,9 @@ export default {
   },
   data() {
     return {
+      width: 800,
+      height: 600,
+      default: { width: 800, height: 600 },
       isLogin: false,
       loading: true,
       btn_title: {
@@ -350,6 +353,24 @@ export default {
     },
   },
   methods: {
+    handleResize() {
+      // resizeのたびにこいつが発火するので、ここでやりたいことをやる
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const d_width = this.default.width;
+      const d_height = this.default.height;
+
+      if (width < d_width) {
+        console.log("幅が小さい");
+        window.resizeTo(d_width, height);
+        window.innerWidth = d_width;
+      }
+      if (height < d_height) {
+        console.log("高さが小さい");
+        window.resizeTo(width, d_height);
+      }
+      console.log("WindowSize", width, height);
+    },
     logout() {
       console.log(this.token);
       this.$store.dispatch(`auth/destroy`);
@@ -357,10 +378,14 @@ export default {
       this.$router.push("/login", () => {});
     },
   },
-  mounted() {
+  mounted: function () {
     setTimeout(() => {
       this.loading = false;
     }, 500);
+    window.addEventListener("resize", this.handleResize);
+  },
+  beforeDestroy: function () {
+    window.removeEventListener("resize", this.handleResize);
   },
 };
 //  font-size: 20px !important;

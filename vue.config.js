@@ -4,8 +4,10 @@ module.exports = {
   devServer: {
     port: 50000,
     proxy: {
-      "^/api/": {
-        target: "http://harima-isk:50001",
+      "/api/": {
+        target: process.env.USE_LOCAL_SERVER
+          ? "http://harima-isk:50001"
+          : "http://harima-isk:50001",
       },
     },
     disableHostCheck: true,

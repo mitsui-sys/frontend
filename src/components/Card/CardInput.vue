@@ -7,12 +7,11 @@
     <v-divider></v-divider>
     <v-card-text>
       <v-container style="max-height: 500px" class="overflow-y-auto">
-        <v-row
-          v-for="(item, index) in content"
-          :key="index"
-          no-gutters
-          class="pa-0 ma-0"
-        >
+        <v-row>
+          <v-col cols="4"> {{ headerName }} </v-col>
+          <v-col>{{ valueName }}</v-col>
+        </v-row>
+        <v-row v-for="(item, index) in content" :key="index" no-gutters>
           <v-col cols="4">
             <v-subheader :class="`text-${bkPoint.model}`">{{
               item.text
@@ -57,9 +56,10 @@
                   >選択</v-btn
                 >
                 <v-dialog v-model="filedialog" max-width="700px" scrorable>
-                  <DialogCardFile
+                  <CardFile
                     :dataType="2"
                     :filepath="content[index].value"
+                    :bkPoint="bkPoint"
                     @clickSubmit="onSubmit"
                     @clickCancel="onCancel"
                   />
@@ -105,34 +105,21 @@
 </template>
 
 <script>
-import DialogCardFile from "@/components/DialogCardFile";
+import CardFile from "@/components/Card/CardFile";
 
 export default {
   name: "DialogCard",
-  components: { DialogCardFile },
+  components: { CardFile },
   props: ["dialogType", "content", "loginType", "dialog", "bkPoint"],
   data() {
     return {
-      pathname: "ファイルパス",
+      headerName: "項目名",
+      valueName: "値",
       filedialog: false,
       filepath: "",
-      columns: [],
-      selectedName: "",
-      checkJP: false,
-      valid: false,
-      singleSelect: false,
-      fileType: 2,
       date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
         .toISOString()
         .substr(0, 10),
-      operater: [
-        { text: "=", value: "=", rule: "=" },
-        { text: "LIKE", value: "LIKE", rule: "LIKE" },
-        { text: ">", value: ">", rule: ">" },
-        { text: "<", value: "<", rule: "<" },
-        { text: ">=", value: ">=", rule: ">=" },
-        { text: "<=", value: "<=", rule: "<=" },
-      ],
       rules: {
         yyyymmdd: (value) => {
           const pattern = this.dateRule;
@@ -155,9 +142,6 @@ export default {
             "日付のフォーマットが正しくありません"
           );
         },
-      },
-      returnData: {
-        content: "",
       },
       inputType: "",
     };

@@ -1,7 +1,7 @@
 <template>
   <v-card class="mx-auto">
     <v-container fluid>
-      <v-card color="#fff" class="condition">
+      <v-card color="#fff">
         <v-row>
           <v-card-title
             class="d-flex justify-center"
@@ -145,7 +145,7 @@
           </v-btn>
           <v-divider class="mx-4" vertical></v-divider>
           <v-dialog v-model="dialog" max-width="700px" scrorable>
-            <DialogCard
+            <CardInput
               :dialogType="editedIndex"
               :content.sync="editedItem"
               :loginType="loginData.level"
@@ -167,10 +167,11 @@
           @childChange="applyChanges"
         />
         <v-dialog v-model="filedialog" max-width="700px" scrorable>
-          <DialogCardFile
+          <CardFile
             :filepath="filepath"
             :dataType="0"
             :download="true"
+            :bkPoint="bkPoint"
             @clickSubmit="filedialog = false"
             @clickCancel="filedialog = false"
           />
@@ -182,15 +183,15 @@
 
 <script>
 import MyXlsx from "@/modules/myXlsx";
-import DialogCard from "@/components/DialogCard";
-import DialogCardFile from "@/components/DialogCardFile";
+import CardInput from "@/components/Card/CardInput";
+import CardFile from "@/components/Card/CardFile";
 import MyTable from "@/components/DataTable/MyTable";
 // import Filtering from "@/components/DataTable/Filtering";
 import Moment from "moment";
 
 export default {
   name: "Sheet",
-  components: { DialogCard, MyTable, DialogCardFile },
+  components: { CardInput, MyTable, CardFile },
   data() {
     return {
       itemkey: "gid",

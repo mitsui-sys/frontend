@@ -85,7 +85,7 @@ export default {
       this.axios
         .get(url)
         .then((res) => {
-          console.log(res.data);
+          console.log("success", res.data);
           this.user.data = Object.assign(res.data);
           const columnNames = res.data.columns.map((x) => x.columnName);
           let h = [];
