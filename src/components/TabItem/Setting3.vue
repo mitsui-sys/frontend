@@ -46,7 +46,6 @@ export default {
       this.axios
         .get(url)
         .then((res) => {
-          console.log(res.data);
           const columnNames = res.data.columns.map((x) => x.columnName);
           let headers = [];
           for (const i in columnNames) {

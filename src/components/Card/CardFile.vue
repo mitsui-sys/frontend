@@ -230,7 +230,8 @@ export default {
       try {
         const requestBody = { path: filepath };
         // ファイルを取得するための POST リクエスト。レスポンスタイプを指定する
-        const response = await this.axios.post("/api/download", requestBody, {
+        const url = `${this.url}/download`;
+        const response = await this.axios.post(url, requestBody, {
           // responseType: "blob",
           responseType: "blob",
         });

@@ -44,6 +44,7 @@ export default {
     confirm() {
       const user = this.user;
       const password = this.password;
+      // const url = `${this.url}/system/user/login?user_name=${user}&password=${password}`;
       const url = `${this.url}/system/user/login?user_name=${user}&password=${password}`;
       let body = {};
       let option = {

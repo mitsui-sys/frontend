@@ -4,13 +4,27 @@ module.exports = {
   devServer: {
     port: 50000,
     proxy: {
-      "/api/": {
-        target: process.env.USE_LOCAL_SERVER
-          ? "http://harima-isk:50001"
-          : "http://harima-isk:50001",
-      },
+      "^/api": { target: "http://harima-isk:50001", changeOrigin: true },
     },
-    disableHostCheck: true,
+
+    // proxy: {
+    //   // "/api/": {
+    //   target: "http://harima-isk:50001",
+    //   //   changeOrigin: true,
+    //   //   pathRewite: { "^/api": "" },
+    //   // },
+    // },
+    // proxy: {
+    //   "^/api": {
+    //     target: "http://localhost:50001",
+    //     changeOrigin: true,
+    //   },
+    //   "/userapi": {
+    //     target: "http://harima-isk:50001/",
+    //     pathRewrite: { "^/userapi": "/api2" },
+    //   },
+    // },
+    // disableHostCheck: true,
   },
   // configureWebpack: {
   //   plugins: [

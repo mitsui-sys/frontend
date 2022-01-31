@@ -161,10 +161,37 @@ export default {
         this.reflesh();
       });
     },
+    open(index) {
+      this.selectIndex = index;
+
+      if (this.selectIndex != -1) {
+        if (this.select.length <= 0) {
+          alert("選択されていません");
+          return;
+        }
+        const item = Object.assign(this.select[0]);
+        this.originItem = Object.assign(item);
+        const edit = Object.assign(this.defaultItem);
+        let data = [];
+        for (const i in edit) {
+          const text = edit[i].text;
+          console.log(text);
+          data.push({ text: text, value: item[text] });
+        }
+        this.editItem = Object.assign(data);
+      } else {
+        this.editItem = Object.assign(this.defaultItem);
+      }
+      this.dialog = true;
+    },
     save() {
-      const item = this.editItem;
+      const origin = this.originItem;
+      const id = origin.id;
+      console.log("origin", id);
+
       //insert
       let data = {};
+      const item = Object.assign(this.editItem);
       for (const i in item) {
         const text = item[i].text;
         const value = item[i].value;
@@ -173,13 +200,11 @@ export default {
       const content1 = { data: data };
 
       //update
-      const origin = this.originItem;
-      const id = origin.id;
-      console.log("origin", id, item);
       data = {};
-      for (const i in item) {
-        const text = item[i].text;
-        const value = item[i].value;
+      const item1 = Object.assign(this.editItem);
+      for (const i in item1) {
+        const text = item1[i].text;
+        const value = item1[i].value;
         if (value != origin[text]) {
           data[text] = value;
         }
@@ -193,31 +218,6 @@ export default {
       if (this.selectIndex == 1) this.update(content2);
       if (this.selectIndex == 2) this.delete(content3);
       this.close();
-    },
-    open(index) {
-      this.selectIndex = index;
-
-      if (this.selectIndex != -1) {
-        if (this.select.length <= 0) {
-          alert("選択されていません");
-          return;
-        }
-        const item = this.select[0];
-
-        this.originItem = Object.assign(item);
-        let edit = Object.assign(this.defaultItem);
-
-        let data = [];
-        for (const i in edit) {
-          const text = Object.assign(edit[i].text);
-          data.push({ text: text, value: item[text] });
-        }
-        this.editItem = Object.assign(data);
-      } else {
-        this.editItem = Object.assign(this.defaultItem);
-      }
-
-      this.dialog = true;
     },
     download() {
       if (this.select.length <= 0) {
@@ -320,7 +320,6 @@ export default {
           this.contents = rows;
           this.defaultItem = Object.assign(defaultItem);
           this.editItem = Object.assign(defaultItem);
-          // console.log(defaultItem);
         })
         .catch((err) => {
           console.log(err);
@@ -376,7 +375,7 @@ export default {
       console.log(data);
       const key = Object.keys(data)[0];
       const value = data[key];
-      const url = `http://localhost:50001/document?${key}=${value}`;
+      const url = `${this.url}/document?${key}=${value}`;
       const option = {
         headers: {
           "Content-Type": "application/json",
@@ -398,9 +397,8 @@ export default {
         });
     },
     getData() {
-      const url = `${this.url}/system`;
       this.axios
-        .get(url)
+        .get(`${this.url}/system`)
         .then((res) => {
           console.log(res);
         })

@@ -92,12 +92,14 @@
             件数:{{ tblContents.length }}
           </span>
           <v-spacer />
+          <!--
           <v-btn
             @click="getTemplateWorkbook()"
             :class="`text-${bkPoint.model}`"
           >
             Excel出力
           </v-btn>
+          -->
 
           <v-btn
             @click="registerItem()"
@@ -115,40 +117,38 @@
           </v-btn>
           -->
           <v-divider class="mx-4" vertical></v-divider>
-          <v-btn
-            @click="createItem()"
-            v-if="loginData.level >= 1"
-            :class="`text-${bkPoint.model}`"
-          >
+          <v-btn @click="open(-1)" :class="`text-${bkPoint.model}`">
             新規登録
           </v-btn>
           <v-btn
-            @click="editItem(0)"
+            @click="open(0)"
             v-if="select.length > 0"
+            :disabled="!select.length > 0"
             :class="`text-${bkPoint.model}`"
           >
             閲覧
           </v-btn>
           <v-btn
-            @click="editItem(1)"
+            @click="open(1)"
             v-if="select.length > 0 && loginData.level >= 1"
+            :disabled="!select.length > 0"
             :class="`text-${bkPoint.model}`"
           >
             編集
           </v-btn>
           <v-btn
-            @click="editItem(2)"
+            @click="open(2)"
             v-if="select.length > 0 && loginData.level >= 1"
+            :disabled="!select.length > 0"
             :class="`text-${bkPoint.model}`"
           >
             削除
           </v-btn>
-          <v-divider class="mx-4" vertical></v-divider>
           <v-dialog v-model="dialog" max-width="700px" scrorable>
             <CardInput
-              :dialogType="editedIndex"
-              :content.sync="editedItem"
-              :loginType="loginData.level"
+              :dialogType="selectIndex"
+              :content="editItem"
+              :loginType="loginData"
               :bkPoint="bkPoint"
               @clickSubmit="save"
               @clickCancel="close"
@@ -182,7 +182,6 @@
 </template>
 
 <script>
-import MyXlsx from "@/modules/myXlsx";
 import CardInput from "@/components/Card/CardInput";
 import CardFile from "@/components/Card/CardFile";
 import MyTable from "@/components/DataTable/MyTable";
@@ -198,7 +197,6 @@ export default {
       displayItems: [],
       tblHeaders: [],
       tblContents: [],
-      isShown: true,
       snackbar: false,
       snackbarText: "成功",
       snackbarColor: "green",
@@ -207,7 +205,6 @@ export default {
       filepath: "",
       isEditing: false,
       editedIndex: -1,
-      dateRule: /^[0-9]{4}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/,
       editedItem: {},
       fileDialog: false,
       fileDialogPath: "",
@@ -229,6 +226,10 @@ export default {
       showSelected: true,
       queryCondition: [],
       display: [],
+      editItem: [],
+      originItem: [],
+      selectIndex: "",
+      // defaultItem: [],
     };
   },
   watch: {
@@ -243,7 +244,7 @@ export default {
 
       this.isLoading = true;
       if (val == null) return;
-      let url = `${this.url}/columns/${val}`;
+      let url = `/columns/${val}`;
       let cond = {};
       let option = {
         headers: {
@@ -266,6 +267,9 @@ export default {
     },
   },
   computed: {
+    url() {
+      return this.$store.getters[`backend/url`];
+    },
     shownHeaders() {
       return this.tblHeaders.filter((h) => h.shown);
     },
@@ -332,44 +336,6 @@ export default {
     loginData() {
       return this.$store.getters[`auth/login`];
     },
-    url() {
-      return this.$store.getters[`backend/url`];
-    },
-    updateEditedItem() {
-      let editedItem = Object.assign(this.editedItem);
-      let sendData = {};
-      let data = {};
-      console.log("edited", editedItem);
-      for (let key in editedItem) {
-        let text = editedItem[key]["text"];
-        let value = editedItem[key]["value"];
-        if (text == "id") sendData["id"] = value;
-        data[text] = value;
-      }
-
-      let select = Object.assign(this.select[0]);
-      for (let key in select) {
-        if (data[key] == select[key]) {
-          delete data[key];
-        }
-      }
-      return data;
-    },
-    insertEditedItem() {
-      let editedItem = Object.assign(this.editedItem);
-      let sendData = {};
-      let data = {};
-      console.log("edited", editedItem);
-      for (let key in editedItem) {
-        let text = editedItem[key]["text"];
-        let value = editedItem[key]["value"];
-        if (value != null && value != "") data[text] = value;
-      }
-      sendData["data"] = [data];
-      console.log(sendData);
-      return sendData;
-    },
-
     kind() {
       return this.$store.getters[`config/kind`];
     },
@@ -389,17 +355,18 @@ export default {
     initialize() {
       this.selectedName = "";
       this.queryCondition = [];
+      this.tblHeaders = [];
       this.tblContents = [];
+      this.select = [];
       const url = `${this.url}/display`;
-      console.log("get all display", url);
       this.axios
         .get(url)
         .then((res) => {
           //成功時
-          console.log("success", res.data);
           const rows = res.data.rows;
           this.display = rows;
           this.displayItems = rows.map((row) => row.name);
+          console.log(rows);
           // const json = JSON.parse(rows[0].display);
           // this.headers = json;
         })
@@ -407,92 +374,8 @@ export default {
           console.log(err);
         });
     },
-    formatToDateString() {
-      // 空文字の場合、変換しない
-      if (this.inputDate === "") return;
-      // 形式が正しくない場合、変換しない
-      if (!this.dateRule.test(this.inputDate)) return;
-      const str = String(this.inputDate);
-      // 表示用に加工
-      this.displayDate = `${str.slice(0, 4)}/${str.slice(4, 6)}/${str.slice(
-        6,
-        8
-      )}`;
-      // DB保存用に加工
-      this.outputDate = `${str.slice(0, 4)}-${str.slice(4, 6)}-${str.slice(
-        6,
-        8
-      )}`;
-      this.isEdit = false;
-    },
     clickRow() {
       console.log(this.select);
-    },
-    createItem() {
-      this.isEditing = true;
-      this.editedIndex = -1;
-      this.editedItem = Object.assign(this.defaultItem);
-      this.dialog = true;
-    },
-    registerItem() {
-      // let url = `${this.url}/db/${this.selectedName}`;
-      const url = `${this.url}/system/search/register`;
-      const layer = this.selectedName;
-      const select = this.select;
-      if (select == "") {
-        alert("テーブル名が選択されていません");
-        return;
-      }
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      let rows = [];
-      for (const i in select) {
-        const num = select[i]["番号"];
-        // rows.push({ user_name: this.loginData.name, layer: layer, id: num });
-        rows.push(`${layer}:${num}`);
-      }
-      const row = rows.join("&");
-      const cond = { data: { user_name: this.loginData.name, search: row } };
-      console.log(url, cond, option);
-      this.axios
-        .post(url, cond, option)
-        .then((response) => {
-          console.log(response);
-          this.snackbarText = "地図システム検索データ登録 成功";
-          this.snackbar = true;
-        })
-        .catch((error) => {
-          this.snackbarText = "地図システム検索データ登録 失敗";
-          this.snackbar = true;
-          console.log(error);
-        });
-    },
-    editItem(id = 0) {
-      this.editedIndex = id;
-      this.isEditing = id == 1;
-      let select = this.select;
-      if (select.length <= 0) {
-        return;
-      }
-
-      const selected1 = Object.assign(select[0]);
-
-      this.editedNumber = selected1["番号"];
-      const data = Object.assign(this.defaultItem);
-      let newData = [];
-      for (let key in selected1) {
-        for (let i in data) {
-          let check = data[i]["text"];
-          if (key == check) {
-            newData.push({ text: key, value: selected1[key] });
-          }
-        }
-      }
-      this.editedItem = Object.assign(newData);
-      this.dialog = true;
     },
     close() {
       this.isEditing = false;
@@ -502,28 +385,68 @@ export default {
         this.editedIndex = -1;
       });
     },
-    save(params) {
-      const index = this.editedIndex;
-      if (index == 0) {
-        console.log("pdfを開く");
-        const filepaths = params.filter((x) => x.text == "ファイルパス");
-        const filepath = filepaths[0].value || "付属図書";
-        this.filepath = filepath;
+    open(index) {
+      this.selectIndex = index;
 
-        console.log("ファイルパス", this.filepath, params);
-        this.filedialog = true;
-        // let filepath = "resources/test.pdf";
-        // window.open(filepath);
+      if (this.selectIndex != -1) {
+        if (this.select.length <= 0) {
+          alert("選択されていません");
+          return;
+        }
+        const item = Object.assign(this.select[0]);
+        console.log(item);
+        this.originItem = Object.assign(item);
+        const edit = Object.assign(this.defaultItem);
+        let data = [];
+        for (const i in edit) {
+          const text = edit[i].text;
+          data.push({ text: text, value: item[text] });
+        }
+        this.editItem = Object.assign(data);
       } else {
-        if (index == 1) {
-          this.updateRows();
-        } else if (index == 2) {
-          this.deleteRows();
-        } else if (index == -1) {
-          this.insertRows();
+        this.editItem = Object.assign(this.defaultItem);
+      }
+      this.dialog = true;
+    },
+    save() {
+      const origin = this.originItem;
+      const id = origin.gid;
+      console.log("origin", id);
+
+      //insert
+      let data = {};
+      const item = Object.assign(this.editItem);
+      for (const i in item) {
+        const text = item[i].text;
+        const value = item[i].value;
+        if (value != null && value != "") data[text] = value;
+      }
+      const content1 = { data: data };
+
+      //update
+      data = {};
+      const item1 = Object.assign(this.editItem);
+      for (const i in item1) {
+        const text = item1[i].text;
+        const value = item1[i].value;
+        if (value != origin[text]) {
+          data[text] = value;
         }
       }
-      this.close();
+      const content2 = { data: { key: { gid: id }, update: data } };
+
+      //delete
+      const content3 = { gid: id };
+
+      if (this.selectIndex == -1) this.insert(content1);
+      else if (this.selectIndex == 1) {
+        this.update(content2);
+      } else if (this.selectIndex == 2) {
+        this.delete(content3);
+      } else {
+        this.close();
+      }
+      this.dialog = false;
     },
     validate() {
       this.$refs.form.validate();
@@ -617,17 +540,16 @@ export default {
         });
       this.registerLog("表示", `${this.selectedName}?${content}`);
     },
-    insertRows() {
+    insert(data) {
       let url = `${this.url}/db/${this.selectedName}`;
-      let cond = this.insertEditedItem;
-      let option = {
+      const option = {
         headers: {
           "Content-Type": "application/json",
         },
       };
-      console.log(url, cond, option);
+      console.log("insert document", url, data, option);
       this.axios
-        .post(url, cond, option)
+        .post(url, data, option)
         .then((response) => {
           console.log(response);
           this.submit();
@@ -639,25 +561,18 @@ export default {
           this.snackbar = true;
           console.log(error);
         });
-      this.registerLog("追加", `${this.selectedName}?${this.insertEditedItem}`);
+      // this.registerLog("追加", `${this.selectedName}?${this.insertEditedItem}`);
     },
-    updateRows() {
+    update(data) {
       let url = `${this.url}/db/${this.selectedName}`;
-      let cond = {
-        data: {
-          key: "番号",
-          id: this.editedNumber,
-          update: this.updateEditedItem,
-        },
-      };
-      let option = {
+      const option = {
         headers: {
           "Content-Type": "application/json",
         },
       };
-      console.info("update", url, cond, option);
+      console.log("update document", url, data, option);
       this.axios
-        .put(url, cond, option)
+        .put(url, data, option)
         .then((response) => {
           console.log(response);
           this.submit();
@@ -669,19 +584,22 @@ export default {
           this.snackbar = true;
           console.log(error);
         });
-      this.registerLog("更新", `${this.selectedName}?${this.updateEditedItem}`);
+      // const json = JSON.stringify(content2);
+      // this.registerLog("更新", `${this.selectedName}:${json}`);
     },
-    deleteRows() {
-      let url = `${this.url}/db/${this.selectedName}`;
-      let cond = { data: { deleteKey: "番号", selectedItem: this.select } };
-      let option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log(url, cond, option);
+    delete(data) {
+      console.log(Object.keys(data));
+      const select = this.select;
+      if (select.length <= 0) {
+        console.error("選択されていません");
+        return;
+      }
+      const mainkey = "gid";
+      const id = select[0][mainkey];
+      let url = `${this.url}/db/${this.selectedName}?${mainkey}=${id}`;
+      console.log(url);
       this.axios
-        .delete(url, cond, option)
+        .delete(url)
         .then((response) => {
           console.log(response);
           this.submit();
@@ -693,56 +611,11 @@ export default {
           this.snackbar = true;
           console.log(error);
         });
-      this.registerLog("削除", `${this.selectedName}?${cond}`);
-    },
-    getTemplateWorkbook() {
-      const assigns = {
-        __date__: "令和4年1月14日",
-        __name__: "播磨太郎", // エクセル内の__name__という文字列を置換
-        __address__: "加古郡播磨町東本荘1丁目5番30番",
-        __doc_number__: 5,
-        __doc_date__: "令和  年  月  日",
-        __city_date__: "令和  年  月  日",
-        __place__: "加古郡播磨町大中1丁目1番2号",
-        __area__: "約500㎡",
-        __owner_name__: "播磨太郎",
-        __owner_address__: "加古郡播磨町東本荘1丁目5番30番",
-        __iseki_type__: "大中遺跡",
-        __iseki_name__: "大中遺跡",
-        __iseki_current__: "大中遺跡",
-        __iseki_era__: "大中遺跡",
-        __site_main__: "大中遺跡",
-        __site_content__: "木造2階建個人住宅",
-        __site_name__: "播磨太郎",
-        __site_address__: "加古郡播磨町東本荘1丁目5番30番",
-        __construction_name__: "未定",
-        __construction_address__: "",
-        __start__: "令和4年7月1日（予定）",
-        __end__: "令和4年12月末",
-        __option__: "",
-        __guidance__: "",
-      };
-
-      //テーブル情報を読み込む
-      let datas = [];
-      const content = this.select;
-      for (let i in content) {
-        let data = Object.assign(assigns);
-        const rowC = content[i];
-        data["__date__"] = Moment();
-        data["__name__"] = "播磨　太郎";
-        data["__address__"] = "加古郡播磨町";
-        data["__iseki_name__"] = rowC["遺跡の名称"];
-        data["__place__"] = rowC["所在地"];
-        data["__site_main__"] = rowC["種別"];
-        data["__option__"] = rowC["備考"];
-        datas.push(data);
-      }
-      MyXlsx.getTemplateWorkbook(datas);
+      this.registerLog("削除", `${this.selectedName}?${mainkey}:${id}`);
     },
   },
   async mounted() {
-    this.initialize();
+    await this.initialize();
 
     this.$nextTick(() => {
       //this.getResizableTable();

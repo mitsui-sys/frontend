@@ -99,14 +99,8 @@ export default {
       this.$emit("childChange", newVal);
     },
   },
-  computed: {
-    url() {
-      return this.$store.getters[`backend/url`];
-    },
-  },
   methods: {
     toggleOrder(text, index) {
-      console.log(this.sortBy, index);
       const desc = !this.headers[index].sortDesc;
       this.headers[index].sortDesc = desc ? true : false;
       this.sortBy = text;

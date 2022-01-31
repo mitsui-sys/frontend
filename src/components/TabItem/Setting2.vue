@@ -74,11 +74,6 @@ export default {
       this.user.sortBy = text;
       this.user.sortDesc = desc;
     },
-    // nextSort(headers, sortBy) {
-    //   let index = headers.findIndex((h) => h.value === sortBy);
-    //   index = (index + 1) % headers.length;
-    //   sortBy = headers[index].value;
-    // },
     getUserData() {
       const url = `${this.url}/system/user`;
       this.loading = true;
@@ -92,7 +87,7 @@ export default {
           let sorts = {};
           for (const i in columnNames) {
             const name = columnNames[i];
-            h.push({ text: name, value: name, sortDesc: true });
+            h.push({ text: name, value: name, sortDesc: false });
             sorts[name] = true;
           }
 

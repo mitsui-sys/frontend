@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <v-toolbar>表示</v-toolbar>
+    <v-toolbar :class="`text-${bkPoint.model}`">表示</v-toolbar>
     <v-card-text>
       <v-switch
         v-model="development"
@@ -10,26 +10,54 @@
       <v-card class="pa-5">
         <v-container fluid>
           <v-row v-if="true">
-            <v-subheader>テーブル名</v-subheader>
-            <v-autocomplete
-              v-model="selectTable"
-              :items="tableNameList"
-              dense
-              filled
-            />
-            <v-btn @click="registerTableShown">登録</v-btn>
-            <v-btn @click="deleteTableShown">削除</v-btn>
+            <v-col cols="2">
+              <v-subheader :class="`text-${bkPoint.model}`"
+                >テーブル名</v-subheader
+              >
+            </v-col>
+            <v-col>
+              <v-autocomplete
+                v-model="selectTable"
+                :items="tableNameList"
+                :class="`text-${bkPoint.model}`"
+                dense
+                filled
+              />
+            </v-col>
+            <v-col cols="1">
+              <v-btn
+                @click="registerTableShown"
+                :class="`text-${bkPoint.model}`"
+                >登録</v-btn
+              >
+            </v-col>
+            <v-col cols="1">
+              <v-btn @click="deleteTableShown" :class="`text-${bkPoint.model}`"
+                >削除</v-btn
+              >
+            </v-col>
           </v-row>
           <v-row>
-            <v-subheader>表示名</v-subheader>
-            <v-autocomplete
-              v-model="selectedDisplay"
-              :items="displayItems"
-              @change="selectTableShown"
-              dense
-              filled
-            />
-            <v-btn @click="registerGetColumns">属性初期化</v-btn>
+            <v-col cols="2">
+              <v-subheader :class="`text-${bkPoint.model}`">表示名</v-subheader>
+            </v-col>
+            <v-col>
+              <v-autocomplete
+                v-model="selectedDisplay"
+                :items="displayItems"
+                :class="`text-${bkPoint.model}`"
+                @change="selectTableShown"
+                dense
+                filled
+              />
+            </v-col>
+            <v-col cols="2">
+              <v-btn
+                @click="registerGetColumns"
+                :class="`text-${bkPoint.model}`"
+                >属性初期化</v-btn
+              >
+            </v-col>
           </v-row>
           <v-row>
             <v-switch
