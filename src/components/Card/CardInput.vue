@@ -18,23 +18,6 @@
             }}</v-subheader>
           </v-col>
           <v-col>
-            <!--
-              <v-text-field
-                v-model="item.value"
-                placeholder="値を入力"
-                ma-0
-                outlined
-                dense
-                :disabled="!isEditing"
-                class="input-items"
-                @focus="$event.target.select()"
-                @keydown.prevent.tab.exact="moveNext(index)"
-                @keydown.prevent.shift.tab="movePrev(index)"
-                @keydown.prevent.down="moveNext(index)"
-                @keydown.prevent.up="movePrev(index)"
-              />
-              -->
-
             <v-text-field
               v-model="content[index].value"
               placeholder="値を入力"
@@ -46,8 +29,7 @@
               <template
                 v-slot:append
                 v-if="
-                  item.text == 'ファイルパス' &&
-                  (dialogType == 1 || dialogType == -1)
+                  item.text == colName && (dialogType == 1 || dialogType == -1)
                 "
               >
                 <v-btn
@@ -120,6 +102,7 @@ export default {
       date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
         .toISOString()
         .substr(0, 10),
+      colName: "uri",
       rules: {
         yyyymmdd: (value) => {
           const pattern = this.dateRule;

@@ -168,11 +168,7 @@ export default {
       dirs: [],
       currentDirs: [],
       files: [],
-
       file: [],
-      returnData: {
-        filepath: this.filepath,
-      },
       fileId: 0,
       folderId: 1,
       items: [
@@ -276,6 +272,7 @@ export default {
           this.dirs = dirs;
           this.files = files;
           this.dirpath = dir;
+          console.log(dirs, files, dir);
         })
         .catch((e) => {
           // エラーの場合
@@ -350,13 +347,16 @@ export default {
         });
     },
   },
-  created() {
+  mounted() {
+    const path = Object.assign(this.filepath);
+    const type = Object.assign(this.downloadType);
+    console.log(path, type);
     if (this.downloadType) {
-      console.log(this.filepath);
       this.getFilePath(this.filepath);
     } else {
-      this.getFilePath(this.defaultDir);
+      this.getFilePath(this.filepath);
     }
   },
+  created() {},
 };
 </script>

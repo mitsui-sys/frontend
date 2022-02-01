@@ -1,10 +1,10 @@
 <template>
   <v-card>
     <v-tabs color="deep-purple accent-4" left>
-      <v-tab>表示設定</v-tab>
+      <v-tab v-if="false">表示設定</v-tab>
       <v-tab>ユーザー設定</v-tab>
       <v-tab>ログ設定</v-tab>
-      <v-tab-item>
+      <v-tab-item v-if="false">
         <Setting1 :bkPoint="bkPoint" />
       </v-tab-item>
       <v-tab-item>

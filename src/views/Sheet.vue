@@ -168,7 +168,7 @@
         />
         <v-dialog v-model="filedialog" max-width="700px" scrorable>
           <CardFile
-            :filepath="filepath"
+            :filepath.sync="filepath"
             :dataType="0"
             :download="true"
             :bkPoint="bkPoint"
@@ -375,7 +375,7 @@ export default {
         });
     },
     clickRow() {
-      console.log(this.select);
+      console.log("選択行", this.select);
     },
     close() {
       this.isEditing = false;
@@ -426,11 +426,13 @@ export default {
       //update
       data = {};
       const item1 = Object.assign(this.editItem);
+      let dataSize = 0;
       for (const i in item1) {
         const text = item1[i].text;
         const value = item1[i].value;
         if (value != origin[text]) {
           data[text] = value;
+          dataSize++;
         }
       }
       const content2 = { data: { key: { gid: id }, update: data } };
@@ -438,10 +440,25 @@ export default {
       //delete
       const content3 = { gid: id };
 
-      if (this.selectIndex == -1) this.insert(content1);
-      else if (this.selectIndex == 1) {
-        this.update(content2);
-      } else if (this.selectIndex == 2) {
+      const index = this.selectIndex;
+      if (index == -1) {
+        this.insert(content1);
+      } else if (index == 0) {
+        const key = "uri";
+        if (key in origin) {
+          this.filepath = Object.assign(origin[key]);
+          console.log(this.filepath);
+          this.filedialog = true;
+        } else {
+          console.log("ファイルパスが存在しません");
+        }
+      } else if (index == 1) {
+        if (dataSize <= 0) {
+          console.log("更新する値が存在しません");
+        } else {
+          this.update(content2);
+        }
+      } else if (index == 2) {
         this.delete(content3);
       } else {
         this.close();
