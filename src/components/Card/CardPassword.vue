@@ -5,7 +5,6 @@
       <v-form ref="form" v-model="valid" lazy-validation>
         <v-text-field
           v-model="password_new"
-          :counter="10"
           :rules="[
             required,
             limit_length,
@@ -21,14 +20,13 @@
         <v-text-field
           v-model="password_same"
           label="パスワード再入力"
+          :rules="[required, same_data]"
           required
         ></v-text-field>
 
-        <v-btn :disabled="!valid" color="success" class="mr-4" @click="submit">
-          Validate
-        </v-btn>
-
-        <v-btn color="error" class="mr-4" @click="cancel">クリア</v-btn>
+        <v-btn color="success" class="mr-4" @click="submit"> 更新 </v-btn>
+        <v-btn color="error" class="mr-4" @click="clear">クリア</v-btn>
+        <v-btn class="mr-4" @click="cancel">キャンセル</v-btn>
       </v-form>
     </v-card-text>
   </v-card>
@@ -54,20 +52,22 @@ export default {
       has_not_alphabet: (v) =>
         /[^a-zA-Z0-9]/.test(v) ||
         "数字・アルファベット以外の文字が含まれていません", // 数字・アルファベット以外の文字
+      same_data: (v) => v === this.password_new || "同じ文字列ではありません",
     };
   },
   computed: {},
   methods: {
-    validate() {
-      this.$refs.form.validate();
-    },
     //親コンポーネントへ送信
     submit() {
       if (this.$refs.form.validate()) {
-        this.$emit("clickSubmit", this.content);
+        console.log(this.password_new);
+        this.$emit("clickSubmit", this.password_new);
       } else {
         alert("もう1度確認してください");
       }
+    },
+    clear() {
+      this.$refs.form.resetValidation();
     },
     cancel() {
       this.$emit("clickCancel");

@@ -172,6 +172,7 @@
             :dataType="0"
             :download="true"
             :bkPoint="bkPoint"
+            :visible="filedialog"
             @clickSubmit="filedialog = false"
             @clickCancel="filedialog = false"
           />
@@ -182,11 +183,11 @@
 </template>
 
 <script>
+import http from "@/modules/http";
 import CardInput from "@/components/Card/CardInput";
 import CardFile from "@/components/Card/CardFile";
 import MyTable from "@/components/DataTable/MyTable";
 // import Filtering from "@/components/DataTable/Filtering";
-import Moment from "moment";
 
 export default {
   name: "Sheet",
@@ -447,7 +448,6 @@ export default {
         const key = "uri";
         if (key in origin) {
           this.filepath = Object.assign(origin[key]);
-          console.log(this.filepath);
           this.filedialog = true;
         } else {
           console.log("ファイルパスが存在しません");
@@ -465,43 +465,12 @@ export default {
       }
       this.dialog = false;
     },
-    validate() {
-      this.$refs.form.validate();
-    },
     addInput() {
       this.queryCondition.push({ text: "", rule: "", value: "" }); // 配列に１つ空データを追加する
     },
     // ボタンをクリックしたときのイベント ③
     removeInput(index) {
       this.queryCondition.splice(index, 1); // 👈 該当するデータを削除
-    },
-    registerLog(action, content) {
-      let url = `${this.url}/system/log/register`;
-      let now = Moment().format("YYYY/MM/DD HH:mm:ss dddd");
-      let cond = {
-        data: {
-          user_name: this.loginData.name,
-          document: this.kind,
-          rireki: action,
-          rireki_content: content,
-          created: now,
-        },
-      };
-      console.log(cond);
-      let option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("操作履歴", url, cond, option);
-      this.axios
-        .post(url, cond, option)
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
     },
     changeName() {
       const name = this.selectedName;
@@ -543,22 +512,14 @@ export default {
           const data = res.data;
           const rows = data.rows;
           this.tblContents = rows.length > 0 ? rows : [];
-          // const columns = data.columns;
-
-          // conklst columnNames = columns.map((x) => x.columnName);
-          // let headers = [];
-          // for (const i in columnNames) {
-          //   const name = columnNames[i];
-          //   headers.push({ text: name, value: name, shown: true });
-          // }
         })
         .catch((error) => {
           console.log(error);
         });
-      this.registerLog("表示", `${this.selectedName}?${content}`);
     },
     insert(data) {
-      let url = `${this.url}/db/${this.selectedName}`;
+      const table = this.selectedName;
+      const url = `${this.url}/db/${table}`;
       const option = {
         headers: {
           "Content-Type": "application/json",
@@ -569,6 +530,13 @@ export default {
         .post(url, data, option)
         .then((response) => {
           console.log(response);
+          http.registerLog(
+            this.url,
+            this.loginData.name,
+            "台帳管理",
+            "新規登録",
+            data
+          );
           this.submit();
           this.snackbarText = "新規登録 成功";
           this.snackbar = true;
@@ -578,10 +546,10 @@ export default {
           this.snackbar = true;
           console.log(error);
         });
-      // this.registerLog("追加", `${this.selectedName}?${this.insertEditedItem}`);
     },
     update(data) {
-      let url = `${this.url}/db/${this.selectedName}`;
+      const table = this.selectedName;
+      const url = `${this.url}/db/${table}`;
       const option = {
         headers: {
           "Content-Type": "application/json",
@@ -592,6 +560,13 @@ export default {
         .put(url, data, option)
         .then((response) => {
           console.log(response);
+          http.registerLog(
+            this.url,
+            this.loginData.name,
+            "台帳管理",
+            "更新",
+            data
+          );
           this.submit();
           this.snackbarText = "更新 成功";
           this.snackbar = true;
@@ -601,24 +576,29 @@ export default {
           this.snackbar = true;
           console.log(error);
         });
-      // const json = JSON.stringify(content2);
-      // this.registerLog("更新", `${this.selectedName}:${json}`);
     },
     delete(data) {
-      console.log(Object.keys(data));
       const select = this.select;
       if (select.length <= 0) {
         console.error("選択されていません");
         return;
       }
+      const table = this.selectedName;
       const mainkey = "gid";
       const id = select[0][mainkey];
-      let url = `${this.url}/db/${this.selectedName}?${mainkey}=${id}`;
+      let url = `${this.url}/db/${table}?${mainkey}=${id}`;
       console.log(url);
       this.axios
         .delete(url)
         .then((response) => {
           console.log(response);
+          http.registerLog(
+            this.url,
+            this.loginData.name,
+            "台帳管理",
+            "削除",
+            data
+          );
           this.submit();
           this.snackbarText = "削除 成功";
           this.snackbar = true;
@@ -628,7 +608,6 @@ export default {
           this.snackbar = true;
           console.log(error);
         });
-      this.registerLog("削除", `${this.selectedName}?${mainkey}:${id}`);
     },
   },
   async mounted() {

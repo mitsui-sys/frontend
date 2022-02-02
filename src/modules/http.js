@@ -1,3 +1,6 @@
+import axios from "axios";
+import Moment from "moment";
+
 const getFile = async (filepath) => {
   try {
     const requestBody = { path: filepath };
@@ -30,6 +33,50 @@ const getFile = async (filepath) => {
   }
 };
 
+const registerLog = (host, name, doc, action, content) => {
+  const url = `${host}/system/log/register`;
+  const now = Moment().format("YYYY/MM/DD HH:mm:ss");
+  const json = JSON.stringify(content);
+  const cond = {
+    data: {
+      user_name: name,
+      document: doc,
+      rireki: action,
+      rireki_content: json,
+      created: now,
+    },
+  };
+  const option = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  axios
+    .post(url, cond, option)
+    .then((response) => {
+      console.log(response);
+      console.log("ログ登録", cond);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+const getReplace = (host) => {
+  const url = `${host}/system/replace`;
+  axios
+    .get(url)
+    .then((response) => {
+      console.log("置換", response);
+      return response;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
 export default {
   getFile,
+  registerLog,
+  getReplace,
 };

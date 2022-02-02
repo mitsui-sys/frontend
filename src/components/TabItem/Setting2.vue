@@ -3,9 +3,35 @@
     <v-toolbar>
       {{ title }}
       <v-spacer />
-      <v-divider vertical />
-      <v-btn v-for="(b, i) in buttons" :key="i" class="mx-2">
-        {{ b.name }}
+      <v-btn @click="onPassword" :class="`text-${bkPoint.model}`">
+        パスワード更新
+      </v-btn>
+      <v-btn @click="open(-1)" :class="`text-${bkPoint.model}`">
+        新規登録
+      </v-btn>
+      <v-btn
+        @click="open(0)"
+        v-if="select.length > 0"
+        :disabled="!select.length > 0"
+        :class="`text-${bkPoint.model} mx-2`"
+      >
+        閲覧
+      </v-btn>
+      <v-btn
+        @click="open(1)"
+        v-if="select.length > 0 && loginData.level >= 1"
+        :disabled="!select.length > 0"
+        :class="`text-${bkPoint.model}`"
+      >
+        編集
+      </v-btn>
+      <v-btn
+        @click="open(2)"
+        v-if="select.length > 0 && loginData.level >= 1"
+        :disabled="!select.length > 0"
+        :class="`text-${bkPoint.model}`"
+      >
+        削除
       </v-btn>
     </v-toolbar>
     <v-card-text>
@@ -17,20 +43,31 @@
         @childChange="applyChanges"
       />
     </v-card-text>
-    <v-btn @click="paswwordDialog = true">ボタン</v-btn>
-    <v-dialog v-model="paswwordDialog" max-width="700px" scrorable>
-      <CardPassword :clickSubmit="onSubmit" :clickCancel="onCancel" />
+    <v-dialog v-model="dialogP" max-width="700px" scrorable>
+      <CardPassword @clickSubmit="updatePassword" @clickCancel="onCancel" />
+    </v-dialog>
+    <v-dialog v-model="dialog" max-width="700px" scrorable>
+      <CardInput
+        :dialogType="selectIndex"
+        :content="editItem"
+        :loginType="loginData"
+        :bkPoint="bkPoint"
+        @clickSubmit="save"
+        @clickCancel="close"
+      />
     </v-dialog>
   </v-card>
 </template>
 
 <script>
 import Moment from "moment";
+import http from "@/modules/http";
 import MyTable from "@/components/DataTable/MyTable";
+import CardInput from "@/components/Card/CardInput";
 import CardPassword from "@/components/Card/CardPassword";
 export default {
   name: "setting2",
-  components: { MyTable, CardPassword },
+  components: { MyTable, CardPassword, CardInput },
   props: ["bkPoint"],
   data() {
     return {
@@ -56,22 +93,46 @@ export default {
       editItem: [],
       originItem: [],
       selectIndex: "",
-      paswwordDialog: false,
+      dialog: false,
+      dialogP: false,
+      select: [],
     };
   },
   computed: {
     url() {
       return this.$store.getters[`backend/url`];
     },
+    loginData() {
+      return this.$store.getters[`auth/login`];
+    },
   },
   methods: {
-    onSubmit(data) {
+    getReplace() {
+      const data = http.getReplace(this.url);
       console.log(data);
-      this.passwordDialog = false;
     },
-    onCancel(data) {
-      console.log(data);
-      this.passwordDialog = false;
+    onPassword() {
+      this.selectIndex = 1;
+      if (this.select.length <= 0) {
+        alert("選択されていません");
+        return;
+      }
+      this.originItem = Object.assign(this.select[0]);
+      this.dialogP = true;
+    },
+    updatePassword(password) {
+      console.log(password);
+      const origin = this.originItem;
+      const id = origin.no;
+      let data = {};
+      data["created_day"] = Moment().format("YYYY/MM/DD");
+      data["password"] = password;
+      const content2 = { data: { key: { no: id }, update: data } };
+      this.dialogP = false;
+      this.update(content2);
+    },
+    onCancel() {
+      this.dialogP = false;
     },
     applyChanges(select) {
       // console.log("parentChange", select);
@@ -83,43 +144,6 @@ export default {
       this.user.headers[index].sortDesc = desc ? true : false;
       this.user.sortBy = text;
       this.user.sortDesc = desc;
-    },
-    getUserData() {
-      const url = `${this.url}/system/user`;
-      this.loading = true;
-      this.axios
-        .get(url)
-        .then((res) => {
-          console.log("success", res.data);
-          this.user.data = Object.assign(res.data);
-          const columnNames = res.data.columns.map((x) => x.columnName);
-          let h = [];
-          let sorts = {};
-          for (const i in columnNames) {
-            const name = columnNames[i];
-            h.push({ text: name, value: name, sortDesc: false });
-            sorts[name] = true;
-          }
-
-          let rows = res.data.rows;
-          console.log(rows);
-          for (const key in rows) {
-            const _date = rows[key]["created_day"];
-            rows[key]["created_day"] = Moment(_date).format("YYYY/MM/DD");
-          }
-          this.user.headers = Object.assign(h);
-          this.user.items = Object.assign(rows);
-          this.user.sorts = Object.assign(sorts);
-        })
-        .catch((error) => {
-          console.log(error);
-          alert(
-            "処理が正しく行えませんでした。時間をおいてやり直してください。"
-          );
-        })
-        .finally(() => {
-          this.loading = false;
-        });
     },
     close() {
       this.isEditing = false;
@@ -154,7 +178,7 @@ export default {
     },
     save() {
       const origin = this.originItem;
-      const id = origin.gid;
+      const id = origin.no;
       console.log("origin", id);
 
       //insert
@@ -179,10 +203,10 @@ export default {
           dataSize++;
         }
       }
-      const content2 = { data: { key: { gid: id }, update: data } };
+      const content2 = { data: { key: { no: id }, update: data } };
 
       //delete
-      const content3 = { gid: id };
+      const content3 = { no: id };
 
       const index = this.selectIndex;
       if (index == -1) {
@@ -209,9 +233,143 @@ export default {
       }
       this.dialog = false;
     },
+
+    getUserData() {
+      this.select = [];
+      const url = `${this.url}/system/user`;
+      this.loading = true;
+      this.axios
+        .get(url)
+        .then((res) => {
+          console.log("success", res.data);
+          this.user.data = Object.assign(res.data);
+          const columnNames = res.data.columns.map((x) => x.columnName);
+          let h = [];
+          let defaultItem = [];
+          let sorts = {};
+          for (const i in columnNames) {
+            const name = columnNames[i];
+            h.push({ text: name, value: name, sortDesc: false });
+            defaultItem.push({ text: name, value: "", sortDesc: false });
+            sorts[name] = true;
+          }
+          this.defaultItem = Object.assign(defaultItem);
+
+          let rows = res.data.rows;
+          console.log(rows);
+          for (const key in rows) {
+            const _date = rows[key]["created_day"];
+            rows[key]["created_day"] = Moment(_date).format("YYYY/MM/DD");
+          }
+          this.user.headers = Object.assign(h);
+          this.user.items = Object.assign(rows);
+          this.user.sorts = Object.assign(sorts);
+        })
+        .catch((error) => {
+          console.log(error);
+          alert(
+            "処理が正しく行えませんでした。時間をおいてやり直してください。"
+          );
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+
+    insert(data) {
+      const url = `${this.url}/system/user`;
+      const option = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+      console.log("insert document", url, data, option);
+      this.axios
+        .post(url, data, option)
+        .then((response) => {
+          console.log(response);
+          http.registerLog(
+            this.url,
+            this.loginData.name,
+            "ユーザー設定",
+            "新規登録",
+            data
+          );
+          this.getUserData();
+          this.snackbarText = "新規登録 成功";
+          this.snackbar = true;
+        })
+        .catch((error) => {
+          this.snackbarText = "新規登録 失敗";
+          this.snackbar = true;
+          console.log(error);
+        });
+    },
+    update(data) {
+      const url = `${this.url}/system/user`;
+      const option = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+      console.log("update document", url, data, option);
+      this.axios
+        .put(url, data, option)
+        .then((response) => {
+          console.log(response);
+
+          http.registerLog(
+            this.url,
+            this.loginData.name,
+            "ユーザー設定",
+            "更新",
+            data
+          );
+          this.getUserData();
+          this.snackbarText = "更新 成功";
+          this.snackbar = true;
+        })
+        .catch((error) => {
+          this.snackbarText = "更新 失敗";
+          this.snackbar = true;
+          console.log(error);
+        });
+    },
+    delete(data) {
+      const select = this.select;
+      if (select.length <= 0) {
+        console.error("選択されていません");
+        return;
+      }
+      const mainkey = "no";
+      const id = select[0][mainkey];
+      const url = `${this.url}/system/user?${mainkey}=${id}`;
+      console.log(url);
+      this.axios
+        .delete(url)
+        .then((response) => {
+          console.log(response);
+          http.registerLog(
+            this.url,
+            this.loginData.name,
+            "ユーザー設定",
+            "削除",
+            data
+          );
+          this.getUserData();
+          this.snackbarText = "削除 成功";
+          this.snackbar = true;
+        })
+        .catch((error) => {
+          this.snackbarText = "削除 失敗";
+          this.snackbar = true;
+          console.log(error);
+        });
+    },
   },
   created() {
     // リアクティブデータ作成後に行いたい処理
+    this.getReplace();
     this.getUserData();
   },
 };

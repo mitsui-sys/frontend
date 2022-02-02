@@ -8,12 +8,12 @@
     <v-container block>
       <v-row justify="center">
         <v-col cols="1">
-          <v-btn icon @click="moveUpDir" :disabled="downloadType"
+          <v-btn icon @click="moveUpDir" :disabled="download"
             ><v-icon>mdi-arrow-up</v-icon></v-btn
           >
         </v-col>
         <v-col cols="1"
-          ><v-btn icon @click="reflesh" :disabled="downloadType"
+          ><v-btn icon @click="reflesh" :disabled="download"
             ><v-icon>mdi-refresh</v-icon></v-btn
           ></v-col
         >
@@ -33,9 +33,10 @@
         <v-row>
           <v-col cols="12" style="height: 400px" class="overflow-auto">
             <v-list
+              id="folderlist"
               flat
               subheader
-              v-if="dirs.length > 0 && displayDataType != 1"
+              v-if="dirs.length > 0 && displayType != 1"
             >
               <v-subheader :class="`text-${bkPoint.model}`"
                 >フォルダ</v-subheader
@@ -60,10 +61,11 @@
             </v-list>
             <v-divider v-if="dirs.length > 0 && files.length > 0" />
             <v-list
+              id="filelist"
               flat
               subheader
               two-line
-              v-if="files.length > 0 && displayDataType != 2"
+              v-if="files.length > 0 && displayType != 2"
             >
               <v-list-item-group v-model="fileId">
                 <v-subheader :class="`text-${bkPoint.model}`"
@@ -109,7 +111,7 @@
     <v-divider></v-divider>
     <v-card-actions>
       <v-container>
-        <v-row v-if="!downloadType">
+        <v-row v-if="!download">
           <v-col cols="2">
             <v-subheader :class="`text-${bkPoint.model}`">{{
               selectedHeader
@@ -131,7 +133,7 @@
             text
             @click="submit"
             :class="`text-${bkPoint.model}`"
-            v-if="!downloadType"
+            v-if="!download"
           >
             {{ dialogYesText }}
           </v-btn>
@@ -153,7 +155,7 @@
 <script>
 export default {
   name: "DialogCardFile",
-  props: ["filepath", "dataType", "download", "bkPoint"],
+  props: ["filepath", "displayType", "download", "visible", "bkPoint"],
   data() {
     return {
       isNew: false,
@@ -171,14 +173,13 @@ export default {
       file: [],
       fileId: 0,
       folderId: 1,
-      items: [
-        { text: "Real-Time", icon: "mdi-clock" },
-        { text: "Audience", icon: "mdi-account" },
-        { text: "Conversions", icon: "mdi-flag" },
-      ],
-      displayDataType: this.dataType || 0,
-      downloadType: this.download || false,
     };
+  },
+  watch: {
+    visible() {
+      const folderpath = `${this.defaultDir}\\${this.filepath}`;
+      this.getFilePath(folderpath);
+    },
   },
   computed: {
     url() {
@@ -186,23 +187,32 @@ export default {
     },
   },
   methods: {
+    replaceSlash(path) {
+      return path.replaceAll("/", "\\");
+    },
     reflesh() {
       const dir = Object.assign(this.selectDir);
       this.getFilePath(dir);
     },
     clickDirectory(dir) {
-      this.getFilePath(dir);
-      this.selectedPath = dir;
-      this.selectDir = dir;
+      //パス名
+      const path = this.replaceSlash(dir);
+      this.getFilePath(path);
+      this.selectDir = path;
+      //選択パス名
+      const path1 = path.split("\\").slice(1).join("\\");
+      this.selectedPath = path1;
     },
     clickFile(file) {
       this.selectedPath = Object.assign(file);
-      if (this.downloadType) {
+      if (this.download) {
         this.getFile(file);
       }
     },
     submit() {
-      this.$emit("update:param", this.selectedPath);
+      const path = Object.assign(this.selectedPath);
+      console.log(path);
+      this.$emit("input", path);
       this.$emit("clickCancel");
     },
     cancel() {
@@ -214,12 +224,14 @@ export default {
         return;
       }
       const dir = this.selectDir
-        .split("/")
+        .split("\\")
         .reverse()
         .slice(1)
         .reverse()
-        .join("/");
+        .join("\\");
       this.selectDir = dir;
+      const path1 = dir.split("\\").slice(1).join("\\");
+      this.selectedPath = path1;
       this.getFilePath(dir);
     },
     async getFile(filepath) {
@@ -255,7 +267,7 @@ export default {
       }
     },
     getFilePath(dir) {
-      const url = `${this.url}/upload?path=${dir}/*`;
+      const url = `${this.url}/upload?path=${dir}\\*`;
 
       // ファイルをアップロードします。
       this.axios
@@ -264,15 +276,11 @@ export default {
           // 成功した場合
           const dirs = res.data.dirs;
           const files = res.data.files;
-          this.currentDirs = dirs;
-          if (this.displayDataType == 2 && dirs.length <= 0) {
-            console.log("フォルダは存在しません");
-            return;
-          }
-          this.dirs = dirs;
-          this.files = files;
-          this.dirpath = dir;
           console.log(dirs, files, dir);
+          this.files = files;
+          this.dirs = dirs;
+          this.dirpath = Object.assign(dir);
+          this.selectDir = Object.assign(dir);
         })
         .catch((e) => {
           // エラーの場合
@@ -348,14 +356,8 @@ export default {
     },
   },
   mounted() {
-    const path = Object.assign(this.filepath);
-    const type = Object.assign(this.downloadType);
-    console.log(path, type);
-    if (this.downloadType) {
-      this.getFilePath(this.filepath);
-    } else {
-      this.getFilePath(this.filepath);
-    }
+    const folderpath = `${this.defaultDir}\\${this.filepath}`;
+    this.getFilePath(folderpath);
   },
   created() {},
 };

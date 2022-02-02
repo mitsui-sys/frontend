@@ -1,6 +1,6 @@
 <template>
   <v-card color="#fff">
-    <v-toolbar> ログ </v-toolbar>
+    <v-toolbar> ログ設定 </v-toolbar>
     <v-card-text>
       <MyTable
         :headers="log.headers"

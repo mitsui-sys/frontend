@@ -39,9 +39,11 @@
                 >
                 <v-dialog v-model="filedialog" max-width="700px" scrorable>
                   <CardFile
-                    :dataType="2"
+                    :displayType="2"
                     :filepath="content[index].value"
+                    :visible="filedialog"
                     :bkPoint="bkPoint"
+                    @input="content[index].value = $event"
                     @clickSubmit="onSubmit"
                     @clickCancel="onCancel"
                   />
