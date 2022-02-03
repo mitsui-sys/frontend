@@ -4,7 +4,7 @@
       <v-col cols="12" align="center">
         <v-card :width="bkPoint.cardWidth" justify="center">
           <v-card-title
-            :class="`text-${bkPoint.titleModel} justify-center cyan darken-1`"
+            :class="`text-${bkPoint.titleModel} justify-center cyan`"
             outlind
           >
             {{ title }}
@@ -39,7 +39,7 @@ export default {
       title: "ホーム画面",
       label: { link: "利用規約", text: "に同意して利用する" },
       items: [
-        { text: "台帳管理", link: "/sheet", color: "gray" },
+        { text: "遺跡台帳管理", link: "/sheet", color: "gray" },
 
         {
           text: "埋蔵文化財発掘届出・通知書管理",
@@ -63,58 +63,32 @@ export default {
       const bkPt = this.$vuetify.breakpoint;
       const point = {
         name: bkPt.name,
-        cardHeight: 400,
-        cardWidth: 500,
-        titleModel: "",
-        model: "h6",
-        btnWidth: 350,
-        btnHeight: 50,
+        cardHeight: 500,
+        cardWidth: 800,
+        btnWidth: 500,
+        btnHeight: 70,
+        titleModel: "h3",
+        model: "h5",
       };
       switch (bkPt.name) {
         case "xl":
-          point.minHeight = 200;
-          point.cardHeight = 800;
-          point.cardWidth = 800;
-          point.titleModel = "h2";
-          point.model = "h3";
-          point.btnWidth = 700;
-          point.btnHeight = 150;
-          break;
         case "lg":
-          point.minHeight = 200;
-          point.cardHeight = 800;
-          point.cardWidth = 800;
-          point.titleModel = "h4";
-          point.model = "h5";
-          point.btnWidth = 500;
-          point.btnHeight = 100;
-          break;
         case "md":
-          point.minHeight = 200;
-          point.cardHeight = 800;
+          point.cardHeight = 500;
           point.cardWidth = 800;
-          point.titleModel = "h6";
-          point.model = "subtitle-1";
-          point.btnWidth = 325;
-          point.btnHeight = 50;
+          point.btnWidth = 500;
+          point.btnHeight = 70;
+          point.titleModel = "h3";
+          point.model = "h5";
           break;
         case "sm":
-          point.minHeight = 200;
-          point.cardHeight = 800;
-          point.cardWidth = 800;
-          point.titleModel = "subtitle-2";
-          point.model = "body-1";
-          point.btnWidth = 275;
-          point.btnHeight = 40;
-          break;
         case "xs":
-          point.minHeight = 200;
-          point.cardHeight = 800;
-          point.cardWidth = 800;
-          point.titleModel = "body-2";
-          point.model = "button";
-          point.btnWidth = 250;
-          point.btnHeight = 30;
+          point.cardHeight = 400;
+          point.cardWidth = 400;
+          point.btnWidth = 300;
+          point.btnHeight = 70;
+          point.titleModel = "h3";
+          point.model = "h5";
           break;
         default:
           break;

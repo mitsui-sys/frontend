@@ -24,7 +24,7 @@
               :class="`text-${bkPoint.model}`"
             ></v-autocomplete>
             <v-btn
-              @click="submit"
+              @click="getDaicho"
               class="flex-col mb-9 mr-1"
               :class="`text-${bkPoint.model}`"
               >検索</v-btn
@@ -88,9 +88,7 @@
             >テーブル表示</v-toolbar-title
           >
           <v-divider class="mx-4" vertical></v-divider>
-          <span :class="`text-${bkPoint.model}`">
-            件数:{{ tblContents.length }}
-          </span>
+          <v-toolbar-title> 件数:{{ tblContents.length }} </v-toolbar-title>
           <v-spacer />
           <!--
           <v-btn
@@ -102,7 +100,7 @@
           -->
 
           <v-btn
-            @click="registerItem()"
+            @click="registerSearch()"
             v-if="select.length > 0 && loginData.level >= 1"
             :class="`text-${bkPoint.model}`"
           >
@@ -117,14 +115,14 @@
           </v-btn>
           -->
           <v-divider class="mx-4" vertical></v-divider>
-          <v-btn @click="open(-1)" :class="`text-${bkPoint.model}`">
+          <v-btn @click="open(-1)" :class="`text-${bkPoint.model} mx-2`">
             新規登録
           </v-btn>
           <v-btn
             @click="open(0)"
             v-if="select.length > 0"
             :disabled="!select.length > 0"
-            :class="`text-${bkPoint.model}`"
+            :class="`text-${bkPoint.model} mx-2`"
           >
             閲覧
           </v-btn>
@@ -132,7 +130,7 @@
             @click="open(1)"
             v-if="select.length > 0 && loginData.level >= 1"
             :disabled="!select.length > 0"
-            :class="`text-${bkPoint.model}`"
+            :class="`text-${bkPoint.model} mx-2`"
           >
             編集
           </v-btn>
@@ -140,7 +138,7 @@
             @click="open(2)"
             v-if="select.length > 0 && loginData.level >= 1"
             :disabled="!select.length > 0"
-            :class="`text-${bkPoint.model}`"
+            :class="`text-${bkPoint.model} mx-2`"
           >
             削除
           </v-btn>
@@ -287,48 +285,34 @@ export default {
       const bkPt = this.$vuetify.breakpoint;
       const point = {
         name: bkPt.name,
-        minHeight: 200,
+        cardWidth: 800,
+        cardHeight: 200,
+        btnWidth: 500,
+        btnHeight: 70,
         titleModel: "h3",
-        model: "h6",
-        btnWidth: 350,
-        btnHeight: 50,
+        model: "h4",
       };
       switch (bkPt.name) {
         case "xl":
-          point.minHeight = 200;
+        case "lg":
+        case "md":
+          point.cardWidth = 800;
+          point.cardHeight = 500;
+          point.btnWidth = 500;
+          point.btnHeight = 70;
           point.titleModel = "h3";
           point.model = "h5";
-          point.btnWidth = 600;
-          point.btnHeight = 150;
-          break;
-        case "lg":
-          point.minHeight = 200;
-          point.titleModel = "h4";
-          point.model = "h5";
-          point.btnWidth = 500;
-          point.btnHeight = 100;
-          break;
-        case "md":
-          point.minHeight = 200;
-          point.titleModel = "h6";
-          point.model = "subtitle-1";
-          point.btnWidth = 325;
-          point.btnHeight = 50;
           break;
         case "sm":
-          point.minHeight = 200;
-          point.titleModel = "subtitle-2";
-          point.model = "body-1";
+        case "xs":
+          point.cardWidth = 800;
+          point.cardHeight = 500;
           point.btnWidth = 275;
           point.btnHeight = 40;
+          point.titleModel = "subtitle-2";
+          point.model = "body-1";
           break;
-        case "xs":
-          point.minHeight = 200;
-          point.titleModel = "body-2";
-          point.model = "button";
-          point.btnWidth = 250;
-          point.btnHeight = 30;
-          break;
+
         default:
           break;
       }
@@ -479,105 +463,123 @@ export default {
       this.tblHeaders = json;
       this.content = [];
     },
-    submit() {
+    async registerSearch() {
+      if (this.select.length <= 0) {
+        alert("選択されていません");
+        return;
+      }
+      const name = this.loginData.name;
+      const table = this.selectedName;
+      const item = Object.assign(this.select[0]);
+      const num = item["番号"] || "?";
+      const search = `${table}:${num}`;
+      const content = {
+        data: { key: { user_name: name }, update: { search: search } },
+      };
+      console.log(content);
+      const json = JSON.stringify(content);
+      const url = `/system/user`;
+      const res = await http.update(url, content);
+      if (res.status == 200) {
+        this.getDaicho();
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "台帳管理",
+          "地図連携登録",
+          json
+        );
+        this.snackbarText = "地図連携登録 成功";
+        this.snackbar = true;
+      } else {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "台帳管理",
+          "地図連携登録:失敗",
+          json
+        );
+        this.snackbarText = "地図連携登録 失敗";
+        this.snackbar = true;
+      }
+    },
+    getCond() {
+      const conds = this.queryCondition;
+      let contents = [];
+      for (const i in conds) {
+        let text = conds[i].text;
+        let value = conds[i].value;
+        contents.push(text + "=" + value);
+      }
+      return contents.join("&");
+    },
+    async getDaicho() {
       const name = this.selectedName;
       if (name === undefined || name == null || name == "") {
         console.log("台帳名が選択されていません");
         return;
       }
-      //項目を入力したか確認      this.$store.dispatch(`table/updateTableName`, this.selectedName);
+      //項目を入力したか確認
       const display = this.display.filter((x) => x.name == name)[0].display;
       const json = JSON.parse(display);
       this.tblHeaders = json;
-      // this.shownHeaders = this.display.filter(x=>x.name==this.selectedName)
-      let conds = this.queryCondition;
-      let contents = [];
-      for (let key in conds) {
-        let text = conds[key].text;
-        let value = conds[key].value;
-        contents.push(text + "=" + value);
-      }
-      let content = contents.join("&");
 
-      let url = `${this.url}/db/${name}?${content}`;
-      let body = {};
-      let option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      this.axios
-        .get(url, body, option)
-        .then((res) => {
-          const data = res.data;
-          const rows = data.rows;
-          this.tblContents = rows.length > 0 ? rows : [];
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      const cond = this.getCond();
+      let url = `/db/${name}?${cond}`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        const data = res.data;
+        const rows = data.rows;
+        this.tblContents = rows.length > 0 ? rows : [];
+        // this.setDocuments(res);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        this.snackbarText = "データ取得 失敗";
+        this.snackbar = true;
+      }
     },
-    insert(data) {
+    async insert(data) {
       const table = this.selectedName;
-      const url = `${this.url}/db/${table}`;
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("insert document", url, data, option);
-      this.axios
-        .post(url, data, option)
-        .then((response) => {
-          console.log(response);
-          http.registerLog(
-            this.url,
-            this.loginData.name,
-            "台帳管理",
-            "新規登録",
-            data
-          );
-          this.submit();
-          this.snackbarText = "新規登録 成功";
-          this.snackbar = true;
-        })
-        .catch((error) => {
-          this.snackbarText = "新規登録 失敗";
-          this.snackbar = true;
-          console.log(error);
-        });
+      const url = `/db/${table}`;
+      const res = await http.create(url, data);
+      if (res.status == 200) {
+        this.getDaicho();
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "台帳管理",
+          "新規登録",
+          data
+        );
+        this.snackbarText = "新規登録 成功";
+        this.snackbar = true;
+      } else {
+        this.snackbarText = "新規登録 失敗";
+        this.snackbar = true;
+      }
     },
-    update(data) {
+    async update(data) {
       const table = this.selectedName;
-      const url = `${this.url}/db/${table}`;
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("update document", url, data, option);
-      this.axios
-        .put(url, data, option)
-        .then((response) => {
-          console.log(response);
-          http.registerLog(
-            this.url,
-            this.loginData.name,
-            "台帳管理",
-            "更新",
-            data
-          );
-          this.submit();
-          this.snackbarText = "更新 成功";
-          this.snackbar = true;
-        })
-        .catch((error) => {
-          this.snackbarText = "更新 失敗";
-          this.snackbar = true;
-          console.log(error);
-        });
+      const url = `/db/${table}`;
+      const res = await http.update(url, data);
+      if (res.status == 200) {
+        this.getDaicho();
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "台帳管理",
+          "更新",
+          data
+        );
+        this.snackbarText = "更新 成功";
+        this.snackbar = true;
+      } else {
+        this.snackbarText = "更新 失敗";
+        this.snackbar = true;
+      }
     },
-    delete(data) {
+    async delete(data) {
       const select = this.select;
       if (select.length <= 0) {
         console.error("選択されていません");
@@ -586,28 +588,23 @@ export default {
       const table = this.selectedName;
       const mainkey = "gid";
       const id = select[0][mainkey];
-      let url = `${this.url}/db/${table}?${mainkey}=${id}`;
-      console.log(url);
-      this.axios
-        .delete(url)
-        .then((response) => {
-          console.log(response);
-          http.registerLog(
-            this.url,
-            this.loginData.name,
-            "台帳管理",
-            "削除",
-            data
-          );
-          this.submit();
-          this.snackbarText = "削除 成功";
-          this.snackbar = true;
-        })
-        .catch((error) => {
-          this.snackbarText = "削除 失敗";
-          this.snackbar = true;
-          console.log(error);
-        });
+      let url = `/db/${table}?${mainkey}=${id}`;
+      const res = await http.remove(url);
+      if (res.status == 200) {
+        this.getDaicho();
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "台帳管理",
+          "削除",
+          data
+        );
+        this.snackbarText = "削除 成功";
+        this.snackbar = true;
+      } else {
+        this.snackbarText = "削除 失敗";
+        this.snackbar = true;
+      }
     },
   },
   async mounted() {

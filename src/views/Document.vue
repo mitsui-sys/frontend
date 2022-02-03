@@ -4,19 +4,34 @@
       <v-card>
         <v-toolbar>
           <v-toolbar-title>{{ title }}</v-toolbar-title>
-          <v-divider class="mx-4" vertical></v-divider>
-          件数：{{ contents.length }}
+          <v-divider
+            class="mx-4"
+            :class="`text-${bkPoint.model}`"
+            vertical
+          ></v-divider>
+          <v-toolbar-title> 件数：{{ contents.length }} </v-toolbar-title>
           <v-spacer />
           <v-divider class="mx-4" vertical></v-divider>
-          <v-btn @click="open(-1)" outlined>新規登録</v-btn>
-          <v-btn @click="open(0)" :disabled="!select.length > 0" outlined
+          <v-btn @click="open(-1)" :class="`text-${bkPoint.model} mx-2`"
+            >新規登録</v-btn
+          >
+          <v-btn
+            @click="open(0)"
+            :disabled="!select.length > 0"
+            :class="`text-${bkPoint.model} mx-2`"
             >閲覧</v-btn
           >
 
-          <v-btn @click="open(1)" :disabled="!select.length > 0" outlined
+          <v-btn
+            @click="open(1)"
+            :disabled="!select.length > 0"
+            :class="`text-${bkPoint.model} mx-2`"
             >編集</v-btn
           >
-          <v-btn @click="open(2)" :disabled="!select.length > 0" outlined
+          <v-btn
+            @click="open(2)"
+            :disabled="!select.length > 0"
+            :class="`text-${bkPoint.model} mx-2`"
             >削除</v-btn
           >
           <v-divider class="mx-4" vertical></v-divider>
@@ -24,7 +39,7 @@
             class="primary"
             @click="download"
             :disabled="!select.length > 0"
-            outlined
+            :class="`text-${bkPoint.model} mx-2`"
             >ダウンロード</v-btn
           >
 
@@ -59,6 +74,7 @@
 import CardInput from "@/components/Card/CardInput";
 import MyTable from "@/components/DataTable/MyTable";
 import MyXlsx from "@/modules/myXlsx";
+import http from "@/modules/http";
 import Moment from "moment";
 
 export default {
@@ -112,11 +128,9 @@ export default {
       const point = {
         name: bkPt.name,
         cardHeight: 800,
-        cardWidth: 800,
-        cardMinHeight: 300,
-        cardMinWidth: 400,
-        btnWidth: 350,
-        btnHeight: 50,
+        cardWidth: 600,
+        btnWidth: 500,
+        btnHeight: 70,
         titleModel: "h3",
         model: "h5",
       };
@@ -125,22 +139,20 @@ export default {
         case "lg":
         case "md":
           point.cardHeight = 800;
-          point.cardWidth = 800;
-          point.btnWidth = 350;
-          point.btnHeight = 50;
-          point.titleModel = "h4";
-          point.model = "h6";
+          point.cardWidth = 600;
+          point.btnWidth = 500;
+          point.btnHeight = 70;
+          point.titleModel = "h3";
+          point.model = "h5";
           break;
         case "sm":
         case "xs":
           point.cardHeight = 800;
-          point.cardWidth = 800;
-          // point.cardMinHeight = 400;
-          // point.cardMinWidth = 400;
-          point.btnWidth = 350;
-          point.btnHeight = 50;
-          point.titleModel = "h5";
-          point.model = "subtitle1";
+          point.cardWidth = 600;
+          point.btnWidth = 500;
+          point.btnHeight = 70;
+          point.titleModel = "h3";
+          point.model = "h5";
           break;
         default:
           break;
@@ -175,7 +187,6 @@ export default {
         let data = [];
         for (const i in edit) {
           const text = edit[i].text;
-          console.log(text);
           data.push({ text: text, value: item[text] });
         }
         this.editItem = Object.assign(data);
@@ -255,146 +266,153 @@ export default {
       let datas = [];
 
       const content = this.select;
+      console.log("書き込みデータ", content);
       console.log(content);
-      for (let i in content) {
-        let data = Object.assign(assigns);
-        const item = content[i];
-        data["__date__"] = Moment();
-        data["__name__"] = item["user_name"];
-        data["__address__"] = item["user_address"];
-        data["__doc_number__"] = item["doc_num"];
-        data["__doc_date__"] = item["doc_date"];
-        data["__city_date__"] = item["city_date"];
-        data["__place__"] = item["place_address"];
-        data["__area__"] = item["place_area"];
+      for (const i in content) {
+        console.log(content[i]);
+        const data = Object.assign(assigns);
+        data["__date__"] = Moment().format("YYYY/MM/DD");
         datas.push(data);
       }
-      MyXlsx.getTemplateWorkbook(datas);
+      const filename = "届出・通知書.xlsx";
+      const path = "/resources/テンプレート.xlsx";
+      MyXlsx.getTemplateWorkbook(path, datas, filename);
     },
-    getDocumentData() {
-      const url = `${this.url}/document`;
-      this.axios
-        .get(url)
-        .then((res) => {
-          //成功時
-          // console.log("success", res.data);
-          let columns = Object.assign(res.data.columns);
-          let defaultItem = [];
-          for (const i in columns) {
-            const name = columns[i].columnName;
-            columns[i]["text"] = name;
-            columns[i]["value"] = name;
-            columns[i]["shown"] = name != "id";
-            if (name != "id") {
-              let content = {};
-              content["text"] = name;
-              content["value"] = "";
-              defaultItem.push(content);
-            }
+    setDocuments(res) {
+      let columns = Object.assign(res.data.columns);
+      let defaultItem = [];
+      for (const i in columns) {
+        const name = columns[i].columnName;
+        columns[i]["text"] = name;
+        columns[i]["value"] = name;
+        columns[i]["shown"] = name != "id";
+        if (name != "id") {
+          let content = {};
+          content["text"] = name;
+          content["value"] = "";
+          defaultItem.push(content);
+        }
+      }
+      const check = (colName, colType) => {
+        let isCheck;
+        for (const i in columns) {
+          const name = columns[i].columnName;
+          if (colName == name) {
+            const type = columns[i].type;
+            isCheck = colType == type;
+            break;
           }
-          const check = (colName, colType) => {
-            let isCheck;
-            for (const i in columns) {
-              const name = columns[i].columnName;
-              if (colName == name) {
-                const type = columns[i].type;
-                isCheck = colType == type;
-                break;
-              }
-            }
-            return isCheck;
-          };
-          let rows = Object.assign(res.data.rows);
-          for (const i in rows) {
-            let row = rows[i];
-            for (const key in row) {
-              if (check(key, "DATE")) {
-                const value = row[key];
-                if (value != undefined)
-                  row[key] = Moment(value).format("YYYY/MM/DD");
-              }
-            }
+        }
+        return isCheck;
+      };
+      let rows = Object.assign(res.data.rows);
+      for (const i in rows) {
+        let row = rows[i];
+        for (const key in row) {
+          if (check(key, "DATE")) {
+            const value = row[key];
+            if (value != undefined)
+              row[key] = Moment(value).format("YYYY/MM/DD");
           }
+        }
+      }
 
-          this.headers = columns;
-          this.contents = rows;
-          this.defaultItem = Object.assign(defaultItem);
-          this.editItem = Object.assign(defaultItem);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      this.headers = columns;
+      this.contents = rows;
+      this.defaultItem = Object.assign(defaultItem);
+      this.editItem = Object.assign(defaultItem);
     },
-    insert(data) {
-      // const url = `${this.url}/document`;
-      const url = `${this.url}/document`;
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("insert document", url, data, option);
-      this.axios
-        .post(url, data, option)
-        .then((res) => {
-          //成功時
-          console.log("success", res.data);
-          this.snackbarText = "新規登録 成功";
-          this.snackbar = true;
-        })
-        .catch((err) => {
-          console.log(err);
-          this.snackbarText = "新規登録 失敗";
-          this.snackbar = true;
-        });
+    async getDocumentData() {
+      const url = `/document`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        this.setDocuments(res);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        this.snackbarText = "データ取得 失敗";
+        this.snackbar = true;
+      }
     },
-    update(data) {
-      const url = `${this.url}/document`;
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("update document", url, data, option);
-      this.axios
-        .put(url, data, option)
-        .then((res) => {
-          //成功時
-          console.log("success", res.data);
-          this.snackbarText = "更新 成功";
-          this.snackbar = true;
-        })
-        .catch((err) => {
-          console.log(err);
-          this.snackbarText = "更新 失敗";
-          this.snackbar = true;
-        });
+    async insert(data) {
+      const url = `/document`;
+      const res = await http.create(url, data);
+      if (res.status == 200) {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "届出管理",
+          "新規登録",
+          data
+        );
+        this.snackbarText = "新規登録 成功";
+        this.snackbar = true;
+      } else {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "届出管理",
+          "新規登録：失敗",
+          data
+        );
+        this.snackbarText = "新規登録 失敗";
+        this.snackbar = true;
+      }
     },
-    delete(data) {
-      // const url = `${this.url}/document`;
+    async update(data) {
+      const url = `/document`;
+      const res = await http.update(url, data);
+      if (res.status == 200) {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "届出管理",
+          "更新",
+          data
+        );
+        this.snackbarText = "更新 成功";
+        this.snackbar = true;
+      } else {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "届出管理",
+          "更新：失敗",
+          data
+        );
+        this.snackbarText = "更新 失敗";
+        this.snackbar = true;
+      }
+      this.getDocumentData();
+    },
+    async delete(data) {
       console.log(data);
       const key = Object.keys(data)[0];
       const value = data[key];
-      const url = `${this.url}/document?${key}=${value}`;
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("delete document", url, data, option);
-      this.axios
-        .delete(url, data, option)
-        .then((res) => {
-          //成功時
-          console.log("success", res.data);
-          this.snackbarText = "削除 成功";
-          this.snackbar = true;
-        })
-        .catch((err) => {
-          console.log(err);
-          this.snackbarText = "削除 失敗";
-          this.snackbar = true;
-        });
+      const url = `/document?${key}=${value}`;
+      const res = await http.remove(url);
+      if (res.status == 200) {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "届出管理",
+          "削除",
+          data
+        );
+        this.snackbarText = "削除 成功";
+        this.snackbar = true;
+      } else {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "届出管理",
+          "削除：失敗",
+          data
+        );
+        this.snackbarText = "削除 失敗";
+        this.snackbar = true;
+      }
+      this.getDocumentData();
     },
     getData() {
       this.axios

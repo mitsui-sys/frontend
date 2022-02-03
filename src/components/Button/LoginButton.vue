@@ -4,6 +4,8 @@
     @click="confirm"
     id="loginbtn"
     :class="`text-${bkPoint.model}`"
+    :width="bkPoint.btnWidth"
+    :height="bkPoint.btnHeight"
     >ログイン</v-btn
   >
 </template>

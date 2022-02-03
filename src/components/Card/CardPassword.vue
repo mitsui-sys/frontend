@@ -67,7 +67,8 @@ export default {
       }
     },
     clear() {
-      this.$refs.form.resetValidation();
+      this.password_new = "";
+      this.password_same = "";
     },
     cancel() {
       this.$emit("clickCancel");

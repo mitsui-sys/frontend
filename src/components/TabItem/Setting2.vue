@@ -3,12 +3,13 @@
     <v-toolbar>
       {{ title }}
       <v-spacer />
-      <v-btn @click="onPassword" :class="`text-${bkPoint.model}`">
+      <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
         パスワード更新
       </v-btn>
-      <v-btn @click="open(-1)" :class="`text-${bkPoint.model}`">
+      <v-btn @click="open(-1)" :class="`text-${bkPoint.model} mx-2`">
         新規登録
       </v-btn>
+      <!--
       <v-btn
         @click="open(0)"
         v-if="select.length > 0"
@@ -21,7 +22,7 @@
         @click="open(1)"
         v-if="select.length > 0 && loginData.level >= 1"
         :disabled="!select.length > 0"
-        :class="`text-${bkPoint.model}`"
+        :class="`text-${bkPoint.model} mx-2`"
       >
         編集
       </v-btn>
@@ -29,10 +30,11 @@
         @click="open(2)"
         v-if="select.length > 0 && loginData.level >= 1"
         :disabled="!select.length > 0"
-        :class="`text-${bkPoint.model}`"
+        :class="`text-${bkPoint.model} mx-2`"
       >
         削除
       </v-btn>
+      -->
     </v-toolbar>
     <v-card-text>
       <MyTable
@@ -96,6 +98,7 @@ export default {
       dialog: false,
       dialogP: false,
       select: [],
+      replace: [],
     };
   },
   computed: {
@@ -107,8 +110,9 @@ export default {
     },
   },
   methods: {
-    getReplace() {
-      const data = http.getReplace(this.url);
+    async getReplace() {
+      const data = await http.getReplace(this.url);
+      this.replace = data;
       console.log(data);
     },
     onPassword() {
@@ -247,9 +251,24 @@ export default {
           let h = [];
           let defaultItem = [];
           let sorts = {};
+          //属性名書き換え
+          const rowsR = this.replace.rows;
+          console.log("rows", rowsR);
+
           for (const i in columnNames) {
-            const name = columnNames[i];
-            h.push({ text: name, value: name, sortDesc: false });
+            let name = columnNames[i];
+            let value = columnNames[i];
+
+            //データがあるなら書き換える
+            const data = rowsR.filter(
+              (x) => x.table == "user" && x.column == name
+            );
+            if (data.length > 0) {
+              const newdata = data.shift();
+              name = newdata.replace;
+            }
+
+            h.push({ text: name, value: value, sortDesc: false });
             defaultItem.push({ text: name, value: "", sortDesc: false });
             sorts[name] = true;
           }
@@ -276,34 +295,58 @@ export default {
         });
     },
 
-    insert(data) {
+    async insert(data) {
       const url = `${this.url}/system/user`;
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("insert document", url, data, option);
-      this.axios
-        .post(url, data, option)
-        .then((response) => {
-          console.log(response);
-          http.registerLog(
-            this.url,
-            this.loginData.name,
-            "ユーザー設定",
-            "新規登録",
-            data
-          );
-          this.getUserData();
-          this.snackbarText = "新規登録 成功";
-          this.snackbar = true;
-        })
-        .catch((error) => {
-          this.snackbarText = "新規登録 失敗";
-          this.snackbar = true;
-          console.log(error);
-        });
+      // const option = {
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      // };
+      // console.log("insert document", url, data, option);
+      // this.axios
+      //   .post(url, data, option)
+      //   .then((response) => {
+      //     console.log(response);
+      //     http.registerLog(
+      //       this.url,
+      //       this.loginData.name,
+      //       "ユーザー設定",
+      //       "新規登録",
+      //       data
+      //     );
+      //     this.getUserData();
+      //     this.snackbarText = "新規登録 成功";
+      //     this.snackbar = true;
+      //   })
+      //   .catch((error) => {
+      //     this.snackbarText = "新規登録 失敗";
+      //     this.snackbar = true;
+      //     console.log(error);
+      //   });
+      //       const table = this.selectedName;
+      // const url = `/db/${table}`;
+      const res = await http.create(url, data);
+      if (res.status == 200) {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "ユーザー設定",
+          "新規登録",
+          data
+        );
+        this.snackbarText = "新規登録 成功";
+        this.snackbar = true;
+      } else {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "ユーザー設定",
+          "新規登録:失敗",
+          data
+        );
+        this.snackbarText = "新規登録 失敗";
+        this.snackbar = true;
+      }
     },
     update(data) {
       const url = `${this.url}/system/user`;
@@ -370,7 +413,9 @@ export default {
   created() {
     // リアクティブデータ作成後に行いたい処理
     this.getReplace();
-    this.getUserData();
+    this.$nextTick(() => {
+      this.getUserData();
+    });
   },
 };
 </script>

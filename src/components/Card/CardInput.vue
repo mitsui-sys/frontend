@@ -67,6 +67,12 @@
     <v-card-actions>
       <v-spacer></v-spacer>
       <v-btn
+        v-if="
+          !(
+            content.filter((x) => x.text == colName).length <= 0 &&
+            dialogType == 0
+          )
+        "
         outlined
         color="blue darken-1"
         text

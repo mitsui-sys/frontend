@@ -1,6 +1,14 @@
 import axios from "axios";
 import Moment from "moment";
 
+const http = axios.create({
+  baseURL: "http://harima-isk:50001",
+  // baseURL: "http://localhost:50001",
+  headers: {
+    "Content-type": "application/json",
+  },
+});
+
 const getFile = async (filepath) => {
   try {
     const requestBody = { path: filepath };
@@ -62,20 +70,57 @@ const registerLog = (host, name, doc, action, content) => {
     });
 };
 
-const getReplace = (host) => {
+const getReplace = async (host) => {
   const url = `${host}/system/replace`;
-  axios
+  let res = await axios
     .get(url)
     .then((response) => {
-      console.log("置換", response);
-      return response;
+      console.log("置換", response.data);
+      return response.data;
     })
     .catch((error) => {
       console.log(error);
+      return null;
     });
+  return res;
+};
+
+const getAll = (url) => {
+  return http.get(url);
+};
+
+const get = (url) => {
+  return http.get(url);
+};
+
+const create = (url, data) => {
+  return http.post(url, data);
+};
+
+const update = (url, data) => {
+  return http.put(url, data);
+};
+
+const remove = (url) => {
+  return http.delete(url);
+};
+
+const removeAll = (url) => {
+  return http.delete(url);
+};
+
+const findByTitle = (title) => {
+  return http.get(`/tutorials?title=${title}`);
 };
 
 export default {
+  getAll,
+  get,
+  create,
+  update,
+  remove,
+  removeAll,
+  findByTitle,
   getFile,
   registerLog,
   getReplace,

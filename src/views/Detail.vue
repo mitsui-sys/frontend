@@ -10,7 +10,7 @@
       :loginType="loginData.level"
       :bkPoint="bkPoint"
       @clickSubmit="save"
-      @clickCancel="close"
+      @clickCancel="windowClose"
     />
   </v-card>
 </template>
@@ -67,47 +67,32 @@ export default {
       const bkPt = this.$vuetify.breakpoint;
       const point = {
         name: bkPt.name,
-        minHeight: 200,
-        titleModel: "",
-        model: "h6",
-        btnWidth: 350,
-        btnHeight: 50,
+        cardHeight: 800,
+        cardWidth: 600,
+        btnWidth: 500,
+        btnHeight: 70,
+        titleModel: "h3",
+        model: "h5",
       };
       switch (bkPt.name) {
         case "xl":
-          point.minHeight = 200;
-          point.titleModel = "h3";
-          point.model = "h5";
-          point.btnWidth = 600;
-          point.btnHeight = 150;
-          break;
         case "lg":
-          point.minHeight = 200;
+        case "md":
+          point.cardHeight = 800;
+          point.cardWidth = 600;
+          point.btnWidth = 500;
+          point.btnHeight = 70;
           point.titleModel = "h4";
           point.model = "h5";
-          point.btnWidth = 500;
-          point.btnHeight = 100;
-          break;
-        case "md":
-          point.minHeight = 200;
-          point.titleModel = "h6";
-          point.model = "subtitle-1";
-          point.btnWidth = 325;
-          point.btnHeight = 50;
           break;
         case "sm":
-          point.minHeight = 200;
-          point.titleModel = "subtitle-2";
-          point.model = "body-1";
-          point.btnWidth = 275;
-          point.btnHeight = 40;
-          break;
         case "xs":
-          point.minHeight = 200;
-          point.titleModel = "body-2";
-          point.model = "button";
-          point.btnWidth = 250;
-          point.btnHeight = 30;
+          point.cardHeight = 800;
+          point.cardWidth = 600;
+          point.btnWidth = 500;
+          point.btnHeight = 70;
+          point.titleModel = "h3";
+          point.model = "h5";
           break;
         default:
           break;

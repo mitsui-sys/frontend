@@ -123,30 +123,30 @@ const copyRanges = (sourceRange, destRange) => {
  * return
  * @param {*} datas テーブルデータ
  */
-const getTemplateWorkbook = (datas) => {
-  getWorkbook("/resources/テンプレート.xlsx")
+const getTemplateWorkbook = (filepath, datas, filename) => {
+  getWorkbook(filepath)
     .then((wb) => {
       // シート名の一覧を取得
       // console.log("Sheet Name", wb.sheets);
       let copy = wb.sheet("Sheet1").usedRange().value();
       console.log(copy);
-      const list = copy.reduce((pre, current) => {
-        pre.push(...current);
-        return pre;
-      }, []);
-      console.log(list);
-      const f = list.filter((x) => x !== undefined);
-      console.log(f);
+      // const list = copy.reduce((pre, current) => {
+      //   pre.push(...current);
+      //   return pre;
+      // }, []);
+      // console.log(list);
+      // const f = list.filter((x) => x !== undefined);
+      // console.log(f);
 
       // resultというSheetを作成
       // resultシートが既にある場合エラーとなるので、存在した場合は削除し、新しく作成する
-      const newSheetName = "result";
-      if (wb.sheet(newSheetName)) {
-        wb.deleteSheet(newSheetName);
-        wb.addSheet(newSheetName);
-      } else {
-        wb.addSheet(newSheetName);
-      }
+      // const newSheetName = "result";
+      // if (wb.sheet(newSheetName)) {
+      //   wb.deleteSheet(newSheetName);
+      //   wb.addSheet(newSheetName);
+      // } else {
+      //   wb.addSheet(newSheetName);
+      // }
       // const newSheet = wb.sheet(newSheetName);
       const newSheet = wb.sheet("Sheet1");
       for (const i in datas) {
@@ -159,8 +159,6 @@ const getTemplateWorkbook = (datas) => {
           });
         });
       }
-
-      let filename = "download.xlsx";
 
       download(wb, filename);
     })
