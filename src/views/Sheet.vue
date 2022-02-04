@@ -5,7 +5,7 @@
         <v-row>
           <v-card-title
             class="d-flex justify-center"
-            :class="`text-${bkPoint.titleModel}`"
+            :class="`text-${bkPoint.model}`"
             >検索条件</v-card-title
           >
         </v-row>
@@ -19,25 +19,29 @@
               class="flex-col mr-3"
               :items="displayItems"
               :search-input.sync="search"
+              :height="bkPoint.btnHeight"
               outlined
               label="選択"
               :class="`text-${bkPoint.model}`"
             ></v-autocomplete>
             <v-btn
               @click="getDaicho"
-              class="flex-col mb-9 mr-1"
+              class="flex-col mb-11 mr-1"
+              :height="bkPoint.btnHeight"
               :class="`text-${bkPoint.model}`"
               >検索</v-btn
             >
             <v-btn
               @click="addInput"
-              class="flex-col mb-9 mr-1"
+              class="flex-col mb-11 mr-1"
+              :height="bkPoint.btnHeight"
               :class="`text-${bkPoint.model}`"
               >条件追加</v-btn
             >
             <v-btn
               @click="initialize"
-              class="flex-col mb-9 mr-1"
+              class="flex-col mb-11 mr-1"
+              :height="bkPoint.btnHeight"
               :class="`text-${bkPoint.model}`"
               >クリア</v-btn
             >
@@ -47,11 +51,12 @@
               v-for="(item, index) in queryCondition"
               :key="index"
               class="flex"
-              height="50px"
+              :height="bkPoint.btnHeight"
             >
               <v-subheader
                 class="flex-col mt-3"
                 :class="`text-${bkPoint.model}`"
+                :height="bkPoint.btnHeight"
                 >条件{{ index + 1 }}</v-subheader
               >
               <v-select
@@ -60,6 +65,7 @@
                 :items="shownHeaders"
                 label="項目"
                 :class="`text-${bkPoint.model}`"
+                :height="bkPoint.btnHeight"
               ></v-select>
               <!-- 各入力ボックス -->
               <v-text-field
@@ -68,6 +74,7 @@
                 type="text"
                 label="条件"
                 :class="`text-${bkPoint.model}`"
+                :height="bkPoint.btnHeight"
               />
               <!-- 入力ボックスの削除ボタン -->
               <v-btn
@@ -75,6 +82,7 @@
                 type="button"
                 @click="removeInput(index)"
                 :class="`text-${bkPoint.model}`"
+                :height="bkPoint.btnHeight"
               >
                 削除
               </v-btn>
@@ -83,12 +91,14 @@
         </v-card-text>
       </v-card>
       <v-card>
-        <v-toolbar flat outlined>
+        <v-toolbar outlined :height="bkPoint.btnHeight + 10">
           <v-toolbar-title :class="`text-${bkPoint.model}`"
             >テーブル表示</v-toolbar-title
           >
           <v-divider class="mx-4" vertical></v-divider>
-          <v-toolbar-title> 件数:{{ tblContents.length }} </v-toolbar-title>
+          <v-toolbar-title :class="`text-${bkPoint.model}`">
+            件数:{{ tblContents.length }}
+          </v-toolbar-title>
           <v-spacer />
           <!--
           <v-btn
@@ -103,6 +113,7 @@
             @click="registerSearch()"
             v-if="select.length > 0 && loginData.level >= 1"
             :class="`text-${bkPoint.model}`"
+            :height="bkPoint.btnHeight"
           >
             地図連携
           </v-btn>
@@ -115,7 +126,11 @@
           </v-btn>
           -->
           <v-divider class="mx-4" vertical></v-divider>
-          <v-btn @click="open(-1)" :class="`text-${bkPoint.model} mx-2`">
+          <v-btn
+            @click="open(-1)"
+            :class="`text-${bkPoint.model} mx-2`"
+            :height="bkPoint.btnHeight"
+          >
             新規登録
           </v-btn>
           <v-btn
@@ -123,6 +138,7 @@
             v-if="select.length > 0"
             :disabled="!select.length > 0"
             :class="`text-${bkPoint.model} mx-2`"
+            :height="bkPoint.btnHeight"
           >
             閲覧
           </v-btn>
@@ -131,6 +147,7 @@
             v-if="select.length > 0 && loginData.level >= 1"
             :disabled="!select.length > 0"
             :class="`text-${bkPoint.model} mx-2`"
+            :height="bkPoint.btnHeight"
           >
             編集
           </v-btn>
@@ -139,6 +156,7 @@
             v-if="select.length > 0 && loginData.level >= 1"
             :disabled="!select.length > 0"
             :class="`text-${bkPoint.model} mx-2`"
+            :height="bkPoint.btnHeight"
           >
             削除
           </v-btn>

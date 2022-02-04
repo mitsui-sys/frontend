@@ -55,7 +55,7 @@ export default {
           point.cardWidth = 600;
           point.textWidth = 300;
           point.textHeight = 80;
-          point.btnWidth = 350;
+          point.btnWidth = 200;
           point.btnHeight = 50;
           point.titleModel = "h3";
           point.model = "h5";

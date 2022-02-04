@@ -7,7 +7,7 @@
     :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
     :type="show ? 'text' : 'password'"
     :class="`text-${bkPoint.model}`"
-    hint="最小8文字で入力してください"
+    hint="8文字以上で入力してください"
     @click:append="show = !show"
     @input="$emit('update:password', $event)"
     :rules="[

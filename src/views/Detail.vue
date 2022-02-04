@@ -12,10 +12,15 @@
       @clickSubmit="save"
       @clickCancel="windowClose"
     />
+    <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
+      <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
+      <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
+    </v-snackbar>
   </v-card>
 </template>
 
 <script>
+import http from "@/modules/http";
 import CardInput from "@/components/Card/CardInput";
 export default {
   name: "detailPage",
@@ -47,6 +52,10 @@ export default {
         y: 0,
       },
       dialogType: 0,
+      snackbar: false,
+      snackbarText: "成功",
+      snackbarColor: "green",
+      timeout: 1000,
     };
   },
   computed: {
@@ -71,8 +80,8 @@ export default {
         cardWidth: 600,
         btnWidth: 500,
         btnHeight: 70,
-        titleModel: "h3",
-        model: "h5",
+        titleModel: "h2",
+        model: "h4",
       };
       switch (bkPt.name) {
         case "xl":
@@ -82,8 +91,8 @@ export default {
           point.cardWidth = 600;
           point.btnWidth = 500;
           point.btnHeight = 70;
-          point.titleModel = "h4";
-          point.model = "h5";
+          point.titleModel = "h2";
+          point.model = "h4";
           break;
         case "sm":
         case "xs":
@@ -207,8 +216,149 @@ export default {
       console.log(this.model);
       this.iconSize = window.innerHeight * 0.1;
     },
-    updateRows() {},
-    deleteRows() {},
+    save(content) {
+      console.log(content);
+
+      const origin = this.originItem;
+      const id = origin.gid;
+      console.log("origin", id);
+
+      //insert
+      let data = {};
+      const item = Object.assign(this.editItem);
+      for (const i in item) {
+        const text = item[i].text;
+        const value = item[i].value;
+        if (value != null && value != "") data[text] = value;
+      }
+      const content1 = { data: data };
+
+      //update
+      data = {};
+      const item1 = Object.assign(content);
+      let dataSize = 0;
+      for (const i in item1) {
+        const text = item1[i].text;
+        const value = item1[i].value;
+        if (value != origin[text]) {
+          data[text] = value;
+          dataSize++;
+        }
+      }
+      const content2 = { data: { key: { gid: id }, update: data } };
+
+      //delete
+      const content3 = { gid: id };
+
+      const index = this.selectIndex;
+      if (index == -1) {
+        this.insert(content1);
+      } else if (index == 0) {
+        const key = "uri";
+        if (key in origin) {
+          this.filepath = Object.assign(origin[key]);
+          this.filedialog = true;
+        } else {
+          console.log("ファイルパスが存在しません");
+        }
+      } else if (index == 1) {
+        if (dataSize <= 0) {
+          console.log("更新する値が存在しません");
+        } else {
+          this.update(content2);
+        }
+      } else if (index == 2) {
+        this.delete(content3);
+      } else {
+        this.close();
+      }
+      this.dialog = false;
+    },
+    async insert(data) {
+      const table = this.selectedName;
+      const url = `/db/${table}`;
+      const res = await http.create(url, data);
+      if (res.status == 200) {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "詳細情報",
+          "新規登録",
+          data
+        );
+        this.snackbarText = "新規登録 成功";
+        this.snackbar = true;
+      } else {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "詳細情報",
+          "新規登録:失敗",
+          data
+        );
+        this.snackbarText = "新規登録 失敗";
+        this.snackbar = true;
+      }
+    },
+    async update(data) {
+      const table = this.selectedName;
+      const url = `/db/${table}`;
+      const res = await http.update(url, data);
+      if (res.status == 200) {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "詳細情報",
+          "更新",
+          data
+        );
+        this.snackbarText = "更新 成功";
+        this.snackbar = true;
+      } else {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "詳細情報",
+          "更新:失敗",
+          data
+        );
+        this.snackbarText = "更新 失敗";
+        this.snackbar = true;
+      }
+    },
+    async delete(data) {
+      const select = this.select;
+      if (select.length <= 0) {
+        console.error("選択されていません");
+        return;
+      }
+      const table = this.selectedName;
+      const mainkey = "gid";
+      const id = select[0][mainkey];
+      let url = `/db/${table}?${mainkey}=${id}`;
+      const res = await http.remove(url);
+      if (res.status == 200) {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "詳細情報",
+          "削除",
+          data
+        );
+        this.snackbarText = "削除 成功";
+        this.snackbar = true;
+      } else {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "詳細情報",
+          "削除:失敗",
+          data
+        );
+        this.snackbarText = "削除 失敗";
+        this.snackbar = true;
+      }
+    },
   },
   mounted() {
     this.onResize();

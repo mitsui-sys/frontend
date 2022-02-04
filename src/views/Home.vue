@@ -4,15 +4,15 @@
       <v-col cols="12" align="center">
         <v-card :width="bkPoint.cardWidth" justify="center">
           <v-card-title
-            :class="`text-${bkPoint.titleModel} justify-center cyan`"
+            :class="`text-${bkPoint.model} justify-center cyan`"
             outlind
           >
             {{ title }}
           </v-card-title>
           <v-card-text>
             <v-container>
-              <v-row>
-                <v-col v-for="(item, index) in items" :key="index" cols="12">
+              <v-row v-for="(item, index) in items" :key="index">
+                <v-col cols="12">
                   <v-btn
                     :color="item.color"
                     @click="setKind(item)"
@@ -76,16 +76,16 @@ export default {
         case "md":
           point.cardHeight = 500;
           point.cardWidth = 800;
-          point.btnWidth = 500;
+          point.btnWidth = 550;
           point.btnHeight = 70;
-          point.titleModel = "h3";
-          point.model = "h5";
+          point.titleModel = "h2";
+          point.model = "h4";
           break;
         case "sm":
         case "xs":
           point.cardHeight = 400;
-          point.cardWidth = 400;
-          point.btnWidth = 300;
+          point.cardWidth = 500;
+          point.btnWidth = 400;
           point.btnHeight = 70;
           point.titleModel = "h3";
           point.model = "h5";

@@ -2,8 +2,8 @@ import axios from "axios";
 import Moment from "moment";
 
 const http = axios.create({
+  // baseURL: "http://LG2201001:50001",
   baseURL: "http://harima-isk:50001",
-  // baseURL: "http://localhost:50001",
   headers: {
     "Content-type": "application/json",
   },
@@ -41,11 +41,11 @@ const getFile = async (filepath) => {
   }
 };
 
-const registerLog = (host, name, doc, action, content) => {
-  const url = `${host}/system/log/register`;
+const registerLog = (name, doc, action, content) => {
+  const url = `/system/log/register`;
   const now = Moment().format("YYYY/MM/DD HH:mm:ss");
   const json = JSON.stringify(content);
-  const cond = {
+  const data = {
     data: {
       user_name: name,
       document: doc,
@@ -54,35 +54,12 @@ const registerLog = (host, name, doc, action, content) => {
       created: now,
     },
   };
-  const option = {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  axios
-    .post(url, cond, option)
-    .then((response) => {
-      console.log(response);
-      console.log("ログ登録", cond);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  create(url, data);
 };
 
-const getReplace = async (host) => {
-  const url = `${host}/system/replace`;
-  let res = await axios
-    .get(url)
-    .then((response) => {
-      console.log("置換", response.data);
-      return response.data;
-    })
-    .catch((error) => {
-      console.log(error);
-      return null;
-    });
-  return res;
+const getReplace = async (url) => {
+  url = `/system/replace`;
+  return http.get(url);
 };
 
 const getAll = (url) => {

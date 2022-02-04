@@ -262,16 +262,26 @@ export default {
         __guidance__: "",
       };
 
+      const count = 24;
+      const serialNumber = Array.from({ length: count }).map((v, k) => k);
+      console.log(serialNumber); //結果：[0,1,2,3,4]
+      // const serialObj = serialNumber.map((k) => ({
+      //   id: `item-${k}`,
+      // }));
+      const serialObj = serialNumber.map((k) => `**value${k}`);
+      console.log(serialObj);
       //テーブル情報を読み込む
       let datas = [];
 
       const content = this.select;
-      console.log("書き込みデータ", content);
+      console.log("書き込みデータ", content[0]);
       console.log(content);
       for (const i in content) {
         console.log(content[i]);
         const data = Object.assign(assigns);
-        data["__date__"] = Moment().format("YYYY/MM/DD");
+        data["**value1"] = Moment().format("YYYY/MM/DD");
+        data["**value2"] = Moment().format("YYYY/MM/DD");
+        data["**value3"] = Moment().format("YYYY/MM/DD");
         datas.push(data);
       }
       const filename = "届出・通知書.xlsx";
@@ -414,21 +424,74 @@ export default {
       }
       this.getDocumentData();
     },
-    getData() {
-      this.axios
-        .get(`${this.url}/system`)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    },
     reflesh() {
       this.getDocumentData();
     },
+    async getTest() {
+      let url = `/test/mst_004_web_input_type`;
+      let res = await http.get(url);
+      if (res.status == 200) {
+        console.log(res.data);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        this.snackbarText = "データ取得 失敗";
+        this.snackbar = true;
+      }
+      url = `/test/mst_005_ruins_type`;
+      res = await http.get(url);
+      if (res.status == 200) {
+        console.log(res.data);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        this.snackbarText = "データ取得 失敗";
+        this.snackbar = true;
+      }
+      url = `/test/mst_006_ruins_current`;
+      res = await http.get(url);
+      if (res.status == 200) {
+        console.log(res.data);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        this.snackbarText = "データ取得 失敗";
+        this.snackbar = true;
+      }
+      url = `/test/mst_007_ruins_era`;
+      res = await http.get(url);
+      if (res.status == 200) {
+        console.log(res.data);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        this.snackbarText = "データ取得 失敗";
+        this.snackbar = true;
+      }
+      url = `/test/mst_008_construction_purpose`;
+      res = await http.get(url);
+      if (res.status == 200) {
+        console.log(res.data);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        this.snackbarText = "データ取得 失敗";
+        this.snackbar = true;
+      }
+      url = `/test/mst_009_guidance`;
+      res = await http.get(url);
+      if (res.status == 200) {
+        console.log(res.data);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        this.snackbarText = "データ取得 失敗";
+        this.snackbar = true;
+      }
+    },
   },
   mounted() {
+    this.getTest();
     this.reflesh();
   },
 };

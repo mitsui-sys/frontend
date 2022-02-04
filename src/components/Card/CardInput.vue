@@ -1,15 +1,17 @@
 <template>
   <v-card>
     <v-card-title>
-      <span :class="`text-${bkPoint.titleModel}`">{{ dialogTitle }}</span>
+      <span :class="`text-${bkPoint.model}`">{{ dialogTitle }}</span>
       <v-spacer></v-spacer>
     </v-card-title>
     <v-divider></v-divider>
     <v-card-text>
       <v-container style="max-height: 500px" class="overflow-y-auto">
         <v-row>
-          <v-col cols="4"> {{ headerName }} </v-col>
-          <v-col>{{ valueName }}</v-col>
+          <v-col cols="4" :class="`text-${bkPoint.model}`">
+            {{ headerName }}
+          </v-col>
+          <v-col :class="`text-${bkPoint.model}`">{{ valueName }}</v-col>
         </v-row>
         <v-row v-for="(item, index) in content" :key="index" no-gutters>
           <v-col cols="4">
