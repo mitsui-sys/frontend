@@ -14,12 +14,6 @@
         <Setting3 :bkPoint="bkPoint" />
       </v-tab-item>
     </v-tabs>
-    <!----------------
-    <v-btn @click="dialog = true">プレビュー表示</v-btn>
-    <v-dialog v-model="dialog" max-width="700px">
-      <PDF :path="filepath" />
-    </v-dialog>
-    -->
   </v-card>
 </template>
 
@@ -34,7 +28,6 @@ export default {
   data() {
     return {
       dialog: false,
-      filepath: "resources/台帳システム進捗_第5回.pdf",
     };
   },
   computed: {

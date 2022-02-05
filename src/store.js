@@ -9,6 +9,7 @@ import table from "./store/modules/table";
 import ipconfig from "./store/modules/ipconfig";
 import auth from "./store/modules/auth";
 import config from "./store/modules/config";
+import http from "./store/modules/http";
 // import createPersistedState from "vuex-persistedstate";
 
 Vue.use(Vuex);
@@ -26,6 +27,7 @@ const store = new Vuex.Store({
     db: ipconfig,
     auth: auth,
     config: config,
+    http: http,
   },
   state: {},
   mutations: {},

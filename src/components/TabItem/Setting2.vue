@@ -111,7 +111,8 @@ export default {
   },
   methods: {
     async getReplace() {
-      const data = await http.getReplace(this.url);
+      const url = "/system/replace";
+      const data = await http.getReplace(url);
       this.replace = data;
       console.log(data);
     },
@@ -238,93 +239,57 @@ export default {
       this.dialog = false;
     },
 
-    getUserData() {
+    async getUserData() {
       this.select = [];
-      const url = `${this.url}/system/user`;
-      this.loading = true;
-      this.axios
-        .get(url)
-        .then((res) => {
-          console.log("success", res.data);
-          this.user.data = Object.assign(res.data);
-          const columnNames = res.data.columns.map((x) => x.columnName);
-          let h = [];
-          let defaultItem = [];
-          let sorts = {};
-          //属性名書き換え
-          const rowsR = this.replace.rows;
-          console.log("rows", rowsR);
+      const url = `/system/user`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        console.log("success", res.data);
+        this.user.data = Object.assign(res.data);
+        const columnNames = res.data.columns.map((x) => x.columnName);
+        let h = [];
+        let defaultItem = [];
+        let sorts = {};
+        //属性名書き換え
+        const rowsR = this.replace.data.rows;
+        console.log(rowsR);
 
-          for (const i in columnNames) {
-            let name = columnNames[i];
-            let value = columnNames[i];
+        for (const i in columnNames) {
+          let name = columnNames[i];
+          let value = columnNames[i];
 
-            //データがあるなら書き換える
-            const data = rowsR.filter(
-              (x) => x.table == "user" && x.column == name
-            );
-            if (data.length > 0) {
-              const newdata = data.shift();
-              name = newdata.replace;
-            }
-
-            h.push({ text: name, value: value, sortDesc: false });
-            defaultItem.push({ text: name, value: "", sortDesc: false });
-            sorts[name] = true;
-          }
-          this.defaultItem = Object.assign(defaultItem);
-
-          let rows = res.data.rows;
-          console.log(rows);
-          for (const key in rows) {
-            const _date = rows[key]["created_day"];
-            rows[key]["created_day"] = Moment(_date).format("YYYY/MM/DD");
-          }
-          this.user.headers = Object.assign(h);
-          this.user.items = Object.assign(rows);
-          this.user.sorts = Object.assign(sorts);
-        })
-        .catch((error) => {
-          console.log(error);
-          alert(
-            "処理が正しく行えませんでした。時間をおいてやり直してください。"
+          //データがあるなら書き換える
+          const data = rowsR.filter(
+            (x) => x.table == "user" && x.column == name
           );
-        })
-        .finally(() => {
-          this.loading = false;
-        });
+          if (data.length > 0) {
+            const newdata = data.shift();
+            name = newdata.replace;
+          }
+
+          h.push({ text: name, value: value, sortDesc: false });
+          defaultItem.push({ text: name, value: "", sortDesc: false });
+          sorts[name] = true;
+        }
+        this.defaultItem = Object.assign(defaultItem);
+
+        let rows = res.data.rows;
+        console.log(rows);
+        for (const key in rows) {
+          const _date = rows[key]["created_day"];
+          rows[key]["created_day"] = Moment(_date).format("YYYY/MM/DD");
+        }
+        this.user.headers = Object.assign(h);
+        this.user.items = Object.assign(rows);
+        this.user.sorts = Object.assign(sorts);
+      } else {
+        console.log(res);
+        alert("処理が正しく行えませんでした。時間をおいてやり直してください。");
+      }
     },
 
     async insert(data) {
-      const url = `${this.url}/system/user`;
-      // const option = {
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      // };
-      // console.log("insert document", url, data, option);
-      // this.axios
-      //   .post(url, data, option)
-      //   .then((response) => {
-      //     console.log(response);
-      //     http.registerLog(
-      //       this.url,
-      //       this.loginData.name,
-      //       "ユーザー設定",
-      //       "新規登録",
-      //       data
-      //     );
-      //     this.getUserData();
-      //     this.snackbarText = "新規登録 成功";
-      //     this.snackbar = true;
-      //   })
-      //   .catch((error) => {
-      //     this.snackbarText = "新規登録 失敗";
-      //     this.snackbar = true;
-      //     console.log(error);
-      //   });
-      //       const table = this.selectedName;
-      // const url = `/db/${table}`;
+      const url = `/system/user`;
       const res = await http.create(url, data);
       if (res.status == 200) {
         http.registerLog(
@@ -348,37 +313,28 @@ export default {
         this.snackbar = true;
       }
     },
-    update(data) {
-      const url = `${this.url}/system/user`;
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("update document", url, data, option);
-      this.axios
-        .put(url, data, option)
-        .then((response) => {
-          console.log(response);
-
-          http.registerLog(
-            this.url,
-            this.loginData.name,
-            "ユーザー設定",
-            "更新",
-            data
-          );
-          this.getUserData();
-          this.snackbarText = "更新 成功";
-          this.snackbar = true;
-        })
-        .catch((error) => {
-          this.snackbarText = "更新 失敗";
-          this.snackbar = true;
-          console.log(error);
-        });
+    async update(data) {
+      const url = `/system/user`;
+      const res = await http.update(url, data);
+      if (res.status == 200) {
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "ユーザー設定",
+          "更新",
+          data
+        );
+        this.getUserData();
+        this.snackbarText = "更新 成功";
+        this.snackbar = true;
+        console.log(res);
+      } else {
+        this.snackbarText = "更新 失敗";
+        this.snackbar = true;
+        console.log(res);
+      }
     },
-    delete(data) {
+    async delete(data) {
       const select = this.select;
       if (select.length <= 0) {
         console.error("選択されていません");
@@ -386,28 +342,25 @@ export default {
       }
       const mainkey = "no";
       const id = select[0][mainkey];
-      const url = `${this.url}/system/user?${mainkey}=${id}`;
-      console.log(url);
-      this.axios
-        .delete(url)
-        .then((response) => {
-          console.log(response);
-          http.registerLog(
-            this.url,
-            this.loginData.name,
-            "ユーザー設定",
-            "削除",
-            data
-          );
-          this.getUserData();
-          this.snackbarText = "削除 成功";
-          this.snackbar = true;
-        })
-        .catch((error) => {
-          this.snackbarText = "削除 失敗";
-          this.snackbar = true;
-          console.log(error);
-        });
+      const url = `/system/user?${mainkey}=${id}`;
+      const res = await http.remove(url);
+      if (res.status == 200) {
+        console.log(res);
+        http.registerLog(
+          this.url,
+          this.loginData.name,
+          "ユーザー設定",
+          "削除",
+          data
+        );
+        this.getUserData();
+        this.snackbarText = "削除 成功";
+        this.snackbar = true;
+      } else {
+        this.snackbarText = "削除 失敗";
+        this.snackbar = true;
+        console.log(res);
+      }
     },
   },
   created() {

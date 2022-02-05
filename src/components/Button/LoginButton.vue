@@ -47,7 +47,7 @@ export default {
     async confirm() {
       const user = this.user;
       const password = this.password;
-      const url = `${this.url}/system/user/login?user_name=${user}&password=${password}`;
+      const url = `/system/user/login?user_name=${user}&password=${password}`;
       const res = await http.get(url);
       if (res.status == 200) {
         const rows = res.data.rows;
