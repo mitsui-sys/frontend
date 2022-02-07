@@ -9,7 +9,7 @@
       <v-btn @click="open(-1)" :class="`text-${bkPoint.model} mx-2`">
         新規登録
       </v-btn>
-      <!--
+
       <v-btn
         @click="open(0)"
         v-if="select.length > 0"
@@ -34,11 +34,10 @@
       >
         削除
       </v-btn>
-      -->
     </v-toolbar>
     <v-card-text>
       <MyTable
-        :headers="user.headers"
+        :headers="shownHeaders"
         :items="user.items"
         :itemkey="user.itemkey"
         :bkPoint="bkPoint"
@@ -58,6 +57,10 @@
         @clickCancel="close"
       />
     </v-dialog>
+    <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
+      <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
+      <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
+    </v-snackbar>
   </v-card>
 </template>
 
@@ -99,6 +102,11 @@ export default {
       dialogP: false,
       select: [],
       replace: [],
+      headers: [],
+      snackbar: false,
+      snackbarText: "成功",
+      snackbarColor: "green",
+      timeout: 1000,
     };
   },
   computed: {
@@ -108,13 +116,49 @@ export default {
     loginData() {
       return this.$store.getters[`auth/login`];
     },
+    shownHeaders() {
+      return this.headers.filter((h) => h.shown);
+    },
   },
   methods: {
     async getReplace() {
       const url = "/system/replace";
-      const data = await http.getReplace(url);
-      this.replace = data;
-      console.log(data);
+      const replace = await http.getReplace(url);
+      this.replace = replace;
+      console.log(replace);
+
+      const res = await http.get("/display");
+      if (res.status == 200) {
+        const rows = res.data.rows.filter((x) => x.type == 0);
+        const name = "ユーザー";
+        const display = rows.filter((x) => x.name == name).shift().display;
+        const json = JSON.parse(display);
+
+        //データがあるなら書き換える
+        const rowsR = replace.data.rows;
+        let defaultItem = [];
+        for (const i in json) {
+          const text = json[i].text;
+          const data = rowsR.filter(
+            (x) => x.table == "user" && x.column == text
+          );
+          if (data.length > 0) {
+            const newdata = data.shift();
+            json[i].text = newdata.replace;
+          }
+          defaultItem.push({
+            text: text,
+            value: "",
+            sortDesc: false,
+            shown: true,
+          });
+        }
+        this.defaultItem = Object.assign(defaultItem);
+        this.headers = json;
+        console.log(json);
+      } else {
+        console.log(res);
+      }
     },
     onPassword() {
       this.selectIndex = 1;
@@ -181,7 +225,8 @@ export default {
       }
       this.dialog = true;
     },
-    save() {
+    save(params) {
+      console.log("submit", params);
       const origin = this.originItem;
       const id = origin.no;
       console.log("origin", id);
@@ -246,42 +291,15 @@ export default {
       if (res.status == 200) {
         console.log("success", res.data);
         this.user.data = Object.assign(res.data);
-        const columnNames = res.data.columns.map((x) => x.columnName);
-        let h = [];
-        let defaultItem = [];
-        let sorts = {};
-        //属性名書き換え
-        const rowsR = this.replace.data.rows;
-        console.log(rowsR);
 
-        for (const i in columnNames) {
-          let name = columnNames[i];
-          let value = columnNames[i];
-
-          //データがあるなら書き換える
-          const data = rowsR.filter(
-            (x) => x.table == "user" && x.column == name
-          );
-          if (data.length > 0) {
-            const newdata = data.shift();
-            name = newdata.replace;
-          }
-
-          h.push({ text: name, value: value, sortDesc: false });
-          defaultItem.push({ text: name, value: "", sortDesc: false });
-          sorts[name] = true;
-        }
-        this.defaultItem = Object.assign(defaultItem);
-
+        //表示データ
         let rows = res.data.rows;
         console.log(rows);
         for (const key in rows) {
           const _date = rows[key]["created_day"];
           rows[key]["created_day"] = Moment(_date).format("YYYY/MM/DD");
         }
-        this.user.headers = Object.assign(h);
         this.user.items = Object.assign(rows);
-        this.user.sorts = Object.assign(sorts);
       } else {
         console.log(res);
         alert("処理が正しく行えませんでした。時間をおいてやり直してください。");
@@ -299,6 +317,7 @@ export default {
           "新規登録",
           data
         );
+        this.getUserData();
         this.snackbarText = "新規登録 成功";
         this.snackbar = true;
       } else {

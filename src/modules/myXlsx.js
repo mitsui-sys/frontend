@@ -154,8 +154,9 @@ const getTemplateWorkbook = (filepath, datas, filename) => {
         newSheet._rows.forEach((row) => {
           row._cells.forEach((cell) => {
             const key = cell.value();
-            // if (assigns[key]) cell.value(assigns[key]);
-            if (d[key]) cell.value(d[key]);
+            console.log(key);
+            console.log(d[key]);
+            if (d[key] != undefined) cell.value(d[key]);
           });
         });
       }

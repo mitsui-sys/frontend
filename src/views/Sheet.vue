@@ -100,15 +100,6 @@
             件数:{{ tblContents.length }}
           </v-toolbar-title>
           <v-spacer />
-          <!--
-          <v-btn
-            @click="getTemplateWorkbook()"
-            :class="`text-${bkPoint.model}`"
-          >
-            Excel出力
-          </v-btn>
-          -->
-
           <v-btn
             @click="registerSearch()"
             v-if="select.length > 0 && loginData.level >= 1"
@@ -117,17 +108,10 @@
           >
             地図連携
           </v-btn>
-          <!--
-          <v-btn
-            @click="registerItem()"
-            v-if="select.length > 0 && loginData.level >= 1"
-          >
-            ジオメトリ削除
-          </v-btn>
-          -->
           <v-divider class="mx-4" vertical></v-divider>
           <v-btn
             @click="open(-1)"
+            :disabled="selectedName == ''"
             :class="`text-${bkPoint.model} mx-2`"
             :height="bkPoint.btnHeight"
           >
@@ -135,7 +119,6 @@
           </v-btn>
           <v-btn
             @click="open(0)"
-            v-if="select.length > 0"
             :disabled="!select.length > 0"
             :class="`text-${bkPoint.model} mx-2`"
             :height="bkPoint.btnHeight"
@@ -144,8 +127,7 @@
           </v-btn>
           <v-btn
             @click="open(1)"
-            v-if="select.length > 0 && loginData.level >= 1"
-            :disabled="!select.length > 0"
+            :disabled="!(select.length > 0 && loginData.level >= 1)"
             :class="`text-${bkPoint.model} mx-2`"
             :height="bkPoint.btnHeight"
           >
@@ -282,6 +264,7 @@ export default {
         })
         .finally(() => (this.isLoading = false));
     },
+    selectedName() {},
   },
   computed: {
     url() {
@@ -355,27 +338,30 @@ export default {
     onCancel() {
       this.dialog = false;
     },
-    initialize() {
+    async getDefault() {
+      const url = `/display`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        //成功時
+        const rows = res.data.rows.filter((x) => x.type == 1);
+        this.display = rows;
+        this.displayItems = rows.map((row) => row.name);
+        // this.setDocuments(res);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        alert("台帳名 失敗");
+        this.snackbarText = "台帳名 失敗";
+        this.snackbar = true;
+      }
+    },
+    async initialize() {
       this.selectedName = "";
       this.queryCondition = [];
       this.tblHeaders = [];
       this.tblContents = [];
       this.select = [];
-      const url = `${this.url}/display`;
-      this.axios
-        .get(url)
-        .then((res) => {
-          //成功時
-          const rows = res.data.rows;
-          this.display = rows;
-          this.displayItems = rows.map((row) => row.name);
-          console.log(rows);
-          // const json = JSON.parse(rows[0].display);
-          // this.headers = json;
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      this.getDefault();
     },
     clickRow() {
       console.log("選択行", this.select);
@@ -627,10 +613,6 @@ export default {
   },
   async mounted() {
     await this.initialize();
-
-    this.$nextTick(() => {
-      //this.getResizableTable();
-    });
   },
 };
 </script>

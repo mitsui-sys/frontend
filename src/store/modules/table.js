@@ -21,6 +21,7 @@ const state = () => ({
   conditions: [],
   actionitem: { text: "Actions", value: "actions", sortable: false },
   replace: [],
+  query: {},
 });
 
 const getters = {
@@ -49,6 +50,7 @@ const getters = {
   shownHeaders: (state) => {
     return state.header.filter((h) => h.shown);
   },
+  query: (state) => state.query,
 };
 
 const actions = {
@@ -115,6 +117,9 @@ const actions = {
   updateReplace({ commit }, replace) {
     commit("updateReplace", replace);
   },
+  updateQuery({ commit }, query) {
+    commit("updateQuery", query);
+  },
 };
 
 const mutations = {
@@ -154,6 +159,9 @@ const mutations = {
   },
   updateReplace(state, replace) {
     state.replace = replace;
+  },
+  updateQuery(state, query) {
+    state.query = query;
   },
 };
 

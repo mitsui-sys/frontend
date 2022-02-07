@@ -143,7 +143,7 @@ export default {
       console.log(event.dataTransfer.files);
       this.uploadfiles = [...event.dataTransfer.files];
 
-      const url = `http://localhost:8000/data/upload`;
+      const url = `/data/upload`;
       this.uploadfiles.forEach((file) => {
         console.log(file);
         let form = new FormData();
@@ -208,7 +208,7 @@ export default {
     // ファイルアップロードボタンを押下した時に呼び出されます。
     onClickUploadFileBtn() {
       // ファイルアップロード先のURLは置き換えてください。
-      const url = `${this.url}/upload`;
+      const url = `/upload`;
 
       // フォームデータを生成し、設定します。
       let formData = new FormData();
@@ -242,7 +242,7 @@ export default {
     },
     getCurrentDir() {
       // ファイルアップロード先のURLは置き換えてください。
-      const url = `${this.url}/upload/directory`;
+      const url = `/upload/directory`;
 
       // ファイルをアップロードします。
       this.axios
@@ -257,7 +257,7 @@ export default {
         });
     },
     getCurrentFile() {
-      const url = `${this.url}/upload`;
+      const url = `/upload`;
       // ファイルをアップロードします。
       this.axios
         .get(url)

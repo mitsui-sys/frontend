@@ -59,6 +59,7 @@
           </v-snackbar>
         </v-toolbar>
         <MyTable
+          :select.sync="select"
           :headers="shownHeaders"
           :items="contents"
           :itemkey="table.itemkey"
@@ -82,6 +83,7 @@ export default {
   components: { CardInput, MyTable },
   data() {
     return {
+      select: [],
       title: "埋蔵文化財発掘届出・通知書",
       message: "お探しのページが見つかりませんでした。",
       mouse: {
@@ -97,7 +99,6 @@ export default {
         itemkey: "id",
       },
       selectIndex: -1,
-      select: [],
       editItem: [],
       originItem: [],
       defaultItem: [],
@@ -278,10 +279,17 @@ export default {
       console.log(content);
       for (const i in content) {
         console.log(content[i]);
-        const data = Object.assign(assigns);
-        data["**value1"] = Moment().format("YYYY/MM/DD");
-        data["**value2"] = Moment().format("YYYY/MM/DD");
-        data["**value3"] = Moment().format("YYYY/MM/DD");
+        let data = Object.assign(assigns);
+        let index = 0;
+        for (const test in content[i]) {
+          console.log(test);
+          const value = content[i][test] || "";
+          const name = `**value${index}`;
+          data[name] = value;
+          index++;
+        }
+        data["**created"] = new Date();
+        console.log(data);
         datas.push(data);
       }
       const filename = "届出・通知書.xlsx";
@@ -333,6 +341,7 @@ export default {
       this.editItem = Object.assign(defaultItem);
     },
     async getDocumentData() {
+      this.select = [];
       const url = `/document`;
       const res = await http.get(url);
       if (res.status == 200) {
@@ -370,6 +379,7 @@ export default {
       }
     },
     async update(data) {
+      console.log("Update", data);
       const url = `/document`;
       const res = await http.update(url, data);
       if (res.status == 200) {

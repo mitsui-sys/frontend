@@ -6,7 +6,7 @@
   -->
     <CardInput
       :dialogType="dialogType"
-      :content.sync="items"
+      :content="items"
       :loginType="loginData.level"
       :bkPoint="bkPoint"
       @clickSubmit="save"
@@ -148,66 +148,56 @@ export default {
         subWinObj1.focus(); // サブウインドウにフォーカスを設定する
       }
     },
-    getUserData(user) {
-      const url = `${this.url}/system/user`;
-      const body = {};
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      this.loading = true;
-      this.axios
-        .get(url, body, option)
-        .then((res) => {
-          console.log("user", res.data);
-          const rows = res.data.rows;
-          for (const i in rows) {
-            if (user == rows[i]["user_name"]) {
-              const level = rows[i]["level"];
-              if (level >= 1) this.dialogType = 1;
-              break;
-            }
+    async getUserData(user) {
+      const url = `/system/user`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        //成功時
+        console.log("user", res.data);
+        const rows = res.data.rows;
+        for (const i in rows) {
+          if (user == rows[i]["user_name"]) {
+            const level = rows[i]["level"];
+            if (level >= 1) this.dialogType = 1;
+            break;
           }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+        }
+        // this.setDocuments(res);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        // alert("台帳名 失敗");
+        // this.snackbarText = "台帳名 失敗";
+        // this.snackbar = true;
+      }
     },
-    getLayerData(layer, content) {
-      const url = `${this.url}/db/${layer}?${content}`;
-      const body = {};
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      this.loading = true;
-      console.log(url);
-      this.axios
-        .get(url, body, option)
-        .then((res) => {
-          const data = res.data.rows;
-          console.log(data);
-          if (data.length > 0) {
-            let data0 = data[0];
-            let tmp = [];
-            for (let key in data0) {
-              if (!["gid", "geometry"].includes(key)) {
-                let row = { text: key, value: data0[key] };
-                tmp.push(row);
-              }
+    async getLayerData(layer, content) {
+      const url = `/db/${layer}?${content}`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        //成功時
+        const data = res.data.rows;
+        console.log(data);
+        if (data.length > 0) {
+          let data0 = data[0];
+          let tmp = [];
+          for (let key in data0) {
+            if (!["gid", "geometry", "uri_パラメータ"].includes(key)) {
+              let row = { text: key, value: data0[key] };
+              tmp.push(row);
             }
-            this.items = tmp;
-            console.log(tmp);
           }
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          this.loading = false;
-        });
+          this.items = tmp;
+          console.log(tmp);
+        }
+        // this.setDocuments(res);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        // alert("台帳名 失敗");
+        // this.snackbarText = "台帳名 失敗";
+        // this.snackbar = true;
+      }
     },
     onResize() {
       this.windowSize = { x: window.innerWidth, y: window.innerHeight };
@@ -361,9 +351,10 @@ export default {
     },
   },
   mounted() {
-    this.onResize();
+    // this.onResize();
     //クエリパラメータがあれば
     let query = this.$route.query;
+    console.log(query);
 
     if (Object.keys(query).length > 0) {
       console.log("query", query);
@@ -378,29 +369,14 @@ export default {
           contents.push(`${key}=${query[key]}`);
         }
         const content = contents.join("&");
-        this.getLayerData(layer, content);
-        console.log("ユーザ確認", user);
-        this.getUserData(user);
+
+        this.$nextTick(() => {
+          this.getLayerData(layer, content);
+          console.log("ユーザ確認", user);
+          this.getUserData(user);
+        });
       }
     }
   },
 };
 </script>
-
-<style></style>
-
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-body {
-  color: blue;
-  p {
-    font-weight: bold;
-  }
-}
-</style>

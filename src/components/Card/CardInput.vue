@@ -69,12 +69,7 @@
     <v-card-actions>
       <v-spacer></v-spacer>
       <v-btn
-        v-if="
-          !(
-            content.filter((x) => x.text == colName).length <= 0 &&
-            dialogType == 0
-          )
-        "
+        v-if="showSubmit"
         outlined
         color="blue darken-1"
         text
@@ -145,6 +140,25 @@ export default {
     },
   },
   computed: {
+    showSubmit() {
+      let isShow = true;
+      const content = this.content;
+      const type = this.dialogType;
+      const name = this.colName;
+      console.log(name);
+      if (type == 0) {
+        isShow = false;
+        for (const i in content) {
+          const text = content[i]["text"];
+          if (text == name) {
+            isShow = true;
+            break;
+          }
+        }
+      }
+
+      return isShow;
+    },
     dialogTitle() {
       const type = this.dialogType;
       return type == 0

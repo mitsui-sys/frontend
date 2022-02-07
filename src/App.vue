@@ -307,44 +307,26 @@ export default {
         minHeight: 200,
         titleModel: "h4",
         btnSize: "h6",
-        btnWidth: 350,
-        btnHeight: 50,
+        btnWidth: 600,
+        btnHeight: 150,
       };
       switch (bkPt.name) {
         case "xl":
+        case "lg":
+        case "md":
           point.minHeight = 200;
           point.titleModel = "h4";
           point.btnSize = "h6";
           point.btnWidth = 600;
           point.btnHeight = 150;
           break;
-        case "lg":
-          point.minHeight = 200;
-          point.titleModel = "h4";
-          point.btnSize = "h6";
-          point.btnWidth = 500;
-          point.btnHeight = 100;
-          break;
-        case "md":
-          point.minHeight = 200;
-          point.titleModel = "h4";
-          point.btnSize = "h6";
-          point.btnWidth = 325;
-          point.btnHeight = 50;
-          break;
         case "sm":
+        case "xs":
           point.minHeight = 200;
           point.titleModel = "h4";
           point.btnSize = "h6";
           point.btnWidth = 275;
           point.btnHeight = 40;
-          break;
-        case "xs":
-          point.minHeight = 200;
-          point.titleModel = "h4";
-          point.btnSize = "h6";
-          point.btnWidth = 250;
-          point.btnHeight = 30;
           break;
         default:
           break;
@@ -382,11 +364,11 @@ export default {
     setTimeout(() => {
       this.loading = false;
     }, 500);
-    window.addEventListener("resize", this.handleResize);
+    // window.addEventListener("resize", this.handleResize);
   },
-  beforeDestroy: function () {
-    window.removeEventListener("resize", this.handleResize);
-  },
+  // beforeDestroy: function () {
+  //   window.removeEventListener("resize", this.handleResize);
+  // },
 };
 //  font-size: 20px !important;
 </script>
@@ -394,12 +376,12 @@ export default {
 <style>
 /* サイト全体のフォント指定 */
 * {
-  font-family: "MS Pゴシック";
+  font-family: "ＭＳ ゴシック", sans-serif !important;
+  /* font-size: 11px !important; */
 }
 
 .v-data-table {
   white-space: nowrap;
-  font-size: 24px !important;
 }
 .v-data-table th {
   border: 1px #333333 solid;

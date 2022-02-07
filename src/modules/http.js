@@ -10,11 +10,11 @@ const http = axios.create({
   },
 });
 
-const getFile = async (filepath) => {
+const getFile = async (url, filepath) => {
   try {
     const requestBody = { path: filepath };
     // ファイルを取得するための POST リクエスト。レスポンスタイプを指定する
-    const response = await this.axios.post("/api/download", requestBody, {
+    const response = await http.post(url, requestBody, {
       // responseType: "blob",
       responseType: "blob",
     });
@@ -90,6 +90,17 @@ const removeAll = (url) => {
 const findByTitle = (title) => {
   return http.get(`/tutorials?title=${title}`);
 };
+
+// const getFile1 = (url, data) => {
+//   const http_file = axios.create({
+//     baseURL: "http://LG2201001:50001",
+//     // baseURL: "http://harima-isk:50001",
+//   });
+//   return http_file.post(url, data, {
+//     // responseType: "blob",
+//     responseType: "blob",
+//   });
+// };
 
 export default {
   getAll,

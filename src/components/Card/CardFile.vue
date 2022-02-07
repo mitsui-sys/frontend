@@ -153,6 +153,7 @@
 </template>
 
 <script>
+import http from "@/modules/http";
 export default {
   name: "DialogCardFile",
   props: ["filepath", "displayType", "download", "visible", "bkPoint"],
@@ -220,7 +221,7 @@ export default {
     },
     moveUpDir() {
       if (this.selectDir == this.defaultDir) {
-        console.log("ルートディレクトリです");
+        alert("ルートディレクトリです");
         return;
       }
       const dir = this.selectDir
@@ -234,58 +235,30 @@ export default {
       this.selectedPath = path1;
       this.getFilePath(dir);
     },
-    async getFile(filepath) {
-      try {
-        const requestBody = { path: filepath };
-        // ファイルを取得するための POST リクエスト。レスポンスタイプを指定する
-        const url = `${this.url}/download`;
-        const response = await this.axios.post(url, requestBody, {
-          // responseType: "blob",
-          responseType: "blob",
-        });
-        console.log("Success", response);
-        // 取得したファイルをダウンロードできるようにする
-        const blob = new Blob([response.data]);
-        const fileURL = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = fileURL;
-        const filename = filepath.split("/").reverse()[0];
-        link.setAttribute("download", filename);
-        document.body.appendChild(link);
-        link.click();
-      } catch (error) {
-        // リクエスト時に Blob 形式を指定しているので、レスポンスの Blob を変換して内容を取り出す
-        try {
-          const blob = error.response.data;
-          const text = await blob.text();
-          const json = JSON.parse(text);
-          console.error("Error Object : ", json);
-        } catch (innerError) {
-          console.error("Inner Error : ", innerError);
-          console.error("Error : ", error);
-        }
-      }
+    getFile(filepath) {
+      const url = `/download`;
+      http.getFile(url, filepath);
     },
-    getFilePath(dir) {
-      const url = `${this.url}/upload?path=${dir}\\*`;
-
-      // ファイルをアップロードします。
-      this.axios
-        .get(url)
-        .then((res) => {
-          // 成功した場合
-          const dirs = res.data.dirs;
-          const files = res.data.files;
-          console.log(dirs, files, dir);
-          this.files = files;
-          this.dirs = dirs;
-          this.dirpath = Object.assign(dir);
-          this.selectDir = Object.assign(dir);
-        })
-        .catch((e) => {
-          // エラーの場合
-          console.log(e);
-        });
+    async getFilePath(dir) {
+      const url = `/upload?path=${dir}\\*`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        // 成功した場合
+        const dirs = res.data.dirs;
+        const files = res.data.files;
+        console.log(dirs, files, dir);
+        this.files = files;
+        this.dirs = dirs;
+        this.dirpath = Object.assign(dir);
+        this.selectDir = Object.assign(dir);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        // エラーの場合
+        console.log(res);
+        // this.snackbarText = "データ取得 失敗";
+        // this.snackbar = true;
+      }
     },
     // ファイル入力が変更された時呼び出されます。
     onChangeFileInput() {
@@ -320,9 +293,9 @@ export default {
     },
 
     // ファイルアップロードボタンを押下した時に呼び出されます。
-    onClickUploadFileBtn() {
+    async onClickUploadFileBtn() {
       // ファイルアップロード先のURLは置き換えてください。
-      const url = `${this.url}/upload`;
+      const url = `/upload`;
 
       // フォームデータを生成し、設定します。
       let formData = new FormData();
@@ -335,24 +308,36 @@ export default {
         this.fileData.fileName
       );
 
-      // Content-typeに"mutlipart/form-data"を設定します。
-      const option = {
-        headers: {
-          "Content-type": "multipart/form-data",
-        },
-      };
+      // // Content-typeに"mutlipart/form-data"を設定します。
+      // const option = {
+      //   headers: {
+      //     "Content-type": "multipart/form-data",
+      //   },
+      // };
 
-      // ファイルをアップロードします。
-      this.axios
-        .post(url, formData, option)
-        .then((response) => {
-          // 成功した場合
-          console.log("成功", response);
-        })
-        .catch((e) => {
-          // エラーの場合
-          console.log(e);
-        });
+      // // ファイルをアップロードします。
+      // this.axios
+      //   .post(url, formData, option)
+      //   .then((response) => {
+      //     // 成功した場合
+      //     console.log("成功", response);
+      //   })
+      //   .catch((e) => {
+      //     // エラーの場合
+      //     console.log(e);
+      //   });
+      const res = await http.create(url);
+      if (res.status == 200) {
+        //     // 成功した場合
+        //     console.log("成功", response);
+        // this.snackbarText = "新規登録 成功";
+        // this.snackbar = true;
+      } else {
+        // エラーの場合
+        console.log(res);
+        // this.snackbarText = "データ取得 失敗";
+        // this.snackbar = true;
+      }
     },
   },
   mounted() {

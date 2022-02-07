@@ -27,11 +27,11 @@
               v-for="(h, index) in headers"
               :class="h.class"
               :key="index"
-              @click="toggleOrder(h.text, index - 1)"
+              @click="toggleOrder(h.value, index - 1)"
               color="primary"
             >
               <span :class="`text-${bkPoint.model} mx-2`">{{ h.text }}</span>
-              <v-btn v-if="h.text != ''" icon
+              <v-btn v-if="h.value != ''" icon
                 ><v-icon v-if="!h.sortDesc">mdi-arrow-up</v-icon
                 ><v-icon v-if="h.sortDesc">mdi-arrow-down</v-icon></v-btn
               >
