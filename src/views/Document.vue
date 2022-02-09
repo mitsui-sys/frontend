@@ -2,44 +2,56 @@
   <v-card class="mx-auto">
     <v-container fluid>
       <v-card>
-        <v-toolbar>
-          <v-toolbar-title>{{ title }}</v-toolbar-title>
+        <v-toolbar outlined :height="bkPoint.btnHeight + 10">
+          <v-toolbar-title :class="`text-${bkPoint.model}`">{{
+            title
+          }}</v-toolbar-title>
           <v-divider
             class="mx-4"
             :class="`text-${bkPoint.model}`"
             vertical
           ></v-divider>
-          <v-toolbar-title> 件数：{{ contents.length }} </v-toolbar-title>
+          <v-toolbar-title :class="`text-${bkPoint.model}`">
+            件数：{{ contents.length }}
+          </v-toolbar-title>
           <v-spacer />
           <v-divider class="mx-4" vertical></v-divider>
-          <v-btn @click="open(-1)" :class="`text-${bkPoint.model} mx-2`"
+          <v-btn
+            @click="open(-1)"
+            :disabled="!(loginData.level >= 1)"
+            :class="`text-${bkPoint.model} mx-2`"
+            :height="bkPoint.btnHeight"
             >新規登録</v-btn
           >
           <v-btn
             @click="open(0)"
             :disabled="!select.length > 0"
             :class="`text-${bkPoint.model} mx-2`"
+            :height="bkPoint.btnHeight"
             >閲覧</v-btn
           >
 
           <v-btn
             @click="open(1)"
-            :disabled="!select.length > 0"
+            :disabled="!(select.length > 0 && loginData.level >= 1)"
             :class="`text-${bkPoint.model} mx-2`"
+            :height="bkPoint.btnHeight"
             >編集</v-btn
           >
           <v-btn
             @click="open(2)"
-            :disabled="!select.length > 0"
+            :disabled="!(select.length > 0 && loginData.level >= 1)"
             :class="`text-${bkPoint.model} mx-2`"
+            :height="bkPoint.btnHeight"
             >削除</v-btn
           >
           <v-divider class="mx-4" vertical></v-divider>
           <v-btn
             class="primary"
             @click="download"
-            :disabled="!select.length > 0"
+            :disabled="!(select.length > 0)"
             :class="`text-${bkPoint.model} mx-2`"
+            :height="bkPoint.btnHeight"
             >ダウンロード</v-btn
           >
 
@@ -114,9 +126,6 @@ export default {
     },
   },
   computed: {
-    url() {
-      return this.$store.getters[`backend/url`];
-    },
     shownHeaders() {
       return this.headers.filter((x) => x.shown);
     },
@@ -170,8 +179,7 @@ export default {
       this.dialog = false;
       this.$nextTick(() => {
         this.selectIndex = -1;
-        this.editItem = Object.assign({}, this.defaultItem);
-        this.reflesh();
+        // this.editItem = Object.assign({}, this.defaultItem);
       });
     },
     open(index) {
@@ -364,6 +372,7 @@ export default {
           "新規登録",
           data
         );
+        this.reflesh();
         this.snackbarText = "新規登録 成功";
         this.snackbar = true;
       } else {
@@ -390,6 +399,7 @@ export default {
           "更新",
           data
         );
+        this.reflesh();
         this.snackbarText = "更新 成功";
         this.snackbar = true;
       } else {
@@ -419,6 +429,7 @@ export default {
           "削除",
           data
         );
+        this.reflesh();
         this.snackbarText = "削除 成功";
         this.snackbar = true;
       } else {

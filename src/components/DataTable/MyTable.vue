@@ -31,7 +31,7 @@
               color="primary"
             >
               <span :class="`text-${bkPoint.model} mx-2`">{{ h.text }}</span>
-              <v-btn v-if="h.value != ''" icon
+              <v-btn v-if="h.text != ''" icon
                 ><v-icon v-if="!h.sortDesc">mdi-arrow-up</v-icon
                 ><v-icon v-if="h.sortDesc">mdi-arrow-down</v-icon></v-btn
               >

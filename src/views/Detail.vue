@@ -5,7 +5,7 @@
     {{ windowSize }}
   -->
     <CardInput
-      :dialogType="dialogType"
+      :dialogType="selectIndex"
       :content="items"
       :loginType="loginData.level"
       :bkPoint="bkPoint"
@@ -51,11 +51,12 @@ export default {
         x: 0,
         y: 0,
       },
-      dialogType: 0,
+      selectIndex: 0,
       snackbar: false,
       snackbarText: "成功",
       snackbarColor: "green",
       timeout: 1000,
+      selectedName: "",
     };
   },
   computed: {
@@ -158,7 +159,9 @@ export default {
         for (const i in rows) {
           if (user == rows[i]["user_name"]) {
             const level = rows[i]["level"];
-            if (level >= 1) this.dialogType = 1;
+            console.log("level", level);
+            if (level >= 1) this.selectIndex = 1;
+            else this.selectIndex = 0;
             break;
           }
         }
@@ -172,6 +175,7 @@ export default {
       }
     },
     async getLayerData(layer, content) {
+      this.selectedName = layer;
       const url = `/db/${layer}?${content}`;
       const res = await http.get(url);
       if (res.status == 200) {
@@ -179,10 +183,11 @@ export default {
         const data = res.data.rows;
         console.log(data);
         if (data.length > 0) {
-          let data0 = data[0];
+          const data0 = data[0];
           let tmp = [];
+          this.originItem = Object.assign(data0);
           for (let key in data0) {
-            if (!["gid", "geometry", "uri_パラメータ"].includes(key)) {
+            if (!["gid", "geometry", "uri_ハイパーリンク"].includes(key)) {
               let row = { text: key, value: data0[key] };
               tmp.push(row);
             }
@@ -214,22 +219,23 @@ export default {
       console.log("origin", id);
 
       //insert
-      let data = {};
-      const item = Object.assign(this.editItem);
-      for (const i in item) {
-        const text = item[i].text;
-        const value = item[i].value;
-        if (value != null && value != "") data[text] = value;
-      }
-      const content1 = { data: data };
+      // let data = {};
+      // const item = Object.assign(this.editItem);
+      // for (const i in item) {
+      //   const text = item[i].text;
+      //   const value = item[i].value;
+      //   if (value != null && value != "") data[text] = value;
+      // }
+      // const content1 = { data: data };
 
       //update
-      data = {};
+      let data = {};
       const item1 = Object.assign(content);
       let dataSize = 0;
       for (const i in item1) {
         const text = item1[i].text;
         const value = item1[i].value;
+        console.log(text, value);
         if (value != origin[text]) {
           data[text] = value;
           dataSize++;
@@ -242,7 +248,7 @@ export default {
 
       const index = this.selectIndex;
       if (index == -1) {
-        this.insert(content1);
+        // this.insert(content1);
       } else if (index == 0) {
         const key = "uri";
         if (key in origin) {
@@ -253,7 +259,7 @@ export default {
         }
       } else if (index == 1) {
         if (dataSize <= 0) {
-          console.log("更新する値が存在しません");
+          alert("更新する値が存在しません");
         } else {
           this.update(content2);
         }

@@ -161,7 +161,7 @@ export default {
     return {
       isNew: false,
       columns: [],
-      defaultDir: "付属図書",
+      defaultDir: "C:\\埋蔵文化財管理システム\\播磨町\\付属図書",
       selectDir: "付属図書",
       selectedHeader: "選択",
       selectedPath: "",

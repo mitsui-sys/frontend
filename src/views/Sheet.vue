@@ -66,7 +66,9 @@
                 label="項目"
                 :class="`text-${bkPoint.model}`"
                 :height="bkPoint.btnHeight"
-              ></v-select>
+                item-height="200"
+              >
+              </v-select>
               <!-- 各入力ボックス -->
               <v-text-field
                 v-model="item.value"
@@ -102,7 +104,7 @@
           <v-spacer />
           <v-btn
             @click="registerSearch()"
-            v-if="select.length > 0 && loginData.level >= 1"
+            v-if="select.length > 0"
             :class="`text-${bkPoint.model}`"
             :height="bkPoint.btnHeight"
           >
@@ -111,7 +113,7 @@
           <v-divider class="mx-4" vertical></v-divider>
           <v-btn
             @click="open(-1)"
-            :disabled="selectedName == ''"
+            :disabled="!(selectedName != '' && loginData.level >= 1)"
             :class="`text-${bkPoint.model} mx-2`"
             :height="bkPoint.btnHeight"
           >
@@ -119,7 +121,7 @@
           </v-btn>
           <v-btn
             @click="open(0)"
-            :disabled="!select.length > 0"
+            :disabled="!(select.length > 0)"
             :class="`text-${bkPoint.model} mx-2`"
             :height="bkPoint.btnHeight"
           >
@@ -135,8 +137,7 @@
           </v-btn>
           <v-btn
             @click="open(2)"
-            v-if="select.length > 0 && loginData.level >= 1"
-            :disabled="!select.length > 0"
+            :disabled="!(select.length > 0 && loginData.level >= 1)"
             :class="`text-${bkPoint.model} mx-2`"
             :height="bkPoint.btnHeight"
           >

@@ -110,9 +110,6 @@ export default {
     };
   },
   computed: {
-    url() {
-      return this.$store.getters[`backend/url`];
-    },
     loginData() {
       return this.$store.getters[`auth/login`];
     },
