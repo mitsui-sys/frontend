@@ -474,10 +474,18 @@ export default {
         return;
       }
       const name = this.loginData.name;
-      const table = this.selectedName;
+      const tableName = this.selectedName;
+      const kc_key = this.display.filter((x) => x.name == tableName)[0][
+        "kc_key"
+      ];
       const item = Object.assign(this.select[0]);
-      const num = item["番号"] || "?";
-      const search = `${table}:${num}`;
+      const num = item[kc_key] || "?";
+      console.log(item);
+      if (num == "?") {
+        alert("連携キーが見つかりません");
+        return;
+      }
+      const search = `${tableName}:${num}`;
       const content = {
         data: { key: { user_name: name }, update: { search: search } },
       };
