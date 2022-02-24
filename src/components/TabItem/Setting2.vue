@@ -4,6 +4,12 @@
       {{ title }}
       <v-spacer />
       <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
+        権限レベル更新
+      </v-btn>
+      <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
+        グループ名更新
+      </v-btn>
+      <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
         パスワード更新
       </v-btn>
       <v-btn @click="open(-1)" :class="`text-${bkPoint.model} mx-2`">
