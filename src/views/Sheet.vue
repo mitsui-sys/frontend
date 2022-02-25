@@ -23,6 +23,7 @@
               outlined
               label="選択"
               :class="`text-${bkPoint.model}`"
+              value="initValue"
             ></v-autocomplete>
             <v-btn
               @click="getDaicho"
@@ -163,6 +164,8 @@
           :items="tblContents"
           :itemkey="itemkey"
           :bkPoint="bkPoint"
+          :sortByItem="sortByItem"
+          :sortByDesc="sortByDesc"
           @childChange="applyChanges"
         />
         <v-dialog v-model="filedialog" max-width="700px" scrorable>
@@ -209,7 +212,7 @@ export default {
       fileDialog: false,
       fileDialogPath: "",
       dialog: false,
-      selectedName: "",
+      selectedName: "指定文化財",
       select: [],
       selectedId: -1,
       valid: false,
@@ -229,7 +232,9 @@ export default {
       editItem: [],
       originItem: [],
       selectIndex: "",
-      // defaultItem: [],
+      initValue: "初期値",
+      // sortByItem: ["年度", "番号"],
+      // sortByDesc: [false, false],
     };
   },
   watch: {
@@ -347,9 +352,10 @@ export default {
         const rows = res.data.rows.filter((x) => x.type == 1);
         this.display = rows;
         this.displayItems = rows.map((row) => row.name);
-        // this.setDocuments(res);
-        // this.snackbarText = "新規登録 成功";
-        // this.snackbar = true;
+        if (this.displayItems > 0) {
+          this.selectedName = Object.assign(this.displayItems[0]);
+          console.log("selectedName", this.selectedName);
+        }
       } else {
         alert("台帳名 失敗");
         this.snackbarText = "台帳名 失敗";
@@ -620,8 +626,9 @@ export default {
       }
     },
   },
-  async mounted() {
-    await this.initialize();
+  created() {
+    this.initialize();
   },
+  mounted() {},
 };
 </script>

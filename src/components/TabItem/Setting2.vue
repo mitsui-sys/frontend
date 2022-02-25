@@ -47,6 +47,8 @@
         :items="user.items"
         :itemkey="user.itemkey"
         :bkPoint="bkPoint"
+        :sortByItem="sortByItem"
+        :sortByDesc="sortByDesc"
         @childChange="applyChanges"
       />
     </v-card-text>
@@ -56,6 +58,7 @@
     <v-dialog v-model="dialog" max-width="700px" scrorable persistent>
       <CardInput
         :dialogType="selectIndex"
+        :header="headers"
         :content="editItem"
         :loginType="loginData"
         :bkPoint="bkPoint"
@@ -113,6 +116,15 @@ export default {
       snackbarText: "成功",
       snackbarColor: "green",
       timeout: 1000,
+      sortByItem: ["no"],
+      sortByDesc: [false],
+      defaultColSetting: {
+        text: "",
+        value: "",
+        shown: 0,
+        type: "型なし",
+        main_key: false,
+      },
     };
   },
   computed: {
@@ -120,47 +132,50 @@ export default {
       return this.$store.getters[`auth/login`];
     },
     shownHeaders() {
-      return this.headers.filter((h) => h.shown);
+      return this.headers.filter((h) => h.shown > 0);
     },
   },
   methods: {
     async getReplace() {
       const url = "/system/replace";
-      const replace = await http.getReplace(url);
-      this.replace = replace;
-      console.log(replace);
-
-      const res = await http.get("/display");
+      const res = await http.getReplace(url);
       if (res.status == 200) {
-        const rows = res.data.rows.filter((x) => x.type == 0);
-        const name = "ユーザー";
-        const display = rows.filter((x) => x.name == name).shift().display;
-        const json = JSON.parse(display);
-
-        //データがあるなら書き換える
-        const rowsR = replace.data.rows;
-        let defaultItem = [];
-        for (const i in json) {
-          const text = json[i].text;
-          const data = rowsR.filter(
-            (x) => x.table == "user" && x.column == text
-          );
-          if (data.length > 0) {
-            const newdata = data.shift();
-            json[i].text = newdata.replace;
-          }
-          defaultItem.push({
-            text: text,
-            value: "",
-            sortDesc: false,
-            shown: true,
-          });
-        }
-        this.defaultItem = Object.assign(defaultItem);
-        this.headers = json;
-        console.log(json);
+        const data = res.data;
+        console.log(data);
+        this.replace = data;
       } else {
-        console.log(res);
+        console.error(res);
+      }
+
+      const res1 = await http.get("/system/user");
+      if (res1.status == 200) {
+        //ユーザ一覧を取得
+        const data = res1.data;
+        //列情報取得
+        const columns = data.columns;
+        //列名取得
+        const colNames = columns.map((x) => x.columnName);
+        //表示設定を取得
+        let headers = [];
+        const replace = this.replace.rows;
+        for (const name of colNames) {
+          const repdata =
+            replace
+              .filter((x) => x.table == "user" && x.column == name)
+              .shift() || undefined;
+          const data = {
+            text: repdata.replace || name,
+            value: name,
+            shown: repdata.display_type || true,
+            type: repdata.data_type || "型なし",
+            main_key: repdata.main_key || false,
+          };
+          headers.push(data);
+        }
+        this.headers = headers;
+        console.log("headers", headers);
+      } else {
+        console.error(res1);
       }
     },
     onPassword() {
@@ -211,21 +226,23 @@ export default {
       this.selectIndex = index;
 
       if (this.selectIndex != -1) {
+        //新規作成以外
         if (this.select.length <= 0) {
           alert("選択されていません");
           return;
         }
-        const item = Object.assign(this.select[0]);
-        console.log(item);
-        this.originItem = Object.assign(item);
+        const selected = this.select[0];
+        this.originItem = Object.assign(selected);
         const edit = Object.assign(this.defaultItem);
         let data = [];
-        for (const i in edit) {
+        for (const i in this.shownHeaders) {
           const text = edit[i].text;
-          data.push({ text: text, value: item[text] });
+          data.push({ text: text, value: selected[text] });
         }
+        console.log(data);
         this.editItem = Object.assign(data);
       } else {
+        //新規作成
         this.editItem = Object.assign(this.defaultItem);
       }
       this.dialog = true;

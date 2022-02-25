@@ -59,15 +59,6 @@
               >
             </v-col>
           </v-row>
-          <v-row>
-            <v-switch
-              v-for="col in headers"
-              :key="col.value"
-              v-model="col.shown"
-              :label="`${col.text} : ${col.type}`"
-              @change="changeTableShown"
-            ></v-switch>
-          </v-row>
         </v-container>
       </v-card>
     </v-card-text>
@@ -97,13 +88,12 @@ export default {
         { name: "Jean", id: 2 },
       ],
       dragging: false,
+      myArray: [],
+      drag: false,
     };
   },
   //   components: { UserField, PasswordField },
   computed: {
-    url() {
-      return this.$store.getters[`backend/url`];
-    },
     tableNameList() {
       return this.$store.getters[`table/tableNameList`];
     },
@@ -152,7 +142,10 @@ export default {
           return;
         }
         const display = rows[0].display;
-
+        if (display == undefined) {
+          console.log("表示設定がありません");
+          return;
+        }
         const json = JSON.parse(display);
         this.headers = json;
         console.log(json);

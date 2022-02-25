@@ -102,7 +102,7 @@ import CardFile from "@/components/Card/CardFile";
 export default {
   name: "DialogCard",
   components: { CardFile },
-  props: ["dialogType", "content", "loginType", "dialog", "bkPoint"],
+  props: ["dialogType", "header", "content", "loginType", "dialog", "bkPoint"],
   data() {
     return {
       headerName: "項目名",
