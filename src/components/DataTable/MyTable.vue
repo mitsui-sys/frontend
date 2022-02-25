@@ -18,6 +18,7 @@
       single-select
       hide-default-header
       hide-default-footer
+      multi-sort
       @page-count="pageCount = $event"
     >
       <template v-slot:header="{ props: { headers } }">

@@ -39,7 +39,12 @@
                   :class="`text-${bkPoint.model}`"
                   >選択</v-btn
                 >
-                <v-dialog v-model="filedialog" max-width="700px" scrorable>
+                <v-dialog
+                  v-model="filedialog"
+                  max-width="700px"
+                  scrorable
+                  persistent
+                >
                   <CardFile
                     :displayType="2"
                     :filepath="content[index].value"

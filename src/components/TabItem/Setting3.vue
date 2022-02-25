@@ -32,16 +32,15 @@ export default {
       },
     };
   },
-  computed: {
-    url() {
-      return this.$store.getters[`backend/url`];
-    },
-  },
   methods: {
     async getReplace() {
-      const data = await http.getReplace(this.url);
-      this.replace = data;
-      console.log(data);
+      const res = await http.getReplace();
+      if (res.status == 200) {
+        console.log(res.data);
+        this.replace = res.data;
+      } else {
+        console.log(res);
+      }
     },
     applyChanges(select) {
       // console.log("parentChange", select);
@@ -51,6 +50,7 @@ export default {
       const columnNames = res.data.columns.map((x) => x.columnName);
       let headers = [];
       //属性名書き換え
+      console.log(this.replace.data.rows);
       const rowsR = this.replace.data.rows;
 
       for (const i in columnNames) {

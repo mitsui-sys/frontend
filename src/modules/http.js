@@ -58,8 +58,8 @@ const registerLog = (name, doc, action, content) => {
   create(url, data);
 };
 
-const getReplace = async (url) => {
-  url = `/system/replace`;
+const getReplace = async () => {
+  const url = `/system/replace`;
   return http.get(url);
 };
 

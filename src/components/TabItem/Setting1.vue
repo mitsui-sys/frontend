@@ -77,6 +77,8 @@
 <script>
 // import UserField from "@/components/TextField/UserField.vue";
 // import PasswordField from "@/components/TextField/PasswordField.vue";
+import http from "@/modules/http";
+
 export default {
   name: "setting1",
   props: ["bkPoint"],
@@ -88,6 +90,13 @@ export default {
       tableItems: [],
       displayItems: [],
       headers: [],
+      enabled: true,
+      list: [
+        { name: "John", id: 0 },
+        { name: "Joao", id: 1 },
+        { name: "Jean", id: 2 },
+      ],
+      dragging: false,
     };
   },
   //   components: { UserField, PasswordField },
@@ -98,154 +107,123 @@ export default {
     tableNameList() {
       return this.$store.getters[`table/tableNameList`];
     },
+    draggingInfo() {
+      return this.dragging ? "under drag" : "";
+    },
   },
   methods: {
     changeDev() {
       console.log("development", this.development);
       this.$store.dispatch(`config/updateDevelopment`, this.development);
     },
-    getTableName() {
-      //DBにあるすべてのテーブル名を取得する
-      this.axios
-        .get(`${this.url}/table`)
-        .then((res) => {
-          //成功時
-          console.log("テーブル名を全て取得", res.data.rows);
-          const rows = res.data.rows;
-          this.$store.dispatch(`table/updateTableNameList`, rows);
-        })
-        .catch((err) => {
-          return err.response;
-        });
+    async getTableName() {
+      this.select = [];
+      const url = `/table`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        console.log(res);
+        console.log("テーブル名を全て取得", res.data.rows);
+        const rows = res.data.rows;
+        this.$store.dispatch(`table/updateTableNameList`, rows);
+      } else {
+        console.error(res);
+      }
     },
-    getTableShown() {
-      this.axios
-        .get(`${this.url}/display`)
-        .then((res) => {
-          //成功時
-          console.log("表示データ取得", res.data);
-          const rows = res.data.rows;
-          this.displayItems = rows.map((row) => row.name);
-        })
-        .catch((err) => {
-          console.log("失敗", err);
-        });
+    async getTableShown() {
+      const url = `/display`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        console.log("表示データ取得", res.data);
+        const rows = res.data.rows;
+        this.displayItems = rows.map((row) => row.name);
+      } else {
+        console.error(res);
+      }
     },
-    selectTableShown() {
+    async selectTableShown() {
       const table = this.selectedDisplay;
-      const url = `${this.url}/display/${table}`;
-      this.axios
-        .get(url)
-        .then((res) => {
-          //成功時
-          console.log("特定の表示データ取得", res.data);
-          const rows = res.data.rows;
-          if (rows.length <= 0) {
-            console.log(`台帳${table}が存在しません`);
-            return;
-          }
-          const json = JSON.parse(rows[0].display);
-          this.headers = json;
-          console.log(json);
-        })
-        .catch((err) => {
-          console.log("失敗", err);
-        });
+      const url = `/display/${table}`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        console.log("特定の表示データ取得", res.data);
+        const rows = res.data.rows;
+        if (rows.length <= 0) {
+          console.log(`台帳${table}が存在しません`);
+          return;
+        }
+        const display = rows[0].display;
+
+        const json = JSON.parse(display);
+        this.headers = json;
+        console.log(json);
+      } else {
+        console.error(res);
+      }
     },
-    registerGetColumns() {
+    async registerGetColumns() {
       const table = this.selectedDisplay;
-      const url = `${this.url}/db/${table}`;
-      this.axios
-        .get(url)
-        .then((res) => {
-          console.log("成功", res);
-          const columns = res.data.columns;
-          let headers = [];
-          for (const i in columns) {
-            const c = columns[i];
-            const name = c.columnName;
-            const shown = c.shown;
-            const type = c.type;
-            headers.push({ text: name, value: name, shown: shown, type: type });
-          }
-          this.headers = Object.assign(headers);
-        })
-        .catch((err) => {
-          console.log("失敗", err);
-        });
+      const url = `/db/${table}`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        const columns = res.data.columns;
+        let headers = [];
+        for (const i in columns) {
+          const c = columns[i];
+          const name = c.columnName;
+          const shown = c.shown;
+          const type = c.type;
+          headers.push({ text: name, value: name, shown: shown, type: type });
+        }
+        this.headers = Object.assign(headers);
+      } else {
+        console.error(res);
+      }
     },
-    registerTableShown() {
-      const url = `${this.url}/display`;
+    async registerTableShown() {
+      const url = `/display`;
       const data = {
         data: {
           name: this.selectTable,
           display: JSON.stringify(this.headers),
         },
       };
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("表示データ新規作成", url, data, option);
-      this.axios
-        .post(url, data, option)
-        .then((res) => {
-          //成功時
-          console.log("success", res.data);
-        })
-        .catch((err) => {
-          console.log("失敗", err);
-        });
+      const res = await http.create(url, data);
+      if (res.status == 200) {
+        console.log("success", res.data);
+      } else {
+        console.error(res);
+      }
     },
-    changeTableShown() {
+    async changeTableShown() {
       const table = this.selectedDisplay;
-      const url = `${this.url}/display`;
+      const url = `/display`;
       const data = {
         data: {
           key: { name: table },
           update: { display: JSON.stringify(this.headers) },
         },
       };
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("表示データ更新", url, data, option);
-      this.axios
-        .put(url, data, option)
-        .then((res) => {
-          //成功時
-          console.log("success", res.data);
-        })
-        .catch((err) => {
-          console.log("失敗", err);
-        });
+      const res = await http.create(url, data);
+      if (res.status == 200) {
+        console.log("成功", res.data);
+      } else {
+        console.error(res);
+      }
     },
-    deleteTableShown() {
-      const table = this.selectTable;
-      const url = `${this.url}/display`;
+    async deleteTableShown() {
+      const table = this.selectedDisplay;
+      const url = `/display`;
       const data = {
         data: {
           key: { name: table },
         },
       };
-      const option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      console.log("表示データ削除", url, data, option);
-      this.axios
-        .delete(url, data, option)
-        .then((res) => {
-          //成功時
-          console.log("success", res.data);
-        })
-        .catch((err) => {
-          console.log("失敗", err);
-        });
+      const res = await http.create(url, data);
+      if (res.status == 200) {
+        console.log("成功", res.data);
+      } else {
+        console.error(res);
+      }
     },
   },
   beforeCreate() {
@@ -283,3 +261,13 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.buttons {
+  margin-top: 35px;
+}
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+</style>

@@ -50,10 +50,10 @@
         @childChange="applyChanges"
       />
     </v-card-text>
-    <v-dialog v-model="dialogP" max-width="700px" scrorable>
+    <v-dialog v-model="dialogP" max-width="700px" scrorable persistent>
       <CardPassword @clickSubmit="updatePassword" @clickCancel="onCancel" />
     </v-dialog>
-    <v-dialog v-model="dialog" max-width="700px" scrorable>
+    <v-dialog v-model="dialog" max-width="700px" scrorable persistent>
       <CardInput
         :dialogType="selectIndex"
         :content="editItem"
@@ -177,6 +177,8 @@ export default {
       const origin = this.originItem;
       const id = origin.no;
       let data = {};
+      // 更新項目がある場合
+
       data["created_day"] = Moment().format("YYYY/MM/DD");
       data["password"] = password;
       const content2 = { data: { key: { no: id }, update: data } };
