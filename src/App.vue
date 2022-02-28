@@ -360,10 +360,11 @@ export default {
       this.$router.push("/login", () => {});
     },
   },
-  mounted: function () {
+  mounted() {
     setTimeout(() => {
       this.loading = false;
     }, 500);
+
     // window.addEventListener("resize", this.handleResize);
   },
   // beforeDestroy: function () {

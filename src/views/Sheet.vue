@@ -24,7 +24,18 @@
               label="選択"
               :class="`text-${bkPoint.model}`"
               value="initValue"
+              @change="changeName"
             ></v-autocomplete>
+            <!--
+            <v-select
+              v-model="selectedName"
+              :items="displayItems"
+              outlined
+              :height="bkPoint.btnHeight"
+              :class="`text-${bkPoint.model}`"
+              @change="changeName"
+            />
+            -->
             <v-btn
               @click="getDaicho"
               class="flex-col mb-11 mr-1"
@@ -233,44 +244,17 @@ export default {
       originItem: [],
       selectIndex: "",
       initValue: "初期値",
-      // sortByItem: ["年度", "番号"],
-      // sortByDesc: [false, false],
+      sortByItem: ["年度", "番号"],
+      sortByDesc: [false, false],
     };
   },
   watch: {
     dialog(val) {
       val || this.close();
     },
-    search(val) {
-      // すでに読み込み済みの場合は、何もしない
-      // if (this.items.length > 0) return;
-      // 読み込み中の場合も、何もしない
-      if (this.isLoading) return;
-
-      this.isLoading = true;
-      if (val == null) return;
-      let url = `/columns/${val}`;
-      let cond = {};
-      let option = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-
-      console.log(url, cond, option);
-      this.axios
-        .get(url, cond, option)
-        .then((res) => {
-          console.log("columns", res.data);
-          let columns = res.data.columns;
-          this.columns = columns;
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => (this.isLoading = false));
+    selectedName() {
+      this.content = [];
     },
-    selectedName() {},
   },
   computed: {
     url() {
@@ -348,12 +332,20 @@ export default {
       const url = `/display`;
       const res = await http.get(url);
       if (res.status == 200) {
-        //成功時
+        //台帳グループのみ抽出
         const rows = res.data.rows.filter((x) => x.type == 1);
+        //表示設定を取得
         this.display = rows;
-        this.displayItems = rows.map((row) => row.name);
-        if (this.displayItems > 0) {
-          this.selectedName = Object.assign(this.displayItems[0]);
+        const sorted = rows.sort((a, b) => (a.sortNo > b.sortNo ? 1 : -1));
+        const items = sorted.map((x) => x.name);
+        // let items = [];
+        // for (const item of sorted) {
+        //   items.push(item.name);
+        // }
+        this.displayItems = items;
+        // this.displayItems = sorted.map((row) => row.name);
+        if (items > 0) {
+          this.selectedName = Object.assign(items.shift());
           console.log("selectedName", this.selectedName);
         }
       } else {
@@ -468,11 +460,20 @@ export default {
       this.queryCondition.splice(index, 1); // 👈 該当するデータを削除
     },
     changeName() {
+      console.log("台帳名の変更");
       const name = this.selectedName;
-      const display = this.display.filter((x) => x.name == name)[0].display;
-      const json = JSON.parse(display);
-      this.tblHeaders = json;
-      this.content = [];
+      const data = this.display.filter((x) => x.name == name)[0];
+      if (data != undefined) {
+        console.log(data);
+        const display = JSON.parse(data.display);
+        this.tblHeaders = display;
+        const sort_default = JSON.parse(data.sort_default);
+        this.sortByItem = sort_default.map((x) => x.column) || [];
+        this.sortByDesc = sort_default.map((x) => x.desc) || [];
+        console.log(this.sortByItem, this.sortByDesc);
+        console.log("sort", sort_default);
+      }
+      this.tblContents = [];
     },
     async registerSearch() {
       if (this.select.length <= 0) {

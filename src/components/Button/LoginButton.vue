@@ -30,12 +30,19 @@ export default {
   data() {
     return {
       show: false,
+      internal_user: "",
+      internal_password: "",
     };
   },
-  computed: {
-    url() {
-      return this.$store.getters[`backend/url`];
+  watch: {
+    user(val) {
+      this.internal_user = val;
     },
+    password(val) {
+      this.internal_password = val;
+    },
+  },
+  computed: {
     loginData() {
       return this.$store.getters[`auth/login`];
     },
@@ -45,9 +52,7 @@ export default {
   },
   methods: {
     async confirm() {
-      const user = this.user;
-      const password = this.password;
-      const url = `/system/user/login?user_name=${user}&password=${password}`;
+      const url = `/system/user/login?user_name=${this.internal_user}&password=${this.internal_password}`;
       const res = await http.get(url);
       if (res.status == 200) {
         const rows = res.data.rows;
@@ -70,6 +75,21 @@ export default {
         // this.snackbar = true;
       }
     },
+  },
+  mounted() {
+    console.log(this.$route);
+    console.log("ログイン処理");
+    const query = this.$route.query || [];
+    console.log("query", query);
+    if (query.user && query.password) {
+      console.log(query);
+      this.internal_user = query.user;
+      this.internal_password = query.password;
+    }
+    //ユーザ名とパスワードが空でなければログイン処理
+    if (this.internal_user && this.internal_password) {
+      this.confirm();
+    }
   },
 };
 </script>

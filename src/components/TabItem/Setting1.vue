@@ -12,7 +12,7 @@
           <v-row v-if="true">
             <v-col cols="2">
               <v-subheader :class="`text-${bkPoint.model}`"
-                >テーブル名</v-subheader
+                >地物テーブル名</v-subheader
               >
             </v-col>
             <v-col>

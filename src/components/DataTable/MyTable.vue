@@ -83,8 +83,8 @@ export default {
       user: {
         sorts: {},
       },
-      sortBy: this.sortByItem,
-      sortDesc: this.sortByDesc,
+      sortBy: [],
+      sortDesc: [],
       //       sortBy: "no",
       // sortDesc: false,
       selectdItem: [],
@@ -101,6 +101,12 @@ export default {
     selectdItem(newVal, oldVal) {
       if (this.isCheck) console.log(newVal, oldVal);
       this.$emit("childChange", newVal);
+    },
+    sortByItem() {
+      this.sortBy = this.sortByItem;
+    },
+    sortByDesc() {
+      this.sortDesc = this.sortByDesc;
     },
   },
   methods: {

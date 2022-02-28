@@ -44,7 +44,7 @@
     <v-card-text>
       <MyTable
         :headers="shownHeaders"
-        :items="user.items"
+        :items="contents"
         :itemkey="user.itemkey"
         :bkPoint="bkPoint"
         :sortByItem="sortByItem"
@@ -112,6 +112,7 @@ export default {
       select: [],
       replace: [],
       headers: [],
+      contents: [],
       snackbar: false,
       snackbarText: "成功",
       snackbarColor: "green",
@@ -134,6 +135,20 @@ export default {
     shownHeaders() {
       return this.headers.filter((h) => h.shown > 0);
     },
+    editHeaders() {
+      return this.headers.filter((h) => h.shown > 1);
+    },
+    showContents() {
+      let rows = [];
+      for (const i in this.contents) {
+        let row = Object.assign(row, this.contents[i]);
+        console.log(row);
+        const _date = row["created_day"];
+        row["created_day"] = Moment(_date).format("YYYY/MM/DD");
+        rows.push(this.contents[i]);
+      }
+      return rows;
+    },
   },
   methods: {
     async getReplace() {
@@ -141,7 +156,6 @@ export default {
       const res = await http.getReplace(url);
       if (res.status == 200) {
         const data = res.data;
-        console.log(data);
         this.replace = data;
       } else {
         console.error(res);
@@ -166,7 +180,7 @@ export default {
           const data = {
             text: repdata.replace || name,
             value: name,
-            shown: repdata.display_type || true,
+            shown: repdata.display_type || 0,
             type: repdata.data_type || "型なし",
             main_key: repdata.main_key || false,
           };
@@ -226,64 +240,77 @@ export default {
       this.selectIndex = index;
 
       if (this.selectIndex != -1) {
-        //新規作成以外
+        //閲覧:0
+        //更新:1
+        //削除:2
         if (this.select.length <= 0) {
           alert("選択されていません");
           return;
         }
         const selected = this.select[0];
+        console.log("選択データ", selected);
         this.originItem = Object.assign(selected);
-        const edit = Object.assign(this.defaultItem);
+        console.log("選択データ登録", this.originItem);
+        const headers =
+          this.selectIndex == 1 ? this.editHeaders : this.shownHeaders;
+        console.log("editHeader");
         let data = [];
-        for (const i in this.shownHeaders) {
-          const text = edit[i].text;
-          data.push({ text: text, value: selected[text] });
+        for (const header of headers) {
+          data.push({
+            text: header.text,
+            text_origin: header.value,
+            value: selected[header.value],
+            type: header.type,
+          });
         }
-        console.log(data);
         this.editItem = Object.assign(data);
+        // const edit = Object.assign(this.defaultItem);
+        // let data = [];
+        // for (const i in this.shownHeaders) {
+        //   const text = edit[i].text;
+        //   data.push({ text: text, value: selected[text] });
+        // }
+        // console.log(data);
+        // this.editItem = Object.assign(data);
       } else {
         //新規作成
-        this.editItem = Object.assign(this.defaultItem);
+        let data = [];
+        for (const header of this.editHeaders) {
+          data.push({
+            text: header.text,
+            text_origin: header.value,
+            value: "",
+            type: header.type,
+          });
+        }
+        this.editItem = data;
       }
       this.dialog = true;
     },
     save(params) {
-      console.log("submit", params);
+      //新規作成・更新・削除
+      const selectedIndex = this.selectIndex;
+
+      console.log("params", params);
       const origin = this.originItem;
+      console.log("origin", origin);
       const id = origin.no;
-      console.log("origin", id);
+      console.log("id", id);
+
+      let data = {};
 
       //insert
-      let data = {};
-      const item = Object.assign(this.editItem);
-      for (const i in item) {
-        const text = item[i].text;
-        const value = item[i].value;
-        if (value != null && value != "") data[text] = value;
-      }
-      const content1 = { data: data };
-
-      //update
-      data = {};
-      const item1 = Object.assign(this.editItem);
-      let dataSize = 0;
-      for (const i in item1) {
-        const text = item1[i].text;
-        const value = item1[i].value;
-        if (value != origin[text]) {
-          data[text] = value;
-          dataSize++;
+      if (selectedIndex == -1) {
+        console.log("新規作成");
+        for (const param of params) {
+          const text = param.text_origin;
+          const value = param.value;
+          if (value != null && value != "") data[text] = value;
         }
-      }
-      const content2 = { data: { key: { no: id }, update: data } };
-
-      //delete
-      const content3 = { no: id };
-
-      const index = this.selectIndex;
-      if (index == -1) {
+        const content1 = { data: data };
         this.insert(content1);
-      } else if (index == 0) {
+      } else if (selectedIndex == 0) {
+        console.log("閲覧");
         const key = "ファイルパス";
         if (key in origin) {
           this.filepath = origin[key];
@@ -292,13 +319,26 @@ export default {
         } else {
           console.log("ファイルパスが存在しません");
         }
-      } else if (index == 1) {
+      } else if (selectedIndex == 1) {
+        console.log("更新");
+        //update
+        let dataSize = 0;
+        for (const param of params) {
+          const text = param.text_origin;
+          const value = param.value;
+          data[text] = value;
+          dataSize++;
+        }
         if (dataSize <= 0) {
           console.log("更新する値が存在しません");
         } else {
+          const content2 = { data: { key: { no: id }, update: data } };
           this.update(content2);
         }
-      } else if (index == 2) {
+      } else if (selectedIndex == 2) {
+        console.log("削除");
+        //delete
+        const content3 = { no: id };
         this.delete(content3);
       } else {
         this.close();
@@ -311,17 +351,9 @@ export default {
       const url = `/system/user`;
       const res = await http.get(url);
       if (res.status == 200) {
-        console.log("success", res.data);
-        this.user.data = Object.assign(res.data);
-
+        console.log("success");
         //表示データ
-        let rows = res.data.rows;
-        console.log(rows);
-        for (const key in rows) {
-          const _date = rows[key]["created_day"];
-          rows[key]["created_day"] = Moment(_date).format("YYYY/MM/DD");
-        }
-        this.user.items = Object.assign(rows);
+        this.contents = res.data.rows;
       } else {
         console.log(res);
         alert("処理が正しく行えませんでした。時間をおいてやり直してください。");
