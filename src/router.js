@@ -112,6 +112,11 @@ const router = new Router({
       component: loadView("Detail"),
     },
     {
+      path: "/detailview",
+      // name: "detail",
+      component: loadView("DetailView"),
+    },
+    {
       path: "/document",
       name: "document",
       component: loadView("Document"),

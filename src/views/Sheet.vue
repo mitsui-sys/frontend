@@ -20,22 +20,12 @@
               :items="displayItems"
               :search-input.sync="search"
               :height="bkPoint.btnHeight"
+              :class="`text-${bkPoint.model}`"
               outlined
               label="選択"
-              :class="`text-${bkPoint.model}`"
               value="initValue"
               @change="changeName"
             ></v-autocomplete>
-            <!--
-            <v-select
-              v-model="selectedName"
-              :items="displayItems"
-              outlined
-              :height="bkPoint.btnHeight"
-              :class="`text-${bkPoint.model}`"
-              @change="changeName"
-            />
-            -->
             <v-btn
               @click="getDaicho"
               class="flex-col mb-11 mr-1"
@@ -78,14 +68,14 @@
                 label="項目"
                 :class="`text-${bkPoint.model}`"
                 :height="bkPoint.btnHeight"
-                item-height="200"
+                @change="changeQueryCond(item.text, index)"
               >
               </v-select>
               <!-- 各入力ボックス -->
               <v-text-field
                 v-model="item.value"
                 class="flex-col ml-3 mr-3"
-                type="text"
+                :type="`${item.type}`"
                 label="条件"
                 :class="`text-${bkPoint.model}`"
                 :height="bkPoint.btnHeight"
@@ -155,7 +145,7 @@
           >
             削除
           </v-btn>
-          <v-dialog v-model="dialog" max-width="700px" scrorable>
+          <v-dialog v-model="dialog" max-width="700px" scrorable persistent>
             <CardInput
               :dialogType="selectIndex"
               :content="editItem"
@@ -172,14 +162,14 @@
         </v-toolbar>
         <MyTable
           :headers="shownHeaders"
-          :items="tblContents"
+          :items="showContents"
           :itemkey="itemkey"
           :bkPoint="bkPoint"
           :sortByItem="sortByItem"
           :sortByDesc="sortByDesc"
           @childChange="applyChanges"
         />
-        <v-dialog v-model="filedialog" max-width="700px" scrorable>
+        <v-dialog v-model="filedialog" max-width="700px" scrorable persistent>
           <CardFile
             :filepath.sync="filepath"
             :dataType="0"
@@ -200,6 +190,7 @@ import http from "@/modules/http";
 import CardInput from "@/components/Card/CardInput";
 import CardFile from "@/components/Card/CardFile";
 import MyTable from "@/components/DataTable/MyTable";
+import Moment from "moment";
 // import Filtering from "@/components/DataTable/Filtering";
 
 export default {
@@ -207,8 +198,15 @@ export default {
   components: { CardInput, MyTable, CardFile },
   data() {
     return {
+      replace: null,
+      value1: null,
+      value2: null,
+      value3: null,
+      value4: null,
       itemkey: "gid",
       displayItems: [],
+      headers: [],
+      contents: [],
       tblHeaders: [],
       tblContents: [],
       snackbar: false,
@@ -257,19 +255,49 @@ export default {
     },
   },
   computed: {
-    url() {
-      return this.$store.getters[`backend/url`];
-    },
     shownHeaders() {
-      return this.tblHeaders.filter((h) => h.shown);
+      return this.headers.filter((h) => h.shown > 0);
+    },
+    editHeaders() {
+      return this.headers.filter((h) => h.shown > 1);
+    },
+    showContents() {
+      let data = this.contents;
+      for (const i in data) {
+        let row = data[i];
+        const headers = this.shownHeaders.filter((x) => x.data_type == "日付");
+        for (const h of headers) {
+          // const text = h.text;
+          const text = h.value;
+          const value = row[text];
+          //空でなければ
+          if (value) {
+            row[text] = Moment(value).format("YYYY/MM/DD");
+          }
+        }
+      }
+      return data;
     },
     defaultItem() {
       let data = [];
-      let header = Object.assign(this.shownHeaders);
-      for (let key in header) {
-        data.push({ text: header[key].text, value: "" });
+      let header = Object.assign(this.editHeaders);
+      console.log("初期値", header);
+      for (const h of header) {
+        // const type = this.setDataType(h.type);
+        data.push({
+          text: h.text,
+          value: null,
+          type: h.type,
+          text_origin: h.value,
+        });
       }
       return data;
+    },
+    replaceData() {
+      return this.$store.getters[`table/replace`];
+    },
+    displayData() {
+      return this.$store.getters[`table/display`];
     },
     bkPoint() {
       // $vuetify.breakpointでブレークポイントを取得
@@ -317,6 +345,81 @@ export default {
     },
   },
   methods: {
+    setDataType(typeName) {
+      return typeName == "整数" || typeName == "小数"
+        ? "number"
+        : typeName == "文字列"
+        ? "text"
+        : typeName == "日付"
+        ? "date"
+        : "text";
+    },
+    initilize() {
+      console.log(this.displayData.rows);
+      const data =
+        this.displayData.rows.filter((x) => x.type == 2).shift() || null;
+      if (data != null) {
+        console.log("届出", data.display);
+        // this.headers = JSON.parse(data.display);
+      }
+    },
+    changeName() {
+      console.log("台帳名の変更");
+      const name = this.selectedName;
+      const data = this.display.filter((x) => x.name == name).shift() || null;
+      if (data != null) {
+        console.log(data);
+        // const display = JSON.parse(data.display);
+        // this.tblHeaders = display;
+        const sort_default = JSON.parse(data.sort_default);
+        this.sortByItem = sort_default.map((x) => x.column) || [];
+        this.sortByDesc = sort_default.map((x) => x.desc) || [];
+        console.log(this.sortByItem, this.sortByDesc);
+        console.log("sort", sort_default);
+      }
+
+      let user_replace =
+        this.replaceData.rows.filter((x) => x.table == this.selectedName) ||
+        null;
+
+      let newReplaceData = [];
+      //表示属性の順序を変更する
+      const user_replace_new = user_replace.sort((a, b) => {
+        if (a.display_number < b.display_number) return -1;
+        if (b.display_number < a.display_number) return 1;
+        return 0;
+      });
+      for (let data of user_replace_new) {
+        console.log(data.display_number);
+      }
+      console.log("置換ソート", user_replace_new);
+      for (let rep of user_replace_new) {
+        rep["text"] = rep["replace"];
+        rep["value"] = rep["column"];
+        rep["type"] = this.setDataType(rep["data_type"]);
+        rep["shown"] = rep["display_type"];
+        newReplaceData.push(rep);
+      }
+
+      this.headers = newReplaceData;
+      console.log("置換設定", user_replace);
+      console.log("置換設定_新", newReplaceData);
+      console.log("show", this.shownHeaders);
+      console.log("edit", this.editHeaders);
+
+      this.contents = [];
+      this.queryCondition = [];
+    },
+    changeQueryCond(value, index) {
+      // console.log(value);
+      // console.log(
+      //   this.shownHeaders.filter((x) => x.text == value).shift().type
+      // );
+      const type =
+        this.shownHeaders.filter((x) => x.text == value).shift().type || "text";
+      let cond = this.queryCondition;
+      cond[index]["type"] = type;
+    },
     applyChanges(select) {
       // console.log("parentChange", select);
       this.select = select;
@@ -377,18 +480,34 @@ export default {
       this.selectIndex = index;
 
       if (this.selectIndex != -1) {
+        //閲覧:0
+        //更新:1
+        //削除:2
         if (this.select.length <= 0) {
           alert("選択されていません");
           return;
         }
-        const item = Object.assign(this.select[0]);
-        console.log(item);
-        this.originItem = Object.assign(item);
-        const edit = Object.assign(this.defaultItem);
+        const selected = this.select[0];
+        console.log("選択データ", selected);
+        this.originItem = Object.assign(selected);
+        const headers =
+          this.selectIndex == 1 ? this.editHeaders : this.shownHeaders;
         let data = [];
-        for (const i in edit) {
-          const text = edit[i].text;
-          data.push({ text: text, value: item[text] });
+        for (const header of headers) {
+          let value = selected[header.value];
+          //日付型かつデータが存在すればYYYY-MM-DD形式に変換
+          if (value) {
+            if (header.type == "date") {
+              value = Moment(value).format("YYYY-MM-DD");
+            }
+          }
+          data.push({
+            text: header.text,
+            text_origin: header.value,
+            value: value,
+            type: header.type,
+          });
+          console.log(data);
         }
         this.editItem = Object.assign(data);
       } else {
@@ -401,35 +520,17 @@ export default {
       const id = origin.gid;
       console.log("origin", id);
 
-      //insert
-      let data = {};
-      const item = Object.assign(this.editItem);
-      for (const i in item) {
-        const text = item[i].text;
-        const value = item[i].value;
-        if (value != null && value != "") data[text] = value;
-      }
-      const content1 = { data: data };
-
-      //update
-      data = {};
-      const item1 = Object.assign(this.editItem);
-      let dataSize = 0;
-      for (const i in item1) {
-        const text = item1[i].text;
-        const value = item1[i].value;
-        if (value != origin[text]) {
-          data[text] = value;
-          dataSize++;
-        }
-      }
-      const content2 = { data: { key: { gid: id }, update: data } };
-
-      //delete
-      const content3 = { gid: id };
-
       const index = this.selectIndex;
       if (index == -1) {
+        //insert
+        let data = {};
+        const item = Object.assign(this.editItem);
+        for (const i in item) {
+          const text = item[i].text;
+          const value = item[i].value;
+          if (value != null && value != "") data[text] = value;
+        }
+        const content1 = { data: data };
         this.insert(content1);
       } else if (index == 0) {
         const key = "uri";
@@ -440,12 +541,27 @@ export default {
           console.log("ファイルパスが存在しません");
         }
       } else if (index == 1) {
+        //update
+        let data = {};
+        const item1 = Object.assign(this.editItem);
+        let dataSize = 0;
+        for (const i in item1) {
+          const text = item1[i].text;
+          const value = item1[i].value;
+          if (value != origin[text]) {
+            data[text] = value;
+            dataSize++;
+          }
+        }
+        const content2 = { data: { key: { gid: id }, update: data } };
         if (dataSize <= 0) {
           console.log("更新する値が存在しません");
         } else {
           this.update(content2);
         }
       } else if (index == 2) {
+        //delete
+        const content3 = { gid: id };
         this.delete(content3);
       } else {
         this.close();
@@ -453,28 +569,13 @@ export default {
       this.dialog = false;
     },
     addInput() {
-      this.queryCondition.push({ text: "", rule: "", value: "" }); // 配列に１つ空データを追加する
+      this.queryCondition.push({ text: "", rule: "", value: "", type: "" }); // 配列に１つ空データを追加する
     },
     // ボタンをクリックしたときのイベント ③
     removeInput(index) {
       this.queryCondition.splice(index, 1); // 👈 該当するデータを削除
     },
-    changeName() {
-      console.log("台帳名の変更");
-      const name = this.selectedName;
-      const data = this.display.filter((x) => x.name == name)[0];
-      if (data != undefined) {
-        console.log(data);
-        const display = JSON.parse(data.display);
-        this.tblHeaders = display;
-        const sort_default = JSON.parse(data.sort_default);
-        this.sortByItem = sort_default.map((x) => x.column) || [];
-        this.sortByDesc = sort_default.map((x) => x.desc) || [];
-        console.log(this.sortByItem, this.sortByDesc);
-        console.log("sort", sort_default);
-      }
-      this.tblContents = [];
-    },
+
     async registerSearch() {
       if (this.select.length <= 0) {
         alert("選択されていません");
@@ -482,6 +583,7 @@ export default {
       }
       const name = this.loginData.name;
       const tableName = this.selectedName;
+
       const kc_key = this.display.filter((x) => x.name == tableName)[0][
         "kc_key"
       ];
@@ -497,39 +599,37 @@ export default {
         data: { key: { user_name: name }, update: { search: search } },
       };
       console.log(content);
-      const json = JSON.stringify(content);
       const url = `/system/user`;
       const res = await http.update(url, content);
       if (res.status == 200) {
         this.getDaicho();
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "台帳管理",
-          "地図連携登録",
-          json
-        );
         this.snackbarText = "地図連携登録 成功";
         this.snackbar = true;
-      } else {
         http.registerLog(
-          this.url,
           this.loginData.name,
           "台帳管理",
-          "地図連携登録:失敗",
-          json
+          this.selectedName,
+          "地図連携登録　成功"
         );
+      } else {
         this.snackbarText = "地図連携登録 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          this.selectedName,
+          "地図連携登録　失敗"
+        );
       }
     },
     getCond() {
       const conds = this.queryCondition;
       let contents = [];
-      for (const i in conds) {
-        let text = conds[i].text;
-        let value = conds[i].value;
-        contents.push(text + "=" + value);
+      for (const c of conds) {
+        const text = c.text;
+        const value = c.value;
+        const type = c.type;
+        contents.push(text + "=" + value + ":" + type);
       }
       return contents.join("&");
     },
@@ -547,12 +647,15 @@ export default {
       const cond = this.getCond();
       let url = `/db/${name}?${cond}`;
       const res = await http.get(url);
+      // const res = await http.get_test(url);
       if (res.status == 200) {
         const data = res.data;
         const rows = data.rows;
         this.tblContents = rows.length > 0 ? rows : [];
+        this.contents = rows || null;
+        console.log("台帳", rows);
         // this.setDocuments(res);
-        // this.snackbarText = "新規登録 成功";
+        // this.snackbarText = "表示";
         // this.snackbar = true;
       } else {
         this.snackbarText = "データ取得 失敗";
@@ -565,18 +668,23 @@ export default {
       const res = await http.create(url, data);
       if (res.status == 200) {
         this.getDaicho();
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "台帳管理",
-          "新規登録",
-          data
-        );
         this.snackbarText = "新規登録 成功";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          this.selectedName,
+          "新規登録　成功"
+        );
       } else {
         this.snackbarText = "新規登録 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          this.selectedName,
+          "新規登録　失敗"
+        );
       }
     },
     async update(data) {
@@ -585,21 +693,26 @@ export default {
       const res = await http.update(url, data);
       if (res.status == 200) {
         this.getDaicho();
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "台帳管理",
-          "更新",
-          data
-        );
         this.snackbarText = "更新 成功";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          this.selectedName,
+          "更新　成功"
+        );
       } else {
         this.snackbarText = "更新 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          this.selectedName,
+          "更新　失敗"
+        );
       }
     },
-    async delete(data) {
+    async delete() {
       const select = this.select;
       if (select.length <= 0) {
         console.error("選択されていません");
@@ -612,22 +725,28 @@ export default {
       const res = await http.remove(url);
       if (res.status == 200) {
         this.getDaicho();
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "台帳管理",
-          "削除",
-          data
-        );
         this.snackbarText = "削除 成功";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          this.selectedName,
+          "削除　成功"
+        );
       } else {
         this.snackbarText = "削除 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          this.selectedName,
+          "削除　失敗"
+        );
       }
     },
   },
   created() {
+    // this.getReplace();
     this.initialize();
   },
   mounted() {},

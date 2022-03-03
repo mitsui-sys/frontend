@@ -21,7 +21,12 @@ const state = () => ({
   conditions: [],
   actionitem: { text: "Actions", value: "actions", sortable: false },
   replace: [],
+  display: [],
   query: {},
+  table_bunkazai: [],
+  table_cityisdb: [],
+  detail_user: "",
+  detail_search: "",
 });
 
 const getters = {
@@ -36,7 +41,9 @@ const getters = {
   selected: (state) => state.selected,
   p_header: (state) => state.p_header,
   conditions: (state) => state.conditions,
+
   replace: (state) => state.replace,
+  display: (state) => state.display,
   params: (state) => {
     let queryStr = `tblName=${state.tableName}`;
     let conds = state.conditions;
@@ -51,6 +58,10 @@ const getters = {
     return state.header.filter((h) => h.shown);
   },
   query: (state) => state.query,
+  bunkazai: (state) => state.table_bunkazai,
+  cityisdb: (state) => state.table_cityisdb,
+  detail_user: (state) => state.detail_user,
+  detail_search: (state) => state.detail_search,
 };
 
 const actions = {
@@ -117,8 +128,22 @@ const actions = {
   updateReplace({ commit }, replace) {
     commit("updateReplace", replace);
   },
+  updateDisplay({ commit }, display) {
+    commit("updateDisplay", display);
+  },
   updateQuery({ commit }, query) {
     commit("updateQuery", query);
+  },
+  updateBunkazai({ commit }, data) {
+    console.log("commit bunkazai", data);
+    commit("updateBunkazai", data);
+  },
+  updateCityisdb({ commit }, data) {
+    console.log("commit cityisdb", data);
+    commit("updateCityisdb", data);
+  },
+  updateDetail({ commit }, data) {
+    commit("updateDetail", data);
   },
 };
 
@@ -160,8 +185,23 @@ const mutations = {
   updateReplace(state, replace) {
     state.replace = replace;
   },
+  updateDisplay(state, display) {
+    state.display = display;
+  },
   updateQuery(state, query) {
     state.query = query;
+  },
+  updateBunkazai(state, data) {
+    state.table_bunkazai = data;
+  },
+  updateCityisdb(state, data) {
+    state.table_cityisdb = data;
+  },
+  updateDetail(state, data) {
+    const user = data.user || null;
+    delete data.user;
+    state.detail_user = user;
+    state.detail_search = data;
   },
 };
 

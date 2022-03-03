@@ -3,12 +3,14 @@
     <v-toolbar>
       {{ title }}
       <v-spacer />
+      <!--
       <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
         権限レベル更新
       </v-btn>
       <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
         グループ名更新
       </v-btn>
+      -->
       <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
         パスワード更新
       </v-btn>
@@ -44,7 +46,7 @@
     <v-card-text>
       <MyTable
         :headers="shownHeaders"
-        :items="contents"
+        :items="showContents"
         :itemkey="user.itemkey"
         :bkPoint="bkPoint"
         :sortByItem="sortByItem"
@@ -53,12 +55,16 @@
       />
     </v-card-text>
     <v-dialog v-model="dialogP" max-width="700px" scrorable persistent>
-      <CardPassword @clickSubmit="updatePassword" @clickCancel="onCancel" />
+      <CardPassword
+        :bkPoint="bkPoint"
+        @clickSubmit="updatePassword"
+        @clickCancel="onCancel"
+      />
     </v-dialog>
     <v-dialog v-model="dialog" max-width="700px" scrorable persistent>
       <CardInput
         :dialogType="selectIndex"
-        :header="headers"
+        :header="editHeaders"
         :content="editItem"
         :loginType="loginData"
         :bkPoint="bkPoint"
@@ -139,58 +145,78 @@ export default {
       return this.headers.filter((h) => h.shown > 1);
     },
     showContents() {
-      let rows = [];
-      for (const i in this.contents) {
-        let row = Object.assign(row, this.contents[i]);
-        console.log(row);
-        const _date = row["created_day"];
-        row["created_day"] = Moment(_date).format("YYYY/MM/DD");
-        rows.push(this.contents[i]);
+      let data = this.contents;
+      for (const i in data) {
+        let row = data[i];
+        // const headers = this.shownHeaders.filter((x) => x.type == "DATE");
+        const headers = this.shownHeaders.filter((x) => x.data_type == "日付");
+        for (const h of headers) {
+          // const text = h.text;
+          const text = h.value;
+          const value = row[text];
+          //空でなければ
+          if (value) {
+            row[text] = Moment(value).format("YYYY/MM/DD");
+          }
+        }
       }
-      return rows;
+      return data;
+    },
+    defaultItem() {
+      let data = [];
+      let header = Object.assign(this.editHeaders);
+      console.log("初期値", header);
+      for (const h of header) {
+        // const type = this.setDataType(h.type);
+        data.push({
+          text: h.text,
+          value: null,
+          type: h.type,
+          text_origin: h.value,
+        });
+      }
+      return data;
+    },
+    replaceData() {
+      return this.$store.getters[`table/replace`];
+    },
+    displayData() {
+      return this.$store.getters[`table/display`];
     },
   },
   methods: {
-    async getReplace() {
-      const url = "/system/replace";
-      const res = await http.getReplace(url);
-      if (res.status == 200) {
-        const data = res.data;
-        this.replace = data;
-      } else {
-        console.error(res);
+    setDataType(typeName) {
+      return typeName == "整数" || typeName == "小数"
+        ? "number"
+        : typeName == "文字列"
+        ? "text"
+        : typeName == "日付"
+        ? "date"
+        : "text";
+    },
+    initilize() {
+      const user_replace =
+        this.replaceData.rows.filter((x) => x.table == "user") || null;
+      console.log("置換設定", user_replace);
+      //表示属性の順序を変更する
+      const user_replace_new = user_replace.sort((a, b) => {
+        if (a.display_number < b.display_number) return -1;
+        if (b.display_number < a.display_number) return 1;
+        return 0;
+      });
+      let newReplaceData = [];
+      for (let rep of user_replace_new) {
+        rep["text"] = rep["replace"];
+        rep["value"] = rep["column"];
+        // rep["type"] = rep["data_type"];
+        rep["type"] = this.setDataType(rep["data_type"]);
+        rep["shown"] = rep["display_type"];
+        newReplaceData.push(rep);
       }
-
-      const res1 = await http.get("/system/user");
-      if (res1.status == 200) {
-        //ユーザ一覧を取得
-        const data = res1.data;
-        //列情報取得
-        const columns = data.columns;
-        //列名取得
-        const colNames = columns.map((x) => x.columnName);
-        //表示設定を取得
-        let headers = [];
-        const replace = this.replace.rows;
-        for (const name of colNames) {
-          const repdata =
-            replace
-              .filter((x) => x.table == "user" && x.column == name)
-              .shift() || undefined;
-          const data = {
-            text: repdata.replace || name,
-            value: name,
-            shown: repdata.display_type || 0,
-            type: repdata.data_type || "型なし",
-            main_key: repdata.main_key || false,
-          };
-          headers.push(data);
-        }
-        this.headers = headers;
-        console.log("headers", headers);
-      } else {
-        console.error(res1);
-      }
+      // console.log("置換設定_新", newReplaceData);
+      this.headers = newReplaceData;
+      // console.log("show", this.shownHeaders);
+      // console.log("edit", this.editHeaders);
     },
     onPassword() {
       this.selectIndex = 1;
@@ -208,7 +234,7 @@ export default {
       let data = {};
       // 更新項目がある場合
 
-      data["created_day"] = Moment().format("YYYY/MM/DD");
+      data["update"] = Moment().format("YYYY/MM/DD");
       data["password"] = password;
       const content2 = { data: { key: { no: id }, update: data } };
       this.dialogP = false;
@@ -250,44 +276,32 @@ export default {
         const selected = this.select[0];
         console.log("選択データ", selected);
         this.originItem = Object.assign(selected);
-        console.log("選択データ登録", this.originItem);
         const headers =
           this.selectIndex == 1 ? this.editHeaders : this.shownHeaders;
-        console.log("editHeader");
         let data = [];
         for (const header of headers) {
+          let value = selected[header.value];
+          //日付型かつデータが存在すればYYYY-MM-DD形式に変換
+          if (value) {
+            if (header.type == "date") {
+              value = Moment(value).format("YYYY-MM-DD");
+            }
+          }
           data.push({
             text: header.text,
             text_origin: header.value,
-            value: selected[header.value],
+            value: value,
             type: header.type,
           });
+          console.log(data);
         }
         this.editItem = Object.assign(data);
-        // const edit = Object.assign(this.defaultItem);
-        // let data = [];
-        // for (const i in this.shownHeaders) {
-        //   const text = edit[i].text;
-        //   data.push({ text: text, value: selected[text] });
-        // }
-        // console.log(data);
-        // this.editItem = Object.assign(data);
       } else {
-        //新規作成
-        let data = [];
-        for (const header of this.editHeaders) {
-          data.push({
-            text: header.text,
-            text_origin: header.value,
-            value: "",
-            type: header.type,
-          });
-        }
-        this.editItem = data;
+        this.editItem = Object.assign(this.defaultItem);
       }
       this.dialog = true;
     },
-    save(params) {
+    async save(params) {
       //新規作成・更新・削除
       const selectedIndex = this.selectIndex;
 
@@ -303,12 +317,28 @@ export default {
       if (selectedIndex == -1) {
         console.log("新規作成");
         for (const param of params) {
+          console.log(param);
           const text = param.text_origin;
           const value = param.value;
           if (value != null && value != "") data[text] = value;
         }
-        const content1 = { data: data };
-        this.insert(content1);
+        //パスワードが空なら
+        if (!data["password"] || data["password"] == "") {
+          alert("パスワードが入力されていません。");
+          return;
+        }
+        const url = `/system/user/login?user_name=${data["user_name"]}`;
+        const res = await http.get(url);
+        if (res.status == 200) {
+          if (res.data.rows.length > 0) {
+            alert("その名前は既に使われています。");
+            return;
+          }
+          const content1 = { data: data };
+          this.insert(content1);
+        } else {
+          console.error(res);
+        }
       } else if (selectedIndex == 0) {
         console.log("閲覧");
         const key = "ファイルパス";
@@ -361,53 +391,57 @@ export default {
     },
 
     async insert(data) {
+      console.log(data);
       const url = `/system/user`;
       const res = await http.create(url, data);
       if (res.status == 200) {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "ユーザー設定",
-          "新規登録",
-          data
-        );
         this.getUserData();
         this.snackbarText = "新規登録 成功";
         this.snackbar = true;
-      } else {
         http.registerLog(
-          this.url,
           this.loginData.name,
-          "ユーザー設定",
-          "新規登録:失敗",
-          data
+          "台帳管理",
+          "ユーザー管理",
+          "新規登録　成功"
         );
+      } else {
         this.snackbarText = "新規登録 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "ユーザー管理",
+          "新規登録　失敗"
+        );
       }
     },
     async update(data) {
       const url = `/system/user`;
       const res = await http.update(url, data);
       if (res.status == 200) {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "ユーザー設定",
-          "更新",
-          data
-        );
         this.getUserData();
         this.snackbarText = "更新 成功";
         this.snackbar = true;
         console.log(res);
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "ユーザー管理",
+          "更新　成功"
+        );
       } else {
         this.snackbarText = "更新 失敗";
         this.snackbar = true;
         console.log(res);
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "ユーザー管理",
+          "更新　失敗"
+        );
       }
     },
-    async delete(data) {
+    async delete() {
       const select = this.select;
       if (select.length <= 0) {
         console.error("選択されていません");
@@ -419,26 +453,29 @@ export default {
       const res = await http.remove(url);
       if (res.status == 200) {
         console.log(res);
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "ユーザー設定",
-          "削除",
-          data
-        );
         this.getUserData();
         this.snackbarText = "削除 成功";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "ユーザー管理",
+          "削除　成功"
+        );
       } else {
         this.snackbarText = "削除 失敗";
         this.snackbar = true;
-        console.log(res);
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "ユーザー管理",
+          "削除　失敗"
+        );
       }
     },
   },
   created() {
-    // リアクティブデータ作成後に行いたい処理
-    this.getReplace();
+    this.initilize();
     this.$nextTick(() => {
       this.getUserData();
     });

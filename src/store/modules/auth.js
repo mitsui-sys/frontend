@@ -5,7 +5,8 @@ const state = () => ({
     token: false,
     name: "ゲスト",
     level: -1,
-    created: "",
+    created: null,
+    update: null,
     expire: 0,
   },
 });
@@ -13,18 +14,20 @@ const getters = {
   login: (state) => state.login,
   elapsed: (state) => {
     console.log(state.login);
-    const dataFrom = Moment(state.login.created);
+    const dataFrom = Moment(state.login.update);
     const today = Moment();
     const elapsedDate = today.diff(dataFrom, "days");
     console.log("経過日数", elapsedDate);
     console.log(
-      dataFrom.format("YYYY/MM/DD HH:mm:ss dddd"),
-      today.format("YYYY/MM/DD HH:mm:ss dddd")
+      "更新日",
+      dataFrom.format("YYYY/MM/DD"),
+      "今日",
+      today.format("YYYY/MM/DD")
     );
 
     if (elapsedDate > 90) alert("パスワードを更新してください");
-    else if (elapsedDate > 80)
-      alert(`パスワードの更新期限まであと${90 - elapsedDate}日です`);
+    // else if (elapsedDate > 80)
+    //   alert(`パスワードの更新期限まであと${90 - elapsedDate}日です`);
     return elapsedDate;
   },
 };
@@ -47,6 +50,7 @@ const mutations = {
     state.login.name = data.user_name; // ユーザー名
     state.login.level = parseInt(data.level); //レベル
     state.login.created = data.created_day;
+    state.login.update = data.update;
     state.login.expire = Math.floor(expireTime); // APIからUNIXタイム(秒)で有効期限が返ってくるものとし、ミリ秒に変換しておく
   },
   destroy: (state) => {

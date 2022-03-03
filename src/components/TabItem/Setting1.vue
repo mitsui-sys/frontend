@@ -18,7 +18,7 @@
             <v-col>
               <v-autocomplete
                 v-model="selectTable"
-                :items="tableNameList"
+                :items="table_bunkazai"
                 :class="`text-${bkPoint.model}`"
                 dense
                 filled
@@ -36,6 +36,44 @@
                 >削除</v-btn
               >
             </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="2">
+              <v-subheader :class="`text-${bkPoint.model}`"
+                >システムテーブル名</v-subheader
+              >
+            </v-col>
+            <v-col>
+              <v-autocomplete
+                v-model="selectCityisdb"
+                :items="table_cityisdb"
+                :class="`text-${bkPoint.model}`"
+                @change="getCityisdbTable"
+                dense
+                filled
+              />
+            </v-col>
+            <v-col cols="1">
+              <v-btn
+                @click="registerTableShown"
+                :class="`text-${bkPoint.model}`"
+                >登録</v-btn
+              >
+            </v-col>
+            <v-col cols="1">
+              <v-btn @click="deleteTableShown" :class="`text-${bkPoint.model}`"
+                >削除</v-btn
+              >
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-switch
+              v-model="item.shown"
+              v-for="(item, index) in selectCityisdbTableCols"
+              :label="item.columnName"
+              :key="index"
+              @change="getCityisdbTableSetting"
+            />
           </v-row>
           <v-row>
             <v-col cols="2">
@@ -59,6 +97,29 @@
               >
             </v-col>
           </v-row>
+          <v-row>
+            <v-text-field
+              v-model="value1"
+              type="text"
+              label="文字列"
+              :height="bkPoint.btnHeight"
+              outlined
+            />
+            <v-text-field
+              v-model="value2"
+              type="number"
+              label="数値"
+              :height="bkPoint.btnHeight"
+              outlined
+            />
+            <v-text-field
+              v-model="value3"
+              type="date"
+              label="日付"
+              :height="bkPoint.btnHeight"
+              outlined
+            />
+          </v-row>
         </v-container>
       </v-card>
     </v-card-text>
@@ -76,6 +137,7 @@ export default {
   data() {
     return {
       selectTable: "",
+      selectCityisdb: "",
       selectedDisplay: "",
       development: false,
       tableItems: [],
@@ -90,12 +152,22 @@ export default {
       dragging: false,
       myArray: [],
       drag: false,
+      value1: "",
+      value2: "",
+      value3: "",
+      selectCityisdbTableCols: [],
     };
   },
   //   components: { UserField, PasswordField },
   computed: {
     tableNameList() {
       return this.$store.getters[`table/tableNameList`];
+    },
+    table_bunkazai() {
+      return this.$store.getters[`table/bunkazai`];
+    },
+    table_cityisdb() {
+      return this.$store.getters[`table/cityisdb`];
     },
     draggingInfo() {
       return this.dragging ? "under drag" : "";
@@ -111,13 +183,67 @@ export default {
       const url = `/table`;
       const res = await http.get(url);
       if (res.status == 200) {
-        console.log(res);
-        console.log("テーブル名を全て取得", res.data.rows);
-        const rows = res.data.rows;
-        this.$store.dispatch(`table/updateTableNameList`, rows);
+        this.$store.dispatch(`table/updateTableNameList`, res.data.rows);
       } else {
         console.error(res);
       }
+    },
+    async getBunkazai() {
+      const url = `/table`;
+      const res = await http.get(url);
+      if (res.status == 200) {
+        // console.log(res);
+        this.$store.dispatch(
+          `table/updateBunkazai`,
+          res.data.rows.map((x) => x.tablename) || []
+        );
+        // console.log(this.table_bunkazai);
+      } else {
+        console.error(res);
+      }
+    },
+    async getCityisdb() {
+      const url = `/system`;
+      const res = await http.get_test(url);
+      if (res.status == 200) {
+        // console.log(res);
+        this.$store.dispatch(
+          `table/updateCityisdb`,
+          res.data.rows.map((x) => x.tablename) || []
+        );
+        // console.log(this.table_cityisdb);
+      } else {
+        console.error(res);
+      }
+    },
+    async getCityisdbTable() {
+      const tableName = this.selectCityisdb;
+      const url = `/test/${tableName}`;
+      const res = await http.get_test(url);
+      if (res.status == 200) {
+        console.log(res.data);
+        let cols = res.data.columns;
+        for (let c of cols) {
+          const name = c.columnName;
+          c["value"] = name;
+          c["text"] = name;
+          c["shown"] = true;
+        }
+        this.selectCityisdbTableCols = cols;
+        // console.log(this.table_cityisdb);
+      } else {
+        console.error(res);
+      }
+    },
+    getCityisdbTableSetting() {
+      //表示属性の設定
+      const json = JSON.stringify(this.selectCityisdbTableCols);
+      console.log("json", json);
+      // console.log(this.selectCityisdbTableCols);
+      const url = "/display";
+      const data = { data: { display: json }, cond: {} };
+      const res = http.update(url, data);
+      console.log(res);
     },
     async getTableShown() {
       const url = `/display`;
@@ -224,14 +350,16 @@ export default {
   },
   created() {
     // リアクティブデータ作成後に行いたい処理
-    this.getTableName();
-    this.getTableShown();
   },
   beforeMount() {
     // DOMにマウントされる前に行いたい処理
   },
   mounted() {
     // DOMにマウントされた後に行いたい処理
+    this.getBunkazai();
+    this.getCityisdb();
+    this.getTableName();
+    this.getTableShown();
   },
   beforeUpdate() {
     // DOMが更新される前に行いたい処理

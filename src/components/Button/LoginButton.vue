@@ -53,24 +53,27 @@ export default {
   methods: {
     async confirm() {
       const url = `/system/user/login?user_name=${this.internal_user}&password=${this.internal_password}`;
+      // const res = await http.get_test(url);
       const res = await http.get(url);
       if (res.status == 200) {
         const rows = res.data.rows;
         if (rows.length > 0) {
           console.log("ログイン情報は存在します");
           // ログイン情報を store に保存
-
+          http.registerLog(this.internal_user, "台帳管理", "ログイン", "成功");
           this.$store.dispatch("auth/create", rows);
           console.log(this.loginElapsed);
           this.$router.push("/");
         } else {
           alert("ユーザまたはパスワードが間違っています");
+          http.registerLog(this.internal_user, "台帳管理", "ログイン", "失敗");
         }
         // this.snackbarText = "新規登録 成功";
         // this.snackbar = true;
       } else {
         console.log(res);
         alert("処理が正しく行えませんでした。時間をおいてやり直してください。");
+        http.registerLog(this.internal_user, "台帳管理", "ログイン", "失敗");
         // this.snackbarText = "データ取得 失敗";
         // this.snackbar = true;
       }
