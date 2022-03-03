@@ -28,6 +28,12 @@
                 :password="password"
                 :bkPoint="bkPoint"
               />
+              <PasswordUpdateButton
+                :user="user"
+                :password="password"
+                :bkPoint="bkPoint"
+                v-if="false"
+              />
             </v-card-actions>
           </v-card>
         </v-form>
@@ -40,6 +46,7 @@
 import UserField from "@/components/TextField/UserField";
 import PasswordField from "@/components/TextField/PasswordField";
 import LoginButton from "@/components/Button/LoginButton";
+import PasswordUpdateButton from "@/components/Button/PasswordUpdateButton";
 export default {
   props: ["bkPoint"],
   data() {
@@ -48,7 +55,7 @@ export default {
       password: "",
     };
   },
-  components: { UserField, PasswordField, LoginButton },
+  components: { UserField, PasswordField, LoginButton, PasswordUpdateButton },
   methods: {
     submit() {
       console.log(this.email + "," + this.password);

@@ -1,5 +1,4 @@
 import axios from "axios";
-import Moment from "moment";
 
 const http = axios.create({
   baseURL: "http://LG2201001:50001",
@@ -9,6 +8,19 @@ const http = axios.create({
     // "X-Requested-With": "XMLHttpRequest",
   },
 });
+
+const http_test = axios.create({
+  baseURL: "http://localhost:50001",
+  // baseURL: "http://harima-isk:50001",
+  headers: {
+    "Content-type": "application/json",
+    // "X-Requested-With": "XMLHttpRequest",
+  },
+});
+
+const get_test = async (url) => {
+  return await http_test(url);
+};
 
 const getFile = async (url, filepath) => {
   try {
@@ -44,7 +56,6 @@ const getFile = async (url, filepath) => {
 
 const registerLog = (name, doc, action, content) => {
   const url = `/system/log/register`;
-  const now = Moment().format("YYYY/MM/DD HH:mm:ss");
   const json = JSON.stringify(content);
   const data = {
     data: {
@@ -52,14 +63,13 @@ const registerLog = (name, doc, action, content) => {
       document: doc,
       rireki: action,
       rireki_content: json,
-      created: now,
     },
   };
   create(url, data);
 };
 
-const getReplace = async (url) => {
-  url = `/system/replace`;
+const getReplace = async () => {
+  const url = `/system/replace`;
   return http.get(url);
 };
 
@@ -113,4 +123,5 @@ export default {
   getFile,
   registerLog,
   getReplace,
+  get_test,
 };

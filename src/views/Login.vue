@@ -16,8 +16,6 @@ export default {
   data: () => ({
     title: "ログイン",
     showPassword: false,
-    name: "",
-    password: "",
     snackbar: false,
     snackbarText: "",
   }),
@@ -66,5 +64,6 @@ export default {
       return point;
     },
   },
+  mounted() {},
 };
 </script>

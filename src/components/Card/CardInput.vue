@@ -22,11 +22,12 @@
           <v-col>
             <v-text-field
               v-model="content[index].value"
-              placeholder="値を入力"
-              outlined
+              :placeholder="placeHolderName"
+              :type="item.type"
               :disabled="!isEditing"
-              hide-details
               :class="`text-${bkPoint.model}`"
+              outlined
+              hide-details
             >
               <template
                 v-slot:append
@@ -39,7 +40,12 @@
                   :class="`text-${bkPoint.model}`"
                   >選択</v-btn
                 >
-                <v-dialog v-model="filedialog" max-width="700px" scrorable>
+                <v-dialog
+                  v-model="filedialog"
+                  max-width="700px"
+                  scrorable
+                  persistent
+                >
                   <CardFile
                     :displayType="2"
                     :filepath="content[index].value"
@@ -51,15 +57,6 @@
                   />
                 </v-dialog>
               </template>
-              <v-text-field
-                v-model="inputDate"
-                label="入力用"
-                @blur="formatToDateString"
-                maxlength="8"
-                type="date"
-                v-if="inputType == 'date'"
-                :class="`text-${bkPoint.model}`"
-              />
             </v-text-field>
           </v-col>
         </v-row>
@@ -97,11 +94,12 @@ import CardFile from "@/components/Card/CardFile";
 export default {
   name: "DialogCard",
   components: { CardFile },
-  props: ["dialogType", "content", "loginType", "dialog", "bkPoint"],
+  props: ["dialogType", "header", "content", "loginType", "dialog", "bkPoint"],
   data() {
     return {
       headerName: "項目名",
       valueName: "値",
+      placeHolderName: "",
       filedialog: false,
       filepath: "",
       date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
@@ -137,6 +135,9 @@ export default {
   watch: {
     filedialog: (v) => {
       console.log(v);
+    },
+    content(v) {
+      console.log("入力データ", v);
     },
   },
   computed: {

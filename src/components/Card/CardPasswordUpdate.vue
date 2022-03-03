@@ -1,8 +1,19 @@
 <template>
   <v-card>
-    <v-card-title>パスワード更新</v-card-title>
+    <v-card-title :class="`text-${bkPoint.model}`">パスワード更新</v-card-title>
     <v-card-text>
-      <v-form ref="form" lazy-validation>
+      <v-form ref="form" v-model="valid" lazy-validation>
+        <v-text-field v-model="username" label="ユーザー名" :rules="[required]">
+        </v-text-field>
+        <v-text-field
+          v-model="password_old"
+          label="現在のパスワード"
+          :rules="[required]"
+          :append-icon="showOld ? 'mdi-eye' : 'mdi-eye-off'"
+          :type="showOld ? 'text' : 'password'"
+          @click:append="showOld = !showOld"
+        >
+        </v-text-field>
         <v-text-field
           v-model="password_new"
           :rules="[
@@ -30,11 +41,20 @@
           required
         ></v-text-field>
 
-        <v-btn color="success" class="mr-4" @click="submit"> 更新 </v-btn>
+        <v-btn
+          color="success"
+          class="mr-4"
+          @click="submit"
+          :class="`text-${bkPoint.model}`"
+        >
+          更新
+        </v-btn>
         <!--
         <v-btn color="error" class="mr-4" @click="clear">クリア</v-btn>
         -->
-        <v-btn class="mr-4" @click="cancel">キャンセル</v-btn>
+        <v-btn class="mr-4" @click="cancel" :class="`text-${bkPoint.model}`"
+          >キャンセル</v-btn
+        >
       </v-form>
     </v-card-text>
   </v-card>
@@ -46,9 +66,12 @@ export default {
   props: ["dialogType", "content", "loginType", "dialog", "bkPoint"],
   data() {
     return {
+      username: "",
+      showOld: false,
       showNew: false,
       showSame: false,
       valid: true,
+      password_old: "",
       password_new: "",
       password_same: "",
       required: (value) => !!value || "必ず入力してください", // 入力必須の制約
@@ -64,6 +87,15 @@ export default {
         "数字・アルファベット以外の文字が含まれていません", // 数字・アルファベット以外の文字
       same_data: (v) => v === this.password_new || "同じ文字列ではありません",
     };
+  },
+  watch: {
+    dialog() {
+      //表示状態の切り替えで初期化
+      this.username = "";
+      this.password_old = "";
+      this.password_new = "";
+      this.password_same = "";
+    },
   },
   computed: {},
   methods: {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-data-table
-      v-model="select"
+      v-model="selectdItem"
       :headers="headers"
       :items="items"
       :sort-by.sync="sortBy"
@@ -18,6 +18,7 @@
       single-select
       hide-default-header
       hide-default-footer
+      multi-sort
       @page-count="pageCount = $event"
     >
       <template v-slot:header="{ props: { headers } }">
@@ -74,7 +75,7 @@
 <script>
 export default {
   name: "MyTable",
-  props: ["headers", "items", "itemkey", "bkPoint"],
+  props: ["headers", "items", "itemkey", "bkPoint", "sortByItem", "sortByDesc"],
   data() {
     return {
       title: "ユーザー情報",
@@ -82,9 +83,11 @@ export default {
       user: {
         sorts: {},
       },
-      sortBy: "no",
-      sortDesc: false,
-      select: [],
+      sortBy: [],
+      sortDesc: [],
+      //       sortBy: "no",
+      // sortDesc: false,
+      selectdItem: [],
       tableHeight: 300,
       itemPerPage: 25,
       itemsPerPageOptions: [5, 25, 50, 100],
@@ -95,9 +98,15 @@ export default {
   },
   //値の変更を確認する
   watch: {
-    select(newVal, oldVal) {
+    selectdItem(newVal, oldVal) {
       if (this.isCheck) console.log(newVal, oldVal);
       this.$emit("childChange", newVal);
+    },
+    sortByItem() {
+      this.sortBy = this.sortByItem;
+    },
+    sortByDesc() {
+      this.sortDesc = this.sortByDesc;
     },
   },
   methods: {

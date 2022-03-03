@@ -1,10 +1,10 @@
 <template>
   <v-card>
     <v-tabs color="deep-purple accent-4" left>
-      <v-tab v-if="false">表示設定</v-tab>
+      <v-tab v-if="isDisplayConf">表示設定</v-tab>
       <v-tab>ユーザー設定</v-tab>
       <v-tab>ログ設定</v-tab>
-      <v-tab-item v-if="false">
+      <v-tab-item v-if="isDisplayConf">
         <Setting1 :bkPoint="bkPoint" />
       </v-tab-item>
       <v-tab-item>
@@ -28,6 +28,7 @@ export default {
   data() {
     return {
       dialog: false,
+      isDisplayConf: false,
     };
   },
   computed: {

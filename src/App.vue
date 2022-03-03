@@ -176,6 +176,7 @@
 
 <script>
 // import Loading from "./components/Loading";
+import http from "@/modules/http";
 import Main from "@/views/Main.vue";
 
 export default {
@@ -333,6 +334,12 @@ export default {
       }
       return point;
     },
+    replaceData() {
+      return this.$store.getters[`table/replace`];
+    },
+    displayData() {
+      return this.$store.getters[`table/display`];
+    },
   },
   methods: {
     handleResize() {
@@ -359,11 +366,41 @@ export default {
       // already logined
       this.$router.push("/login", () => {});
     },
+    async getReplace() {
+      const url = "/system/replace";
+      const res = await http.getReplace(url);
+      if (res.status == 200) {
+        const data = res.data;
+        this.$store.dispatch(`table/updateReplace`, data);
+        console.log("Replace", this.replaceData);
+      } else {
+        console.error(res);
+      }
+    },
+    async getDisplay() {
+      const url = "/display";
+      const res = await http.get(url);
+      if (res.status == 200) {
+        const data = res.data;
+        this.$store.dispatch(`table/updateDisplay`, data);
+        console.log("Display", this.displayData);
+      } else {
+        console.error(res);
+      }
+    },
   },
-  mounted: function () {
+  beforeCreate() {
+    // リアクティブデータ作成前に行いたい処理
+  },
+  created() {
+    this.getReplace();
+    this.getDisplay();
+  },
+  mounted() {
     setTimeout(() => {
       this.loading = false;
     }, 500);
+
     // window.addEventListener("resize", this.handleResize);
   },
   // beforeDestroy: function () {

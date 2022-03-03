@@ -55,7 +55,7 @@
             >ダウンロード</v-btn
           >
 
-          <v-dialog v-model="dialog" max-width="700px" scrorable>
+          <v-dialog v-model="dialog" max-width="700px" scrorable persistent>
             <CardInput
               :dialogType="selectIndex"
               :content="editItem"
@@ -73,7 +73,7 @@
         <MyTable
           :select.sync="select"
           :headers="shownHeaders"
-          :items="contents"
+          :items="showContents"
           :itemkey="table.itemkey"
           :bkPoint="bkPoint"
           @childChange="applyChanges"
@@ -113,7 +113,7 @@ export default {
       selectIndex: -1,
       editItem: [],
       originItem: [],
-      defaultItem: [],
+
       dialog: false,
       snackbar: false,
       snackbarText: "",
@@ -127,7 +127,50 @@ export default {
   },
   computed: {
     shownHeaders() {
-      return this.headers.filter((x) => x.shown);
+      return this.headers.filter((h) => h.shown > 0);
+    },
+    editHeaders() {
+      return this.headers.filter((h) => h.shown > 1);
+    },
+    showContents() {
+      let data = this.contents;
+      for (const i in data) {
+        let row = data[i];
+        // const headers = this.shownHeaders.filter((x) => x.type == "DATE");
+        const headers = this.shownHeaders.filter((x) => x.data_type == "日付");
+        for (const h of headers) {
+          // const text = h.text;
+          const text = h.value;
+          const value = row[text];
+          //空でなければ
+          if (value) {
+            row[text] = Moment(value).format("YYYY/MM/DD");
+          }
+        }
+      }
+      return data;
+    },
+    defaultItem() {
+      let data = [];
+      let header = Object.assign(this.editHeaders);
+      console.log("初期値", header);
+      for (const h of header) {
+        // const type = this.setDataType(h.type);
+        data.push({
+          text: h.text,
+          value: null,
+          type: h.type,
+          text_origin: h.value,
+        });
+      }
+      console.log("data", data);
+      return data;
+    },
+    replaceData() {
+      return this.$store.getters[`table/replace`];
+    },
+    displayData() {
+      return this.$store.getters[`table/display`];
     },
     loginData() {
       return this.$store.getters[`auth/login`];
@@ -171,6 +214,38 @@ export default {
     },
   },
   methods: {
+    setDataType(typeName) {
+      return typeName == "整数" || typeName == "小数"
+        ? "number"
+        : typeName == "文字列"
+        ? "text"
+        : typeName == "日付"
+        ? "date"
+        : "text";
+    },
+    initilize() {
+      const user_replace =
+        this.replaceData.rows.filter((x) => x.table == "document") || null;
+      console.log("置換設定", user_replace);
+      let newReplaceData = [];
+      //表示属性の順序を変更する
+      const user_replace_new = user_replace.sort((a, b) => {
+        if (a.display_number < b.display_number) return -1;
+        if (b.display_number < a.display_number) return 1;
+        return 0;
+      });
+      for (let rep of user_replace_new) {
+        rep["text"] = rep["replace"];
+        rep["value"] = rep["column"];
+        rep["type"] = this.setDataType(rep["data_type"]);
+        rep["shown"] = rep["display_type"];
+        newReplaceData.push(rep);
+      }
+      console.log("置換設定_新", newReplaceData);
+      this.headers = newReplaceData;
+      console.log("show", this.shownHeaders);
+      console.log("edit", this.editHeaders);
+    },
     applyChanges(select) {
       // console.log("parentChange", select);
       this.select = select;
@@ -179,24 +254,39 @@ export default {
       this.dialog = false;
       this.$nextTick(() => {
         this.selectIndex = -1;
-        // this.editItem = Object.assign({}, this.defaultItem);
       });
     },
     open(index) {
       this.selectIndex = index;
 
       if (this.selectIndex != -1) {
+        //閲覧:0
+        //更新:1
+        //削除:2
         if (this.select.length <= 0) {
           alert("選択されていません");
           return;
         }
-        const item = Object.assign(this.select[0]);
-        this.originItem = Object.assign(item);
-        const edit = Object.assign(this.defaultItem);
+        const selected = this.select[0];
+        console.log("選択データ", selected);
+        this.originItem = Object.assign(selected);
+        const headers =
+          this.selectIndex == 1 ? this.editHeaders : this.shownHeaders;
         let data = [];
-        for (const i in edit) {
-          const text = edit[i].text;
-          data.push({ text: text, value: item[text] });
+        for (const header of headers) {
+          let value = selected[header.value];
+          //日付型かつデータが存在すればYYYY-MM-DD形式に変換
+          if (value) {
+            if (header.type == "date") {
+              value = Moment(value).format("YYYY-MM-DD");
+            }
+          }
+          data.push({
+            text: header.text,
+            text_origin: header.value,
+            value: value,
+            type: header.type,
+          });
         }
         this.editItem = Object.assign(data);
       } else {
@@ -209,34 +299,40 @@ export default {
       const id = origin.id;
       console.log("origin", id);
 
-      //insert
-      let data = {};
-      const item = Object.assign(this.editItem);
-      for (const i in item) {
-        const text = item[i].text;
-        const value = item[i].value;
-        if (value != null && value != "") data[text] = value;
-      }
-      const content1 = { data: data };
-
-      //update
-      data = {};
-      const item1 = Object.assign(this.editItem);
-      for (const i in item1) {
-        const text = item1[i].text;
-        const value = item1[i].value;
-        if (value != origin[text]) {
-          data[text] = value;
+      if (this.selectIndex == -1) {
+        console.log("新規登録");
+        //insert
+        let data = {};
+        const items = Object.assign(this.editItem);
+        for (const item of items) {
+          const text = item.text;
+          const value = item.value;
+          if (value != null && value != "") data[text] = value;
         }
+        const content1 = { data: data };
+        this.insert(content1);
+      } else if (this.selectIndex == 0) {
+        console.log("閲覧");
+      } else if (this.selectIndex == 1) {
+        console.log("更新");
+        //update
+        let data = {};
+        const item1 = Object.assign(this.editItem);
+        for (const i in item1) {
+          const text = item1[i].text;
+          const value = item1[i].value;
+          if (value != origin[text]) {
+            data[text] = value;
+          }
+        }
+        const content2 = { data: { key: { id: id }, update: data } };
+        this.update(content2);
+      } else if (this.selectIndex == 2) {
+        console.log("削除");
+        //delete
+        const content3 = { id: id };
+        this.delete(content3);
       }
-      const content2 = { data: { key: { id: id }, update: data } };
-
-      //delete
-      const content3 = { id: id };
-
-      if (this.selectIndex == -1) this.insert(content1);
-      if (this.selectIndex == 1) this.update(content2);
-      if (this.selectIndex == 2) this.delete(content3);
       this.close();
     },
     download() {
@@ -271,12 +367,10 @@ export default {
         __guidance__: "",
       };
 
-      const count = 24;
+      //書き込み番号
+      const count = 25;
       const serialNumber = Array.from({ length: count }).map((v, k) => k);
       console.log(serialNumber); //結果：[0,1,2,3,4]
-      // const serialObj = serialNumber.map((k) => ({
-      //   id: `item-${k}`,
-      // }));
       const serialObj = serialNumber.map((k) => `**value${k}`);
       console.log(serialObj);
       //テーブル情報を読み込む
@@ -296,64 +390,88 @@ export default {
           data[name] = value;
           index++;
         }
+        //データ番号
+        while (index <= count) {
+          const name = `**value${index}`;
+          data[name] = "";
+          index++;
+        }
         data["**created"] = new Date();
         console.log(data);
         datas.push(data);
       }
       const filename = "届出・通知書.xlsx";
       const path = "/resources/テンプレート.xlsx";
+      //届出・通知書をファイルに出力
       MyXlsx.getTemplateWorkbook(path, datas, filename);
+      http.registerLog(
+        this.loginData.name,
+        "台帳管理",
+        "届出・通知書",
+        "ダウンロードしました。"
+      );
     },
-    setDocuments(res) {
-      let columns = Object.assign(res.data.columns);
-      let defaultItem = [];
-      for (const i in columns) {
-        const name = columns[i].columnName;
-        columns[i]["text"] = name;
-        columns[i]["value"] = name;
-        columns[i]["shown"] = name != "id";
-        if (name != "id") {
-          let content = {};
-          content["text"] = name;
-          content["value"] = "";
-          defaultItem.push(content);
-        }
-      }
-      const check = (colName, colType) => {
-        let isCheck;
-        for (const i in columns) {
-          const name = columns[i].columnName;
-          if (colName == name) {
-            const type = columns[i].type;
-            isCheck = colType == type;
-            break;
-          }
-        }
-        return isCheck;
-      };
-      let rows = Object.assign(res.data.rows);
-      for (const i in rows) {
-        let row = rows[i];
-        for (const key in row) {
-          if (check(key, "DATE")) {
-            const value = row[key];
-            if (value != undefined)
-              row[key] = Moment(value).format("YYYY/MM/DD");
-          }
-        }
-      }
-
-      this.headers = columns;
-      this.contents = rows;
-      this.defaultItem = Object.assign(defaultItem);
-      this.editItem = Object.assign(defaultItem);
+    setDocuments() {
+      //       const data = this.display.filter((x) => x.name == name)[0];
+      // if (data != undefined) {
+      //   console.log(data);
+      //   const display = JSON.parse(data.display);
+      //   this.tblHeaders = display;
+      //   const sort_default = JSON.parse(data.sort_default);
+      //   this.sortByItem = sort_default.map((x) => x.column) || [];
+      //   this.sortByDesc = sort_default.map((x) => x.desc) || [];
+      //   console.log(this.sortByItem, this.sortByDesc);
+      //   console.log("sort", sort_default);
+      // }
+      // this.tblContents = [];
+      // let defaultItem = [];
+      // let columns = Object.assign(res.data.columns);
+      // for (const i in columns) {
+      //   const name = columns[i].columnName;
+      //   columns[i]["text"] = name;
+      //   columns[i]["value"] = name;
+      //   columns[i]["shown"] = name != "id";
+      //   if (name != "id") {
+      //     let content = {};
+      //     content["text"] = name;
+      //     content["value"] = "";
+      //     defaultItem.push(content);
+      //   }
+      // }
+      // const check = (colName, colType) => {
+      //   let isCheck;
+      //   for (const i in columns) {
+      //     const name = columns[i].columnName;
+      //     if (colName == name) {
+      //       const type = columns[i].type;
+      //       isCheck = colType == type;
+      //       break;
+      //     }
+      //   }
+      //   return isCheck;
+      // };
+      // let rows = Object.assign(res.data.rows);
+      // for (const i in rows) {
+      //   let row = rows[i];
+      //   for (const key in row) {
+      //     if (check(key, "DATE")) {
+      //       const value = row[key];
+      //       if (value != undefined)
+      //         row[key] = Moment(value).format("YYYY/MM/DD");
+      //     }
+      //   }
+      // }
+      // this.headers = columns;
+      // this.contents = rows;
+      // this.defaultItem = Object.assign(defaultItem);
+      // this.editItem = Object.assign(defaultItem);
     },
     async getDocumentData() {
       this.select = [];
       const url = `/document`;
       const res = await http.get(url);
       if (res.status == 200) {
-        this.setDocuments(res);
+        this.contents = res.data.rows;
         // this.snackbarText = "新規登録 成功";
         // this.snackbar = true;
       } else {
@@ -365,16 +483,15 @@ export default {
       const url = `/document`;
       const res = await http.create(url, data);
       if (res.status == 200) {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "届出管理",
-          "新規登録",
-          data
-        );
         this.reflesh();
         this.snackbarText = "新規登録 成功";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "届出・通知書",
+          "新規登録　成功"
+        );
       } else {
         http.registerLog(
           this.url,
@@ -385,6 +502,12 @@ export default {
         );
         this.snackbarText = "新規登録 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "届出・通知書",
+          "新規登録　失敗"
+        );
       }
     },
     async update(data) {
@@ -402,16 +525,21 @@ export default {
         this.reflesh();
         this.snackbarText = "更新 成功";
         this.snackbar = true;
-      } else {
         http.registerLog(
-          this.url,
           this.loginData.name,
-          "届出管理",
-          "更新：失敗",
-          data
+          "台帳管理",
+          "届出・通知書",
+          "更新　成功"
         );
+      } else {
         this.snackbarText = "更新 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "届出・通知書",
+          "更新　失敗"
+        );
       }
       this.getDocumentData();
     },
@@ -432,6 +560,12 @@ export default {
         this.reflesh();
         this.snackbarText = "削除 成功";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "届出・通知書",
+          "削除　成功"
+        );
       } else {
         http.registerLog(
           this.url,
@@ -442,6 +576,12 @@ export default {
         );
         this.snackbarText = "削除 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.loginData.name,
+          "台帳管理",
+          "届出・通知書",
+          "削除　失敗"
+        );
       }
       this.getDocumentData();
     },
@@ -512,7 +652,8 @@ export default {
     },
   },
   mounted() {
-    this.getTest();
+    // this.getTest();
+    this.initilize();
     this.reflesh();
   },
 };
