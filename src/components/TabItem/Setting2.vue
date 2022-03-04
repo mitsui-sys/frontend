@@ -311,6 +311,7 @@ export default {
       const id = origin.no;
       console.log("id", id);
 
+<<<<<<< Updated upstream
       let data = {};
 
       //insert
@@ -341,6 +342,21 @@ export default {
         }
       } else if (selectedIndex == 0) {
         console.log("閲覧");
+=======
+      const index = this.selectIndex;
+      if (index == -1) {
+        //insert
+        let data = {};
+        const item = Object.assign(this.editItem);
+        for (const i in item) {
+          const text = item[i].text;
+          const value = item[i].value;
+          if (value != null && value != "") data[text] = value;
+        }
+        const content1 = { data: data };
+        this.insert(content1);
+      } else if (index == 0) {
+>>>>>>> Stashed changes
         const key = "ファイルパス";
         if (key in origin) {
           this.filepath = origin[key];
@@ -349,6 +365,7 @@ export default {
         } else {
           console.log("ファイルパスが存在しません");
         }
+<<<<<<< Updated upstream
       } else if (selectedIndex == 1) {
         console.log("更新");
         //update
@@ -359,14 +376,34 @@ export default {
           data[text] = value;
           dataSize++;
         }
+=======
+      } else if (index == 1) {
+        //update
+        let data = {};
+        const item1 = Object.assign(this.editItem);
+        let dataSize = 0;
+        for (const i in item1) {
+          const text = item1[i].text;
+          const value = item1[i].value;
+          if (value != origin[text]) {
+            data[text] = value;
+            dataSize++;
+          }
+        }
+        const content2 = { data: { key: { no: id }, update: data } };
+>>>>>>> Stashed changes
         if (dataSize <= 0) {
           console.log("更新する値が存在しません");
         } else {
           const content2 = { data: { key: { no: id }, update: data } };
           this.update(content2);
         }
+<<<<<<< Updated upstream
       } else if (selectedIndex == 2) {
         console.log("削除");
+=======
+      } else if (index == 2) {
+>>>>>>> Stashed changes
         //delete
         const content3 = { no: id };
         this.delete(content3);
