@@ -63,9 +63,9 @@ export default {
       const bkPt = this.$vuetify.breakpoint;
       const point = {
         name: bkPt.name,
-        cardHeight: 500,
-        cardWidth: 800,
-        btnWidth: 500,
+        cardHeight: 400,
+        cardWidth: 500,
+        btnWidth: 400,
         btnHeight: 70,
         titleModel: "h3",
         model: "h5",
@@ -74,13 +74,6 @@ export default {
         case "xl":
         case "lg":
         case "md":
-          point.cardHeight = 500;
-          point.cardWidth = 800;
-          point.btnWidth = 550;
-          point.btnHeight = 70;
-          point.titleModel = "h2";
-          point.model = "h4";
-          break;
         case "sm":
         case "xs":
           point.cardHeight = 400;

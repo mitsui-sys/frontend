@@ -40,9 +40,11 @@ export default {
       }
     },
   },
-  mounted() {
+  async mounted() {
     //クエリパラメータがあれば
     let query = this.$route.query;
+    await this.getReplace();
+    await this.getDisplay();
 
     if (Object.keys(query).length > 0) {
       console.log("query", query);

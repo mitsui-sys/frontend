@@ -23,7 +23,7 @@
               :class="`text-${bkPoint.model}`"
               outlined
               label="選択"
-              value="initValue"
+              :value="initValue"
               @change="changeName"
             ></v-autocomplete>
             <v-btn
@@ -101,7 +101,7 @@
           >
           <v-divider class="mx-4" vertical></v-divider>
           <v-toolbar-title :class="`text-${bkPoint.model}`">
-            件数:{{ tblContents.length }}
+            件数:{{ contents.length }}
           </v-toolbar-title>
           <v-spacer />
           <v-btn
@@ -151,6 +151,7 @@
               :content="editItem"
               :loginType="loginData"
               :bkPoint="bkPoint"
+              :showClose="true"
               @clickSubmit="save"
               @clickCancel="close"
             />
@@ -198,17 +199,11 @@ export default {
   components: { CardInput, MyTable, CardFile },
   data() {
     return {
-      replace: null,
-      value1: null,
-      value2: null,
-      value3: null,
-      value4: null,
+      initFirst: false, //初回設定フラグ
       itemkey: "gid",
       displayItems: [],
       headers: [],
       contents: [],
-      tblHeaders: [],
-      tblContents: [],
       snackbar: false,
       snackbarText: "成功",
       snackbarColor: "green",
@@ -354,20 +349,13 @@ export default {
         ? "date"
         : "text";
     },
-    initilize() {
-      console.log(this.displayData.rows);
-      const data =
-        this.displayData.rows.filter((x) => x.type == 2).shift() || null;
-      if (data != null) {
-        console.log("届出", data.display);
-        // this.headers = JSON.parse(data.display);
-      }
-    },
     changeName() {
       console.log("台帳名の変更");
       const name = this.selectedName;
+      //属性表示情報の取得
       const data = this.display.filter((x) => x.name == name).shift() || null;
       if (data != null) {
+        //ソート情報の初期化
         console.log(data);
         // const display = JSON.parse(data.display);
         // this.tblHeaders = display;
@@ -389,10 +377,10 @@ export default {
         if (b.display_number < a.display_number) return 1;
         return 0;
       });
-      for (let data of user_replace_new) {
-        console.log(data.display_number);
-      }
-      console.log("置換ソート", user_replace_new);
+      // for (let data of user_replace_new) {
+      //   console.log(data.display_number);
+      // }
+      // console.log("置換ソート", user_replace_new);
       for (let rep of user_replace_new) {
         rep["text"] = rep["replace"];
         rep["value"] = rep["column"];
@@ -402,10 +390,10 @@ export default {
       }
 
       this.headers = newReplaceData;
-      console.log("置換設定", user_replace);
-      console.log("置換設定_新", newReplaceData);
-      console.log("show", this.shownHeaders);
-      console.log("edit", this.editHeaders);
+      // console.log("置換設定", user_replace);
+      // console.log("置換設定_新", newReplaceData);
+      // console.log("show", this.shownHeaders);
+      // console.log("edit", this.editHeaders);
 
       this.contents = [];
       this.queryCondition = [];
@@ -441,27 +429,25 @@ export default {
         this.display = rows;
         const sorted = rows.sort((a, b) => (a.sortNo > b.sortNo ? 1 : -1));
         const items = sorted.map((x) => x.name);
-        // let items = [];
-        // for (const item of sorted) {
-        //   items.push(item.name);
-        // }
         this.displayItems = items;
-        // this.displayItems = sorted.map((row) => row.name);
-        if (items > 0) {
-          this.selectedName = Object.assign(items.shift());
-          console.log("selectedName", this.selectedName);
+        if (!this.initFirst) {
+          this.initFirst = true;
+          //初期値に項目の最初の値を
+          console.log(this.displayItems);
+          this.selectedName = this.displayItems[0];
+          this.changeName();
         }
       } else {
-        alert("台帳名 失敗");
         this.snackbarText = "台帳名 失敗";
         this.snackbar = true;
       }
     },
+    clear() {},
     async initialize() {
       this.selectedName = "";
       this.queryCondition = [];
-      this.tblHeaders = [];
-      this.tblContents = [];
+      this.headers = [];
+      this.contents = [];
       this.select = [];
       this.getDefault();
     },
@@ -651,12 +637,8 @@ export default {
       if (res.status == 200) {
         const data = res.data;
         const rows = data.rows;
-        this.tblContents = rows.length > 0 ? rows : [];
-        this.contents = rows || null;
-        console.log("台帳", rows);
-        // this.setDocuments(res);
-        // this.snackbarText = "表示";
-        // this.snackbar = true;
+        this.contents = rows || [];
+        // console.log("台帳", rows);
       } else {
         this.snackbarText = "データ取得 失敗";
         this.snackbar = true;

@@ -6,7 +6,6 @@
     prepend-icon="mdi-lock"
     :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
     :type="show ? 'text' : 'password'"
-    :class="`text-${bkPoint.model}`"
     hint="8文字以上で入力してください"
     @click:append="show = !show"
     @input="$emit('update:password', $event)"

@@ -4,7 +4,6 @@
     :value="userdate"
     label="日付"
     prepend-icon="mdi-account-circle"
-    :class="`text-${bkPoint.model}`"
     @input="$emit('update:user', $event)"
     @blur="formatToDateString"
     maxlength="8"

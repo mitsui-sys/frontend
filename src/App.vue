@@ -2,7 +2,6 @@
   <v-app>
     <!-- サイドメニュー -->
     <v-navigation-drawer
-      app
       clipped
       v-model="drawer"
       v-if="development && loginData.level >= 1"
@@ -54,7 +53,7 @@
         @click.stop="drawer = !drawer"
         v-if="development"
       ></v-app-bar-nav-icon>
-      <v-toolbar-title :class="`text-${bkPoint.titleModel}`"
+      <v-toolbar-title :class="`text-${bkPoint.titleModel}`" class="mainTitle"
         >台帳システム</v-toolbar-title
       >
       <v-btn
@@ -158,10 +157,12 @@
       </v-toolbar-items>
     </v-app-bar>
     <!-- メイン -->
+
     <v-main>
-      <!-- vue-routerを使用する場合 -->
       <router-view></router-view>
     </v-main>
+    <!-- vue-routerを使用する場合 -->
+
     <!-- フッター -->
     <v-footer app color="primary">
       <v-spacer></v-spacer>
@@ -407,14 +408,22 @@ export default {
   //   window.removeEventListener("resize", this.handleResize);
   // },
 };
-//  font-size: 20px !important;
 </script>
 
 <style>
 /* サイト全体のフォント指定 */
 * {
-  font-family: "ＭＳ ゴシック", sans-serif !important;
-  /* font-size: 11px !important; */
+  /*font-family: "MSゴシック", sans-serif !important;*/
+  font-family: "MSゴシック" !important;
+  /*
+  font-family: monospace !important;
+  font-family: sans-serif !important;
+  font-family: serif !important;
+  */
+  /*font-size: 20px !important;*/
+}
+.main-title {
+  font-size: 28px !important;
 }
 
 .v-data-table {
@@ -422,11 +431,13 @@ export default {
 }
 .v-data-table th {
   border: 1px #333333 solid;
-  width: 100px !important;
-}
-
-.display.v-data-table tr th {
   background: #fdfcaa !important;
+  font-size: 20px !important;
+}
+.display.v-data-table td {
+  background: #dddddd;
+  border: 1px solid;
+  font-size: 20px !important;
 }
 .display.v-data-table tr.v-data-table__selected td {
   background: #aadaff;
@@ -438,10 +449,6 @@ export default {
 
 .v-data-table tr:nth-child(odd) td {
   background: #ffffff;
-}
-.display.v-data-table td {
-  background: #dddddd;
-  border: 1px solid;
 }
 
 /* ヘッダに縦線出すよ */
@@ -486,5 +493,12 @@ ul {
   align-items: center;
   margin: 0.5em;
   font-size: 10px;
+}
+.showdialog {
+  max-height: 500px;
+}
+.item-header {
+  font-size: 20px !important;
+  min-width: 150px;
 }
 </style>

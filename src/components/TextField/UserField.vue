@@ -4,7 +4,6 @@
     :value="user"
     label="ユーザー"
     prepend-icon="mdi-account-circle"
-    :class="`text-${bkPoint.model}`"
     @input="$emit('update:user', $event)"
     :rules="[required]"
   >

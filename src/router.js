@@ -40,7 +40,38 @@ const router = new Router({
       name: "login",
       component: loadView("Login"),
     },
-
+    {
+      path: "/detail",
+      // name: "detail",
+      component: loadView("Detail"),
+    },
+    {
+      path: "/detailview",
+      // name: "detail",
+      component: loadView("DetailView"),
+    },
+    {
+      path: "/document",
+      name: "document",
+      component: loadView("Document"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/setting",
+      name: "setting",
+      component: loadView("Setting"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/error",
+      name: "error",
+      component: loadView("Error"),
+    },
+    //これ以降不要なページ
     {
       path: "/pdf",
       name: "pdf",
@@ -66,14 +97,7 @@ const router = new Router({
         requiresAuth: true,
       },
     },
-    {
-      path: "/setting",
-      name: "setting",
-      component: loadView("Setting"),
-      meta: {
-        requiresAuth: true,
-      },
-    },
+
     {
       path: "/leaflet",
       name: "leaflet",
@@ -106,24 +130,7 @@ const router = new Router({
         requiresAuth: true,
       },
     },
-    {
-      path: "/detail",
-      // name: "detail",
-      component: loadView("Detail"),
-    },
-    {
-      path: "/detailview",
-      // name: "detail",
-      component: loadView("DetailView"),
-    },
-    {
-      path: "/document",
-      name: "document",
-      component: loadView("Document"),
-      meta: {
-        requiresAuth: true,
-      },
-    },
+
     {
       path: "/drag",
       name: "drag",
@@ -133,11 +140,6 @@ const router = new Router({
       path: "/chohyo",
       name: "chohyo",
       component: loadView("Chohyo"),
-    },
-    {
-      path: "/error",
-      name: "error",
-      component: loadView("Error"),
     },
     {
       path: "*",

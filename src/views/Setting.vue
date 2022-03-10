@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card class="display">
     <v-tabs color="deep-purple accent-4" left>
       <v-tab v-if="isDisplayConf">表示設定</v-tab>
       <v-tab>ユーザー設定</v-tab>
@@ -49,13 +49,15 @@ export default {
         cardMinWidth: 400,
         btnWidth: 350,
         btnHeight: 50,
-        titleModel: "h3",
-        model: "h5",
+        titleModel: "h4",
+        model: "h6",
       };
       switch (bkPt.name) {
         case "xl":
         case "lg":
         case "md":
+        case "sm":
+        case "xs":
           point.cardHeight = 800;
           point.cardWidth = 800;
           point.btnWidth = 350;
@@ -63,17 +65,16 @@ export default {
           point.titleModel = "h4";
           point.model = "h6";
           break;
-        case "sm":
-        case "xs":
-          point.cardHeight = 800;
-          point.cardWidth = 800;
-          // point.cardMinHeight = 400;
-          // point.cardMinWidth = 400;
-          point.btnWidth = 350;
-          point.btnHeight = 50;
-          point.titleModel = "h5";
-          point.model = "subtitle1";
-          break;
+
+        // point.cardHeight = 800;
+        // point.cardWidth = 800;
+        // // point.cardMinHeight = 400;
+        // // point.cardMinWidth = 400;
+        // point.btnWidth = 350;
+        // point.btnHeight = 50;
+        // point.titleModel = "h5";
+        // point.model = "subtitle1";
+        // break;
         default:
           break;
       }

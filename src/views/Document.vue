@@ -20,14 +20,12 @@
             @click="open(-1)"
             :disabled="!(loginData.level >= 1)"
             :class="`text-${bkPoint.model} mx-2`"
-            :height="bkPoint.btnHeight"
             >新規登録</v-btn
           >
           <v-btn
             @click="open(0)"
             :disabled="!select.length > 0"
             :class="`text-${bkPoint.model} mx-2`"
-            :height="bkPoint.btnHeight"
             >閲覧</v-btn
           >
 
@@ -35,14 +33,12 @@
             @click="open(1)"
             :disabled="!(select.length > 0 && loginData.level >= 1)"
             :class="`text-${bkPoint.model} mx-2`"
-            :height="bkPoint.btnHeight"
             >編集</v-btn
           >
           <v-btn
             @click="open(2)"
             :disabled="!(select.length > 0 && loginData.level >= 1)"
             :class="`text-${bkPoint.model} mx-2`"
-            :height="bkPoint.btnHeight"
             >削除</v-btn
           >
           <v-divider class="mx-4" vertical></v-divider>
@@ -51,7 +47,6 @@
             @click="download"
             :disabled="!(select.length > 0)"
             :class="`text-${bkPoint.model} mx-2`"
-            :height="bkPoint.btnHeight"
             >ダウンロード</v-btn
           >
 
@@ -61,6 +56,7 @@
               :content="editItem"
               :loginType="loginData"
               :bkPoint="bkPoint"
+              :showClose="true"
               @clickSubmit="save"
               @clickCancel="close"
             />
@@ -155,15 +151,34 @@ export default {
       let header = Object.assign(this.editHeaders);
       console.log("初期値", header);
       for (const h of header) {
-        // const type = this.setDataType(h.type);
+        let rules = [];
+        if (h.type == "number") {
+          if (h.min) {
+            const rule = (v) => v >= h.min || `値は${h.min}以上にしてください`;
+            rules.push(rule);
+          }
+          if (h.max) {
+            const rule = (v) => v <= h.max || `値は${h.max}以下にしてください`;
+            rules.push(rule);
+          }
+        } else if (h.type == "date") {
+          // if (h.min) {
+          //   const rule = (v) => v >= h.min || `値は${h.min}以上にしてください`;
+          //   rules.push(rule);
+          // }
+          console.log("日付");
+        }
         data.push({
           text: h.text,
+          text_origin: h.value,
           value: null,
           type: h.type,
-          text_origin: h.value,
+          min: h.min,
+          max: h.max,
+          rules: rules,
         });
       }
-      console.log("data", data);
+      console.log("defalut", data);
       return data;
     },
     replaceData() {
@@ -251,6 +266,7 @@ export default {
       this.select = select;
     },
     close() {
+      this.editItem = [];
       this.dialog = false;
       this.$nextTick(() => {
         this.selectIndex = -1;
@@ -273,28 +289,124 @@ export default {
         const headers =
           this.selectIndex == 1 ? this.editHeaders : this.shownHeaders;
         let data = [];
-        for (const header of headers) {
-          let value = selected[header.value];
+        for (const h of headers) {
+          //データを取得
+          let text = h.text;
+          let text_origin = h.value;
+          let type = h.type;
+          let value = selected[h.value];
+          let min = h.min;
+          let max = h.max;
+          //ルールの設定
+          let rules = [];
+          if (type == "number") {
+            if (h.min) {
+              const rule = (v) =>
+                v >= h.min || `値は${h.min}以上にしてください`;
+              rules.push(rule);
+            }
+            if (h.max) {
+              const rule = (v) =>
+                v <= h.max || `値は${h.max}以下にしてください`;
+              rules.push(rule);
+            }
+          }
           //日付型かつデータが存在すればYYYY-MM-DD形式に変換
           if (value) {
-            if (header.type == "date") {
+            if (type == "date") {
               value = Moment(value).format("YYYY-MM-DD");
             }
           }
+
           data.push({
-            text: header.text,
-            text_origin: header.value,
+            text: text,
+            text_origin: text_origin,
             value: value,
-            type: header.type,
+            type: type,
+            rules: rules,
+            min: min,
+            max: max,
+          });
+        }
+        console.log(data);
+        this.editItem = Object.assign(data);
+      } else {
+        let data = [];
+        let header = Object.assign(this.editHeaders);
+        console.log("初期値", header);
+        for (const h of header) {
+          let rules = [];
+          if (h.type == "number") {
+            if (h.min) {
+              const rule = (v) =>
+                v >= h.min || `値は${h.min}以上にしてください`;
+              rules.push(rule);
+            }
+            if (h.max) {
+              const rule = (v) =>
+                v <= h.max || `値は${h.max}以下にしてください`;
+              rules.push(rule);
+            }
+          } else if (h.type == "date") {
+            // if (h.min) {
+            //   const rule = (v) => v >= h.min || `値は${h.min}以上にしてください`;
+            //   rules.push(rule);
+            // }
+          }
+          data.push({
+            text: h.text,
+            text_origin: h.value,
+            value: null,
+            type: h.type,
+            min: h.min,
+            max: h.max,
+            rules: rules,
           });
         }
         this.editItem = Object.assign(data);
-      } else {
-        this.editItem = Object.assign(this.defaultItem);
+        // this.editItem = Object.assign(this.defaultItem);
       }
       this.dialog = true;
+      // this.selectIndex = index;
+
+      // if (this.selectIndex != -1) {
+      //   //閲覧:0
+      //   //更新:1
+      //   //削除:2
+      //   if (this.select.length <= 0) {
+      //     alert("選択されていません");
+      //     return;
+      //   }
+      //   const selected = this.select[0];
+      //   console.log("選択データ", selected);
+      //   this.originItem = Object.assign(selected);
+      //   const headers =
+      //     this.selectIndex == 1 ? this.editHeaders : this.shownHeaders;
+      //   let data = [];
+      //   for (const header of headers) {
+      //     let value = selected[header.value];
+      //     //日付型かつデータが存在すればYYYY-MM-DD形式に変換
+      //     if (value) {
+      //       if (header.type == "date") {
+      //         value = Moment(value).format("YYYY-MM-DD");
+      //       }
+      //     }
+      //     data.push({
+      //       text: header.text,
+      //       text_origin: header.value,
+      //       value: value,
+      //       type: header.type,
+      //       min: header.min,
+      //       max: header.max,
+      //     });
+      //   }
+      //   this.editItem = Object.assign(data);
+      // } else {
+      //   this.editItem = Object.assign(this.defaultItem);
+      // }
+      // this.dialog = true;
     },
-    save() {
+    save(content) {
       const origin = this.originItem;
       const id = origin.id;
       console.log("origin", id);
@@ -303,8 +415,8 @@ export default {
         console.log("新規登録");
         //insert
         let data = {};
-        const items = Object.assign(this.editItem);
-        for (const item of items) {
+        // const items = Object.assign(this.editItem);
+        for (const item of content) {
           const text = item.text;
           const value = item.value;
           if (value != null && value != "") data[text] = value;
@@ -317,7 +429,7 @@ export default {
         console.log("更新");
         //update
         let data = {};
-        const item1 = Object.assign(this.editItem);
+        const item1 = content; //Object.assign(this.editItem);
         for (const i in item1) {
           const text = item1[i].text;
           const value = item1[i].value;
@@ -411,61 +523,6 @@ export default {
         "ダウンロードしました。"
       );
     },
-    setDocuments() {
-      //       const data = this.display.filter((x) => x.name == name)[0];
-      // if (data != undefined) {
-      //   console.log(data);
-      //   const display = JSON.parse(data.display);
-      //   this.tblHeaders = display;
-      //   const sort_default = JSON.parse(data.sort_default);
-      //   this.sortByItem = sort_default.map((x) => x.column) || [];
-      //   this.sortByDesc = sort_default.map((x) => x.desc) || [];
-      //   console.log(this.sortByItem, this.sortByDesc);
-      //   console.log("sort", sort_default);
-      // }
-      // this.tblContents = [];
-      // let defaultItem = [];
-      // let columns = Object.assign(res.data.columns);
-      // for (const i in columns) {
-      //   const name = columns[i].columnName;
-      //   columns[i]["text"] = name;
-      //   columns[i]["value"] = name;
-      //   columns[i]["shown"] = name != "id";
-      //   if (name != "id") {
-      //     let content = {};
-      //     content["text"] = name;
-      //     content["value"] = "";
-      //     defaultItem.push(content);
-      //   }
-      // }
-      // const check = (colName, colType) => {
-      //   let isCheck;
-      //   for (const i in columns) {
-      //     const name = columns[i].columnName;
-      //     if (colName == name) {
-      //       const type = columns[i].type;
-      //       isCheck = colType == type;
-      //       break;
-      //     }
-      //   }
-      //   return isCheck;
-      // };
-      // let rows = Object.assign(res.data.rows);
-      // for (const i in rows) {
-      //   let row = rows[i];
-      //   for (const key in row) {
-      //     if (check(key, "DATE")) {
-      //       const value = row[key];
-      //       if (value != undefined)
-      //         row[key] = Moment(value).format("YYYY/MM/DD");
-      //     }
-      //   }
-      // }
-      // this.headers = columns;
-      // this.contents = rows;
-      // this.defaultItem = Object.assign(defaultItem);
-      // this.editItem = Object.assign(defaultItem);
-    },
     async getDocumentData() {
       this.select = [];
       const url = `/document`;
@@ -493,13 +550,6 @@ export default {
           "新規登録　成功"
         );
       } else {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "届出管理",
-          "新規登録：失敗",
-          data
-        );
         this.snackbarText = "新規登録 失敗";
         this.snackbar = true;
         http.registerLog(
@@ -515,13 +565,6 @@ export default {
       const url = `/document`;
       const res = await http.update(url, data);
       if (res.status == 200) {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "届出管理",
-          "更新",
-          data
-        );
         this.reflesh();
         this.snackbarText = "更新 成功";
         this.snackbar = true;
@@ -550,13 +593,6 @@ export default {
       const url = `/document?${key}=${value}`;
       const res = await http.remove(url);
       if (res.status == 200) {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "届出管理",
-          "削除",
-          data
-        );
         this.reflesh();
         this.snackbarText = "削除 成功";
         this.snackbar = true;
@@ -567,13 +603,6 @@ export default {
           "削除　成功"
         );
       } else {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "届出管理",
-          "削除：失敗",
-          data
-        );
         this.snackbarText = "削除 失敗";
         this.snackbar = true;
         http.registerLog(

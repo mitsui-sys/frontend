@@ -1,13 +1,9 @@
 <template>
-  <v-card class="mx-auto">
-    <!--
-    <v-subheader :class="`text-${bkPoint.model}`">Window Size</v-subheader>
-    {{ windowSize }}
-  -->
+  <div>
     <CardInput
       :dialogType="selectIndex"
       :content="editItem"
-      :loginType="loginData.level"
+      :loginType="user.level"
       :bkPoint="bkPoint"
       @clickSubmit="save"
       @clickCancel="windowClose"
@@ -19,6 +15,7 @@
         :download="true"
         :bkPoint="bkPoint"
         :visible="filedialog"
+        :showClose="false"
         @clickSubmit="filedialog = false"
         @clickCancel="filedialog = false"
       />
@@ -27,7 +24,7 @@
       <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
       <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
     </v-snackbar>
-  </v-card>
+  </div>
 </template>
 
 <script>
@@ -75,6 +72,12 @@ export default {
       editItem: [],
       filedialog: false,
       filepath: "",
+      detailTest: [
+        { text: "kankoengeeener1", value: "value1" },
+        { text: "kanko2", value: "value2" },
+        { text: "kanko3", value: "value3" },
+      ],
+      user: [],
     };
   },
   computed: {
@@ -134,33 +137,27 @@ export default {
       const bkPt = this.$vuetify.breakpoint;
       const point = {
         name: bkPt.name,
-        cardHeight: 800,
-        cardWidth: 600,
-        btnWidth: 500,
-        btnHeight: 70,
-        titleModel: "h2",
+        cardWidth: 800,
+        cardHeight: 500,
+        btnWidth: 275,
+        btnHeight: 40,
+        titleModel: "h3",
         model: "h4",
       };
       switch (bkPt.name) {
         case "xl":
         case "lg":
         case "md":
-          point.cardHeight = 800;
-          point.cardWidth = 600;
-          point.btnWidth = 500;
-          point.btnHeight = 70;
-          point.titleModel = "h2";
-          point.model = "h4";
-          break;
         case "sm":
         case "xs":
-          point.cardHeight = 800;
-          point.cardWidth = 600;
-          point.btnWidth = 500;
-          point.btnHeight = 70;
-          point.titleModel = "h3";
-          point.model = "h5";
+          point.cardWidth = 800;
+          point.cardHeight = 500;
+          point.btnWidth = 275;
+          point.btnHeight = 40;
+          point.titleModel = "subtitle-2";
+          point.model = "body-1";
           break;
+
         default:
           break;
       }
@@ -188,21 +185,17 @@ export default {
         ? "date"
         : "text";
     },
-    async initilize() {
-      await this.getReplace();
-      await this.getDisplay();
-      console.log(this.displayData);
-      console.log(this.replaceData);
+    initilize() {
+      //表示設定を読み込む
       const user_replace =
-        this.replaceData.rows.filter((x) => x.table == this.selectedName) ||
-        null;
-      console.log("置換設定", user_replace);
+        this.replaceData.rows.filter((x) => x.table == this.selectedName) || [];
       //表示属性の順序を変更する
       const user_replace_new = user_replace.sort((a, b) => {
         if (a.display_number < b.display_number) return -1;
         if (b.display_number < a.display_number) return 1;
         return 0;
       });
+      //表示属性情報の追加
       let newReplaceData = [];
       for (let rep of user_replace_new) {
         rep["text"] = rep["replace"];
@@ -211,10 +204,7 @@ export default {
         rep["shown"] = rep["display_type"];
         newReplaceData.push(rep);
       }
-      console.log("置換設定_新", newReplaceData);
       this.headers = newReplaceData;
-      console.log("show", this.shownHeaders);
-      console.log("edit", this.editHeaders);
     },
     windowClose() {
       window.open("about:blank", "_self");
@@ -250,97 +240,89 @@ export default {
       }
     },
     async getUserData(user) {
-      const url = `/system/user`;
-      // const res = await http.get_test(url);
-      const res = await http.get(url);
-      if (res.status == 200) {
-        //成功時
-        console.log("user", res.data);
-        const rows = res.data.rows;
-        for (const i in rows) {
-          if (user == rows[i]["user_name"]) {
-            const level = rows[i]["level"];
-            console.log("level", level);
-            if (level >= 1) this.selectIndex = 1;
+      try {
+        const url = `/system/user?user_name=${user}`;
+        // const res = await http.get_test(url);
+        const res = await http.get(url);
+        if (res.status == 200) {
+          //成功時
+          // console.log("user", res.data);
+          const rows = res.data.rows;
+          if (rows.length > 0) {
+            this.user = rows.shift();
+            if (this.user.level > 0) this.selectIndex = 1;
             else this.selectIndex = 0;
-            break;
+            console.log("user", this.user);
           }
+        } else {
+          // alert("台帳名 失敗");
+          // this.snackbarText = "台帳名 失敗";
+          // this.snackbar = true;
         }
-        // this.setDocuments(res);
-        // this.snackbarText = "新規登録 成功";
-        // this.snackbar = true;
-      } else {
-        // alert("台帳名 失敗");
-        // this.snackbarText = "台帳名 失敗";
-        // this.snackbar = true;
+      } catch (error) {
+        console.log("error.name=" + error.name);
+        console.log("error.toString()=" + error.toString());
+        console.log("Error.prototype.toString()=" + Error.prototype.toString());
+        if ("isAxiosError" in error) {
+          console.log(`Request URI: ${error.request.path}`);
+          console.log(`${error.response.status} ${error.response.statusText}`);
+        }
       }
     },
-    async getLayerData(layer, content) {
-      this.selectedName = layer;
-      const url = `/detail/${layer}?${content}`;
-      // const res = await http.get_test(url);
-      console.log("url", url);
-      const res = await http.get(url);
-      if (res.status == 200) {
-        //成功時
-        const rows = res.data.rows;
-        console.log("取得データ", rows);
-        if (rows.length <= 0) {
-          alert("選択されていません");
-          return;
-        }
-        const selected = rows[0];
-        console.log("選択データ", selected);
-        this.originItem = Object.assign(selected);
-        const headers =
-          this.selectIndex == 1 ? this.editHeaders : this.shownHeaders;
-        let data = [];
-        for (const header of headers) {
-          console.log(header.value);
-          let value = selected[header.value];
-          //日付型かつデータが存在すればYYYY-MM-DD形式に変換
-          if (value) {
-            if (header.type == "date") {
-              value = Moment(value).format("YYYY-MM-DD");
-            }
+    setDisplayData(index, item) {
+      const selected = Object.assign(item);
+      const headers = index == 1 ? this.editHeaders : this.shownHeaders;
+      let data = [];
+      for (const header of headers) {
+        let value = selected[header.value];
+        //日付型かつデータが存在すればYYYY-MM-DD形式に変換
+        if (value) {
+          if (header.type == "date") {
+            value = Moment(value).format("YYYY-MM-DD");
           }
-          data.push({
-            text: header.text,
-            text_origin: header.value,
-            value: value,
-            type: header.type,
-          });
         }
-        console.log("表示データ", data);
-        this.editItem = Object.assign(data);
-
-        // console.log(data);
-        // if (data.length > 0) {
-        //   const data0 = data[0];
-        //   let tmp = [];
-        //   this.originItem = Object.assign(data0);
-        //   for (let key in data0) {
-        //     if (!["gid", "geometry", "uri_ハイパーリンク"].includes(key)) {
-        //       let row = { text: key, value: data0[key] };
-        //       tmp.push(row);
-        //     }
-        //   }
-        //   this.items = tmp;
-        //   console.log(tmp);
-
-        //   //閲覧:0
-        //   //更新:1
-        //   //削除:2
-
-        // }
-
-        // this.setDocuments(res);
-        // this.snackbarText = "新規登録 成功";
-        // this.snackbar = true;
-      } else {
-        // alert("台帳名 失敗");
-        // this.snackbarText = "台帳名 失敗";
-        // this.snackbar = true;
+        data.push({
+          text: header.text,
+          text_origin: header.value,
+          value: value,
+          type: header.type,
+        });
+      }
+      console.log("表示データ", data);
+      this.editItem = Object.assign(data);
+    },
+    async getLayerData(layer, content) {
+      try {
+        this.selectedName = layer;
+        const url = `/detail/${layer}?${content}`;
+        // const res = await http.get_test(url);
+        console.log("url", url);
+        const res = await http.get(url);
+        if (res.status == 200) {
+          //成功時
+          const rows = res.data.rows;
+          console.log("取得データ", rows);
+          if (rows.length <= 0) {
+            alert("選択されていません");
+            return;
+          }
+          const selected = rows[0];
+          console.log("選択データ", selected);
+          this.originItem = Object.assign(selected);
+          this.setDisplayData(this.selectIndex, selected);
+        } else {
+          // alert("台帳名 失敗");
+          // this.snackbarText = "台帳名 失敗";
+          // this.snackbar = true;
+        }
+      } catch (error) {
+        console.log("error.name=" + error.name);
+        console.log("error.toString()=" + error.toString());
+        console.log("Error.prototype.toString()=" + Error.prototype.toString());
+        if ("isAxiosError" in error) {
+          console.log(`Request URI: ${error.request.path}`);
+          console.log(`${error.response.status} ${error.response.statusText}`);
+        }
       }
     },
     onResize() {
@@ -352,25 +334,11 @@ export default {
     },
     save(content) {
       console.log(content);
-
       const origin = this.originItem;
       const id = origin.gid;
-      console.log("origin", origin);
-
       const index = this.selectIndex;
       console.log("index", index);
-      if (index == -1) {
-        //insert
-        // let data = {};
-        // const item = Object.assign(this.editItem);
-        // for (const i in item) {
-        //   const text = item[i].text;
-        //   const value = item[i].value;
-        //   if (value != null && value != "") data[text] = value;
-        // }
-        // const content1 = { data: data };
-        // this.insert(content1);
-      } else if (index == 0) {
+      if (index == 0) {
         const key = "uri";
         console.log("key", key in origin);
         if (key in origin) {
@@ -413,25 +381,23 @@ export default {
       const url = `/db/${table}`;
       const res = await http.create(url, data);
       if (res.status == 200) {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "詳細情報",
-          "新規登録",
-          data
-        );
         this.snackbarText = "新規登録 成功";
         this.snackbar = true;
-      } else {
         http.registerLog(
-          this.url,
-          this.loginData.name,
+          this.user.name,
           "詳細情報",
-          "新規登録:失敗",
-          data
+          this.selectedName,
+          "新規登録　成功"
         );
+      } else {
         this.snackbarText = "新規登録 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.user.name,
+          "詳細情報",
+          this.selectedName,
+          "新規登録　失敗"
+        );
       }
     },
     async update(data) {
@@ -439,28 +405,26 @@ export default {
       const url = `/db/${table}`;
       const res = await http.update(url, data);
       if (res.status == 200) {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "詳細情報",
-          "更新",
-          data
-        );
         this.snackbarText = "更新 成功";
         this.snackbar = true;
-      } else {
         http.registerLog(
-          this.url,
-          this.loginData.name,
+          this.user.name,
           "詳細情報",
-          "更新:失敗",
-          data
+          this.selectedName,
+          "更新　成功"
         );
+      } else {
         this.snackbarText = "更新 失敗";
         this.snackbar = true;
+        http.registerLog(
+          this.user.name,
+          "詳細情報",
+          this.selectedName,
+          "更新　失敗"
+        );
       }
     },
-    async delete(data) {
+    async delete() {
       const select = this.select;
       if (select.length <= 0) {
         console.error("選択されていません");
@@ -472,47 +436,23 @@ export default {
       let url = `/db/${table}?${mainkey}=${id}`;
       const res = await http.remove(url);
       if (res.status == 200) {
-        http.registerLog(
-          this.url,
-          this.loginData.name,
-          "詳細情報",
-          "削除",
-          data
-        );
         this.snackbarText = "削除 成功";
         this.snackbar = true;
-      } else {
         http.registerLog(
-          this.url,
-          this.loginData.name,
+          this.user.name,
           "詳細情報",
-          "削除:失敗",
-          data
+          this.selectedName,
+          "削除　成功"
         );
+      } else {
         this.snackbarText = "削除 失敗";
         this.snackbar = true;
-      }
-    },
-    async getReplace() {
-      const url = "/system/replace";
-      const res = await http.getReplace(url);
-      if (res.status == 200) {
-        const data = res.data;
-        this.$store.dispatch(`table/updateReplace`, data);
-        console.log("Replace", this.replaceData);
-      } else {
-        console.error(res);
-      }
-    },
-    async getDisplay() {
-      const url = "/display";
-      const res = await http.get(url);
-      if (res.status == 200) {
-        const data = res.data;
-        this.$store.dispatch(`table/updateDisplay`, data);
-        console.log("Display", this.displayData);
-      } else {
-        console.error(res);
+        http.registerLog(
+          this.user.name,
+          "詳細情報",
+          this.selectedName,
+          "削除　失敗"
+        );
       }
     },
   },
@@ -520,31 +460,8 @@ export default {
     //クエリパラメータがあれば
     let query = this.$route.query;
     console.log(query);
-
-    if (Object.keys(query).length > 0) {
-      console.log("query", query);
-      //パラメータにlayerが存在するか
-      if ("layer" in query) {
-        const layer = query.layer?.slice();
-        const user = query.user?.slice();
-        delete query["layer"];
-        delete query["user"];
-        let contents = [];
-        for (const key in query) {
-          contents.push(`${key}=${query[key]}`);
-        }
-        const content = contents.join("&");
-        this.selectedName = layer;
-        this.initilize();
-        this.getLayerData(layer, content);
-        console.log("ユーザ確認", user);
-        this.getUserData(user);
-        this.$nextTick(() => {});
-      }
-    }
     console.log(this.detail_user);
     console.log(this.detail_search);
-
     this.getUserData(this.detail_user);
     let search = Object.assign(this.detail_search);
     const layer = Object.assign(search.layer);
@@ -556,7 +473,9 @@ export default {
     }
     const content = contents.join("&");
     this.initilize();
-    this.getLayerData(layer, content);
+    this.$nextTick(() => {
+      this.getLayerData(layer, content);
+    });
   },
 };
 </script>

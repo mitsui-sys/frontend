@@ -56,13 +56,13 @@ const getFile = async (url, filepath) => {
 
 const registerLog = (name, doc, action, content) => {
   const url = `/system/log/register`;
-  const json = JSON.stringify(content);
+  // const json = JSON.stringify(content);
   const data = {
     data: {
       user_name: name,
       document: doc,
       rireki: action,
-      rireki_content: json,
+      rireki_content: content,
     },
   };
   create(url, data);

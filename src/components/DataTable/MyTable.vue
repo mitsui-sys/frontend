@@ -16,11 +16,14 @@
       fixed-footer
       show-select
       single-select
-      hide-default-header
+      default-header
       hide-default-footer
       multi-sort
       @page-count="pageCount = $event"
+      :header-props="{ 'sort-icon': 'mdi-triangle' }"
+      @click:row="clickRow"
     >
+      <!--
       <template v-slot:header="{ props: { headers } }">
         <thead>
           <tr>
@@ -40,6 +43,8 @@
           </tr>
         </thead>
       </template>
+      -->
+      <!--
       <template v-slot:item="{ item, isSelected, select }">
         <tr
           :class="[{ 'v-data-table__selected': isSelected }]"
@@ -61,6 +66,7 @@
           </td>
         </tr>
       </template>
+      -->
     </v-data-table>
     <v-pagination
       dense
@@ -85,8 +91,6 @@ export default {
       },
       sortBy: [],
       sortDesc: [],
-      //       sortBy: "no",
-      // sortDesc: false,
       selectdItem: [],
       tableHeight: 300,
       itemPerPage: 25,
@@ -98,23 +102,28 @@ export default {
   },
   //値の変更を確認する
   watch: {
+    items() {
+      console.log("表示データ更新");
+      this.selectdItem = [];
+    },
     selectdItem(newVal, oldVal) {
-      if (this.isCheck) console.log(newVal, oldVal);
+      console.log("選択データ変更", newVal, oldVal);
       this.$emit("childChange", newVal);
     },
     sortByItem() {
       this.sortBy = this.sortByItem;
+      // console.log(this.sortBy);
     },
     sortByDesc() {
       this.sortDesc = this.sortByDesc;
+      // console.log(this.sortDesc);
     },
   },
   methods: {
-    toggleOrder(text, index) {
-      const desc = !this.headers[index].sortDesc;
-      this.headers[index].sortDesc = desc ? true : false;
-      this.sortBy = text;
-      this.sortDesc = desc;
+    clickRow(item, row) {
+      row.select(!row.isSelected);
+      console.log(row);
+      // this.$emit("childChange", this.selectdItem);
     },
   },
   created() {},

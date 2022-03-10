@@ -7,6 +7,8 @@
         :items="showContents"
         :itemkey="log.itemkey"
         :bkPoint="bkPoint"
+        :sortByItem="sortByItem"
+        :sortByDesc="sortByDesc"
         @childChange="applyChanges"
       />
     </v-card-text>
@@ -34,6 +36,8 @@ export default {
       },
       headers: [],
       contents: [],
+      sortByItem: [],
+      sortByDesc: [],
     };
   },
   computed: {
@@ -96,7 +100,6 @@ export default {
     initilize() {
       const user_replace =
         this.replaceData.rows.filter((x) => x.table == "log") || null;
-      console.log("置換設定", user_replace);
       //表示属性の順序を変更する
       const user_replace_new = user_replace.sort((a, b) => {
         if (a.display_number < b.display_number) return -1;
@@ -111,69 +114,27 @@ export default {
         rep["shown"] = rep["display_type"];
         newReplaceData.push(rep);
       }
-      console.log("置換設定_新", newReplaceData);
+      // console.log("属性表示", newReplaceData);
       this.headers = newReplaceData;
-      console.log("show", this.shownHeaders);
-      console.log("edit", this.editHeaders);
-    },
-    async getReplace() {
-      const res = await http.getReplace();
-      if (res.status == 200) {
-        console.log(res.data);
-        this.replace = res.data;
-      } else {
-        console.log(res);
-      }
     },
     applyChanges(select) {
       // console.log("parentChange", select);
       this.select = select;
     },
-    // async getDisplayData(res) {
-    //   const columnNames = res.data.columns.map((x) => x.columnName);
-    //   let headers = [];
-    //   //属性名書き換え
-    //   console.log(this.replace.data.rows);
-    //   const rowsR = this.replace.data.rows;
-
-    //   for (const i in columnNames) {
-    //     let name = columnNames[i];
-    //     const value = columnNames[i];
-
-    //     //データがあるなら書き換える
-    //     const data = rowsR.filter((x) => x.table == "log" && x.column == name);
-    //     if (data.length > 0) {
-    //       const newdata = data.shift();
-    //       name = newdata.replace;
-    //     }
-
-    //     headers.push({ text: name, value: value, sortDesc: false });
-    //   }
-    //   let rows = res.data.rows;
-    //   console.log(rows);
-    //   for (const key in rows) {
-    //     const _date = rows[key]["created"];
-    //     rows[key]["created"] = Moment(_date).format("YYYY/MM/DD");
-    //   }
-    //   this.log.headers = Object.assign(headers);
-    //   this.log.items = Object.assign(rows);
-    // },
     async getLogData() {
       const url = `/system/log`;
       const res = await http.get(url);
       if (res.status == 200) {
         // this.getDisplayData(res);
         this.contents = res.data.rows;
-        console.log(this.contents);
       } else {
         console.log(res);
         alert("処理が正しく行えませんでした。時間をおいてやり直してください。");
       }
     },
   },
-  mounted() {
+  created() {
     this.initilize();
-    // this.getReplace();
     this.$nextTick(() => {
       this.getLogData();
     });

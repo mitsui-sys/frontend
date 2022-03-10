@@ -1,13 +1,5 @@
 <template>
-  <v-btn
-    class="info"
-    @click="confirm"
-    id="loginbtn"
-    :class="`text-${bkPoint.model}`"
-    :width="bkPoint.btnWidth"
-    :height="bkPoint.btnHeight"
-    >ログイン</v-btn
-  >
+  <v-btn class="info" @click="confirm" id="loginbtn" block>ログイン</v-btn>
 </template>
 <script>
 import http from "@/modules/http";

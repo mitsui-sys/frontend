@@ -1,29 +1,23 @@
 <template>
   <v-card>
     <v-card-title>
-      <span class="item-header">{{ dialogTitle }}</span>
+      <span>{{ dialogTitle }}</span>
       <v-spacer></v-spacer>
     </v-card-title>
     <v-divider></v-divider>
-    <v-card-text class="overflow-y-auto" style="height: 500px">
+    <v-card-text>
       <div>
-        <span class="d-inline-block text-truncate item-header my-3">
-          {{ headerName }}
-        </span>
-        <span class="d-inline-block text-truncate item-header my-3">{{
-          valueName
-        }}</span>
-      </div>
-      <v-form ref="form" v-model="valid" lazy-validation>
+        <p><span></span><span></span></p>
+        <p v-for="(item, index) in editItem" :key="index">
+          <span class="d-inline-block" style="min-width: 150px">{{
+            item.text
+          }}</span
+          ><span class="d-inline-block">{{ item.value }}</span>
+        </p>
         <v-text-field
-          v-model="content[index].value"
-          v-for="(item, index) in content"
+          v-model="detailTest[index].value"
+          v-for="(item, index) in detailTest"
           :key="index"
-          :type="item.type"
-          :min="item.min"
-          :max="item.max"
-          :rules="item.rules"
-          :disabled="!isEditing"
           outlined
         >
           <template v-slot:prepend>
@@ -31,87 +25,25 @@
               {{ item.text }}
             </span>
           </template>
-          <template
-            v-slot:append
-            v-if="item.text == colName && (dialogType == 1 || dialogType == -1)"
-          >
-            <v-btn @click="filedialog = true" :class="`text-${bkPoint.model}`"
-              >選択</v-btn
-            >
-            <v-dialog
-              v-model="filedialog"
-              max-width="700px"
-              scrorable
-              persistent
-            >
-              <CardFile
-                :displayType="2"
-                :filepath="content[index].value"
-                :visible="filedialog"
-                :bkPoint="bkPoint"
-                @input="content[index].value = $event"
-                @clickSubmit="onSubmit"
-                @clickCancel="onCancel"
-              />
-            </v-dialog>
+          <template v-slot:append-outer>
+            <v-btn>
+              <v-icon left> mdi-menu </v-icon>
+              Menu
+            </v-btn>
           </template>
         </v-text-field>
-      </v-form>
-      <!--
-      <v-row>
-        <v-col cols="4" :class="`text-${bkPoint.model}`">
-          {{ headerName }}
-        </v-col>
-        <v-col :class="`text-${bkPoint.model}`">{{ valueName }}</v-col>
-      </v-row>
-      <v-row v-for="(item, index) in content" :key="index" no-gutters>
-        <v-col cols="4">
-          <v-subheader :class="`text-${bkPoint.model}`">{{
-            item.text
-          }}</v-subheader>
-        </v-col>
-        <v-col>
-          <v-text-field
-            v-model="content[index].value"
-            :placeholder="placeHolderName"
-            :type="item.type"
-            :disabled="!isEditing"
-            :class="`text-${bkPoint.model}`"
-            :min="item.min"
-            :max="item.max"
-            :rules="item.rules"
-            outlined
-          >
-            <template
-              v-slot:append
-              v-if="
-                item.text == colName && (dialogType == 1 || dialogType == -1)
-              "
-            >
-              <v-btn @click="filedialog = true" :class="`text-${bkPoint.model}`"
-                >選択</v-btn
-              >
-              <v-dialog
-                v-model="filedialog"
-                max-width="700px"
-                scrorable
-                persistent
-              >
-                <CardFile
-                  :displayType="2"
-                  :filepath="content[index].value"
-                  :visible="filedialog"
-                  :bkPoint="bkPoint"
-                  @input="content[index].value = $event"
-                  @clickSubmit="onSubmit"
-                  @clickCancel="onCancel"
-                />
-              </v-dialog>
-            </template>
-          </v-text-field>
-        </v-col>
-      </v-row>
-      -->
+      </div>
+      <v-dialog v-model="filedialog" max-width="700px" scrorable persistent>
+        <CardFile
+          :displayType="2"
+          :filepath="content[index].value"
+          :visible="filedialog"
+          :bkPoint="bkPoint"
+          @input="content[index].value = $event"
+          @clickSubmit="onSubmit"
+          @clickCancel="onCancel"
+        />
+      </v-dialog>
     </v-card-text>
     <v-divider></v-divider>
     <v-card-actions>
@@ -123,7 +55,6 @@
         text
         @click="submit"
         :class="`text-${bkPoint.model}`"
-        :disabled="!valid"
       >
         {{ dialogYesText }}
       </v-btn>
@@ -158,9 +89,6 @@ export default {
   ],
   data() {
     return {
-      valid: true,
-      success: false,
-      test_form: false,
       headerName: "項目名",
       valueName: "値",
       placeHolderName: "",
@@ -198,7 +126,7 @@ export default {
     };
   },
   watch: {
-    filedialog(v) {
+    filedialog: (v) => {
       console.log(v);
     },
     content(v) {
@@ -211,6 +139,7 @@ export default {
       const content = this.content;
       const type = this.dialogType;
       const name = this.colName;
+      console.log(name);
       if (type == 0) {
         isShow = false;
         for (const i in content) {
@@ -221,7 +150,7 @@ export default {
           }
         }
       }
-      console.log(isShow);
+
       return isShow;
     },
     dialogTitle() {
@@ -256,7 +185,6 @@ export default {
   methods: {
     onSubmit(params) {
       this.filedialog = false;
-      console.log(params);
       this.filepath = params.filepath;
     },
     onCancel() {
@@ -277,15 +205,7 @@ export default {
     },
     //親コンポーネントへ送信
     submit() {
-      if (this.$refs.form.validate()) {
-        // すべてのバリデーションが通過したときのみ
-        // if文の中に入る
-        this.success = true;
-        this.$emit("clickSubmit", this.content);
-      } else {
-        console.error(this.content);
-        this.success = false;
-      }
+      this.$emit("clickSubmit", this.content);
     },
     cancel() {
       this.$emit("clickCancel");

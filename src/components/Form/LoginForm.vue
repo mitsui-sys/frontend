@@ -1,28 +1,22 @@
 <template>
   <v-container>
-    <v-card class="pb-5" :width="bkPoint.cardWidth" color="blue-grey lighten-4">
-      <v-toolbar
-        class="headline"
-        :class="`text-${bkPoint.model} my-5`"
-        color="blue-grey lighten-5"
-        flat
+    <v-card class="pb-5" width="400" color="blue-grey lighten-4">
+      <v-toolbar class="headline my-5" color="blue-grey lighten-5" flat
         >次の項目を使用してログイン</v-toolbar
       >
       <v-card-text color="red">
         <v-form>
-          <v-card :width="bkPoint.cardWidth">
+          <v-card>
             <!-- タイトル -->
-            <v-card-title class="headline" :class="`text-${bkPoint.model} my-5`"
-              >ログイン</v-card-title
-            >
+            <v-card-title class="headline my-5">ログイン</v-card-title>
             <!-- 入力欄 -->
             <v-card-text>
-              <UserField :user.sync="user" :bkPoint="bkPoint" />
-              <PasswordField :password.sync="password" :bkPoint="bkPoint" />
+              <UserField :user.sync="user" />
+              <PasswordField :password.sync="password" />
             </v-card-text>
 
             <!-- アクションボタン -->
-            <v-card-actions class="my-5">
+            <v-card-actions>
               <LoginButton
                 :user="user"
                 :password="password"
@@ -32,7 +26,7 @@
                 :user="user"
                 :password="password"
                 :bkPoint="bkPoint"
-                v-if="false"
+                v-if="true"
               />
             </v-card-actions>
           </v-card>
@@ -56,10 +50,5 @@ export default {
     };
   },
   components: { UserField, PasswordField, LoginButton, PasswordUpdateButton },
-  methods: {
-    submit() {
-      console.log(this.email + "," + this.password);
-    },
-  },
 };
 </script>
