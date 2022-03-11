@@ -1,16 +1,18 @@
 <template>
-  <v-card color="#fff">
-    <v-toolbar>
-      {{ title }}
+  <v-card color="#fff" class="ma-3">
+    <v-toolbar outlined>
+      <v-toolbar-title :class="`text-${bkPoint.model}`">{{
+        title
+      }}</v-toolbar-title>
+      <v-divider
+        class="mx-4"
+        :class="`text-${bkPoint.model}`"
+        vertical
+      ></v-divider>
+      <v-toolbar-title :class="`text-${bkPoint.model}`">
+        件数：{{ contents.length }}
+      </v-toolbar-title>
       <v-spacer />
-      <!--
-      <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
-        権限レベル更新
-      </v-btn>
-      <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
-        グループ名更新
-      </v-btn>
-      -->
       <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
         パスワード更新
       </v-btn>
@@ -20,7 +22,6 @@
 
       <v-btn
         @click="open(0)"
-        v-if="select.length > 0"
         :disabled="!select.length > 0"
         :class="`text-${bkPoint.model} mx-2`"
       >
@@ -28,32 +29,29 @@
       </v-btn>
       <v-btn
         @click="open(1)"
-        v-if="select.length > 0 && loginData.level >= 1"
-        :disabled="!select.length > 0"
+        :disabled="!(select.length > 0 && loginData.level >= 1)"
         :class="`text-${bkPoint.model} mx-2`"
       >
         編集
       </v-btn>
       <v-btn
         @click="open(2)"
-        v-if="select.length > 0 && loginData.level >= 1"
-        :disabled="!select.length > 0"
+        :disabled="!(select.length > 0 && loginData.level >= 1)"
         :class="`text-${bkPoint.model} mx-2`"
       >
         削除
       </v-btn>
     </v-toolbar>
-    <v-card-text>
-      <MyTable
-        :headers="shownHeaders"
-        :items="showContents"
-        :itemkey="itemkey"
-        :bkPoint="bkPoint"
-        :sortByItem="sortByItem"
-        :sortByDesc="sortByDesc"
-        @childChange="applyChanges"
-      />
-    </v-card-text>
+    <MyTable
+      :headers="shownHeaders"
+      :items="showContents"
+      :itemkey="itemkey"
+      :bkPoint="bkPoint"
+      :sortByItem="sortByItem"
+      :sortByDesc="sortByDesc"
+      @childChange="applyChanges"
+    />
+
     <v-dialog v-model="dialogP" max-width="700px" scrorable persistent>
       <CardPassword
         :bkPoint="bkPoint"

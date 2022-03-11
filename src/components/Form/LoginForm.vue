@@ -22,12 +22,7 @@
                 :password="password"
                 :bkPoint="bkPoint"
               />
-              <PasswordUpdateButton
-                :user="user"
-                :password="password"
-                :bkPoint="bkPoint"
-                v-if="true"
-              />
+              <PasswordUpdateButton :bkPoint="bkPoint" v-if="true" />
             </v-card-actions>
           </v-card>
         </v-form>

@@ -1,81 +1,77 @@
 <template>
-  <v-card class="mx-auto">
-    <v-container fluid>
-      <v-card>
-        <v-toolbar outlined :height="bkPoint.btnHeight + 10">
-          <v-toolbar-title :class="`text-${bkPoint.model}`">{{
-            title
-          }}</v-toolbar-title>
-          <v-divider
-            class="mx-4"
-            :class="`text-${bkPoint.model}`"
-            vertical
-          ></v-divider>
-          <v-toolbar-title :class="`text-${bkPoint.model}`">
-            件数：{{ contents.length }}
-          </v-toolbar-title>
-          <v-spacer />
-          <v-divider class="mx-4" vertical></v-divider>
-          <v-btn
-            @click="open(-1)"
-            :disabled="!(loginData.level >= 1)"
-            :class="`text-${bkPoint.model} mx-2`"
-            >新規登録</v-btn
-          >
-          <v-btn
-            @click="open(0)"
-            :disabled="!select.length > 0"
-            :class="`text-${bkPoint.model} mx-2`"
-            >閲覧</v-btn
-          >
+  <v-card class="ma-3">
+    <v-toolbar outlined>
+      <v-toolbar-title :class="`text-${bkPoint.model}`">{{
+        title
+      }}</v-toolbar-title>
+      <v-divider
+        class="mx-4"
+        :class="`text-${bkPoint.model}`"
+        vertical
+      ></v-divider>
+      <v-toolbar-title :class="`text-${bkPoint.model}`">
+        件数：{{ contents.length }}
+      </v-toolbar-title>
+      <v-spacer />
+      <v-divider class="mx-4" vertical></v-divider>
+      <v-btn
+        @click="open(-1)"
+        :disabled="!(loginData.level >= 1)"
+        :class="`text-${bkPoint.model} mx-2`"
+        >新規登録</v-btn
+      >
+      <v-btn
+        @click="open(0)"
+        :disabled="!select.length > 0"
+        :class="`text-${bkPoint.model} mx-2`"
+        >閲覧</v-btn
+      >
 
-          <v-btn
-            @click="open(1)"
-            :disabled="!(select.length > 0 && loginData.level >= 1)"
-            :class="`text-${bkPoint.model} mx-2`"
-            >編集</v-btn
-          >
-          <v-btn
-            @click="open(2)"
-            :disabled="!(select.length > 0 && loginData.level >= 1)"
-            :class="`text-${bkPoint.model} mx-2`"
-            >削除</v-btn
-          >
-          <v-divider class="mx-4" vertical></v-divider>
-          <v-btn
-            class="primary"
-            @click="download"
-            :disabled="!(select.length > 0)"
-            :class="`text-${bkPoint.model} mx-2`"
-            >ダウンロード</v-btn
-          >
+      <v-btn
+        @click="open(1)"
+        :disabled="!(select.length > 0 && loginData.level >= 1)"
+        :class="`text-${bkPoint.model} mx-2`"
+        >編集</v-btn
+      >
+      <v-btn
+        @click="open(2)"
+        :disabled="!(select.length > 0 && loginData.level >= 1)"
+        :class="`text-${bkPoint.model} mx-2`"
+        >削除</v-btn
+      >
+      <v-divider class="mx-4" vertical></v-divider>
+      <v-btn
+        class="primary"
+        @click="download"
+        :disabled="!(select.length > 0)"
+        :class="`text-${bkPoint.model} mx-2`"
+        >ダウンロード</v-btn
+      >
 
-          <v-dialog v-model="dialog" max-width="700px" scrorable persistent>
-            <CardInput
-              :dialogType="selectIndex"
-              :content="editItem"
-              :loginType="loginData"
-              :bkPoint="bkPoint"
-              :showClose="true"
-              @clickSubmit="save"
-              @clickCancel="close"
-            />
-          </v-dialog>
-          <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
-            <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
-            <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
-          </v-snackbar>
-        </v-toolbar>
-        <MyTable
-          :select.sync="select"
-          :headers="shownHeaders"
-          :items="showContents"
-          :itemkey="table.itemkey"
+      <v-dialog v-model="dialog" max-width="700px" scrorable persistent>
+        <CardInput
+          :dialogType="selectIndex"
+          :content="editItem"
+          :loginType="loginData"
           :bkPoint="bkPoint"
-          @childChange="applyChanges"
+          :showClose="true"
+          @clickSubmit="save"
+          @clickCancel="close"
         />
-      </v-card>
-    </v-container>
+      </v-dialog>
+      <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
+        <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
+        <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
+      </v-snackbar>
+    </v-toolbar>
+    <MyTable
+      :select.sync="select"
+      :headers="shownHeaders"
+      :items="showContents"
+      :itemkey="table.itemkey"
+      :bkPoint="bkPoint"
+      @childChange="applyChanges"
+    />
   </v-card>
 </template>
 
@@ -92,7 +88,8 @@ export default {
   data() {
     return {
       select: [],
-      title: "埋蔵文化財発掘届出・通知書",
+      title_origin: "埋蔵文化財発掘届出・通知書",
+      title: "届出・通知書",
       message: "お探しのページが見つかりませんでした。",
       mouse: {
         x: 0,
@@ -206,13 +203,6 @@ export default {
         case "xl":
         case "lg":
         case "md":
-          point.cardHeight = 800;
-          point.cardWidth = 600;
-          point.btnWidth = 500;
-          point.btnHeight = 70;
-          point.titleModel = "h3";
-          point.model = "h5";
-          break;
         case "sm":
         case "xs":
           point.cardHeight = 800;

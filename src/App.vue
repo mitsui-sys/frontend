@@ -178,13 +178,9 @@
 <script>
 // import Loading from "./components/Loading";
 import http from "@/modules/http";
-import Main from "@/views/Main.vue";
 
 export default {
   name: "App",
-  component: {
-    Main,
-  },
   data() {
     return {
       width: 800,

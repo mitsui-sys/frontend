@@ -1,189 +1,187 @@
 <template>
-  <v-card class="mx-auto">
-    <v-container fluid>
-      <v-card color="#fff">
-        <v-row>
-          <v-card-title
-            class="d-flex justify-center"
+  <div>
+    <v-card color="#fff">
+      <v-row>
+        <v-card-title
+          class="d-flex justify-center"
+          :class="`text-${bkPoint.model}`"
+          >検索条件</v-card-title
+        >
+      </v-row>
+      <v-card-text class="d-flex justify-center flex-column search">
+        <div class="flex">
+          <v-subheader class="flex-col" :class="`text-${bkPoint.model}`"
+            >台帳名</v-subheader
+          >
+          <v-autocomplete
+            v-model="selectedName"
+            class="flex-col mr-3"
+            :items="displayItems"
+            :search-input.sync="search"
+            :height="bkPoint.btnHeight"
             :class="`text-${bkPoint.model}`"
-            >検索条件</v-card-title
-          >
-        </v-row>
-        <v-card-text class="d-flex justify-center flex-column search">
-          <div class="flex">
-            <v-subheader class="flex-col" :class="`text-${bkPoint.model}`"
-              >台帳名</v-subheader
-            >
-            <v-autocomplete
-              v-model="selectedName"
-              class="flex-col mr-3"
-              :items="displayItems"
-              :search-input.sync="search"
-              :height="bkPoint.btnHeight"
-              :class="`text-${bkPoint.model}`"
-              outlined
-              label="選択"
-              :value="initValue"
-              @change="changeName"
-            ></v-autocomplete>
-            <v-btn
-              @click="getDaicho"
-              class="flex-col mb-11 mr-1"
-              :height="bkPoint.btnHeight"
-              :class="`text-${bkPoint.model}`"
-              >検索</v-btn
-            >
-            <v-btn
-              @click="addInput"
-              class="flex-col mb-11 mr-1"
-              :height="bkPoint.btnHeight"
-              :class="`text-${bkPoint.model}`"
-              >条件追加</v-btn
-            >
-            <v-btn
-              @click="initialize"
-              class="flex-col mb-11 mr-1"
-              :height="bkPoint.btnHeight"
-              :class="`text-${bkPoint.model}`"
-              >クリア</v-btn
-            >
-          </div>
-          <v-card max-height="200" class="overflow-auto ma-0">
-            <div
-              v-for="(item, index) in queryCondition"
-              :key="index"
-              class="flex"
-              :height="bkPoint.btnHeight"
-            >
-              <v-subheader
-                class="flex-col mt-3"
-                :class="`text-${bkPoint.model}`"
-                :height="bkPoint.btnHeight"
-                >条件{{ index + 1 }}</v-subheader
-              >
-              <v-select
-                v-model="item.text"
-                class="flex-col"
-                :items="shownHeaders"
-                label="項目"
-                :class="`text-${bkPoint.model}`"
-                :height="bkPoint.btnHeight"
-                @change="changeQueryCond(item.text, index)"
-              >
-              </v-select>
-              <!-- 各入力ボックス -->
-              <v-text-field
-                v-model="item.value"
-                class="flex-col ml-3 mr-3"
-                :type="`${item.type}`"
-                label="条件"
-                :class="`text-${bkPoint.model}`"
-                :height="bkPoint.btnHeight"
-              />
-              <!-- 入力ボックスの削除ボタン -->
-              <v-btn
-                class="flex-col"
-                type="button"
-                @click="removeInput(index)"
-                :class="`text-${bkPoint.model}`"
-                :height="bkPoint.btnHeight"
-              >
-                削除
-              </v-btn>
-            </div>
-          </v-card>
-        </v-card-text>
-      </v-card>
-      <v-card>
-        <v-toolbar outlined :height="bkPoint.btnHeight + 10">
-          <v-toolbar-title :class="`text-${bkPoint.model}`"
-            >テーブル表示</v-toolbar-title
-          >
-          <v-divider class="mx-4" vertical></v-divider>
-          <v-toolbar-title :class="`text-${bkPoint.model}`">
-            件数:{{ contents.length }}
-          </v-toolbar-title>
-          <v-spacer />
+            outlined
+            label="選択"
+            :value="initValue"
+            @change="changeName"
+          ></v-autocomplete>
           <v-btn
-            @click="registerSearch()"
-            v-if="select.length > 0"
+            @click="getDaicho"
+            class="flex-col mb-11 mr-1"
+            :height="bkPoint.btnHeight"
             :class="`text-${bkPoint.model}`"
-            :height="bkPoint.btnHeight"
+            >検索</v-btn
           >
-            地図連携
-          </v-btn>
-          <v-divider class="mx-4" vertical></v-divider>
           <v-btn
-            @click="open(-1)"
-            :disabled="!(selectedName != '' && loginData.level >= 1)"
-            :class="`text-${bkPoint.model} mx-2`"
+            @click="addInput"
+            class="flex-col mb-11 mr-1"
             :height="bkPoint.btnHeight"
+            :class="`text-${bkPoint.model}`"
+            >条件追加</v-btn
           >
-            新規登録
-          </v-btn>
           <v-btn
-            @click="open(0)"
-            :disabled="!(select.length > 0)"
-            :class="`text-${bkPoint.model} mx-2`"
+            @click="initialize"
+            class="flex-col mb-11 mr-1"
+            :height="bkPoint.btnHeight"
+            :class="`text-${bkPoint.model}`"
+            >クリア</v-btn
+          >
+        </div>
+        <v-card max-height="200" class="overflow-auto ma-0">
+          <div
+            v-for="(item, index) in queryCondition"
+            :key="index"
+            class="flex"
             :height="bkPoint.btnHeight"
           >
-            閲覧
-          </v-btn>
-          <v-btn
-            @click="open(1)"
-            :disabled="!(select.length > 0 && loginData.level >= 1)"
-            :class="`text-${bkPoint.model} mx-2`"
-            :height="bkPoint.btnHeight"
-          >
-            編集
-          </v-btn>
-          <v-btn
-            @click="open(2)"
-            :disabled="!(select.length > 0 && loginData.level >= 1)"
-            :class="`text-${bkPoint.model} mx-2`"
-            :height="bkPoint.btnHeight"
-          >
-            削除
-          </v-btn>
-          <v-dialog v-model="dialog" max-width="700px" scrorable persistent>
-            <CardInput
-              :dialogType="selectIndex"
-              :content="editItem"
-              :loginType="loginData"
-              :bkPoint="bkPoint"
-              :showClose="true"
-              @clickSubmit="save"
-              @clickCancel="close"
+            <v-subheader
+              class="flex-col mt-3"
+              :class="`text-${bkPoint.model}`"
+              :height="bkPoint.btnHeight"
+              >条件{{ index + 1 }}</v-subheader
+            >
+            <v-select
+              v-model="item.text"
+              class="flex-col"
+              :items="shownHeaders"
+              label="項目"
+              :class="`text-${bkPoint.model}`"
+              :height="bkPoint.btnHeight"
+              @change="changeQueryCond(item.text, index)"
+            >
+            </v-select>
+            <!-- 各入力ボックス -->
+            <v-text-field
+              v-model="item.value"
+              class="flex-col ml-3 mr-3"
+              :type="`${item.type}`"
+              label="条件"
+              :class="`text-${bkPoint.model}`"
+              :height="bkPoint.btnHeight"
             />
-          </v-dialog>
-          <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
-            <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
-            <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
-          </v-snackbar>
-        </v-toolbar>
-        <MyTable
-          :headers="shownHeaders"
-          :items="showContents"
-          :itemkey="itemkey"
-          :bkPoint="bkPoint"
-          :sortByItem="sortByItem"
-          :sortByDesc="sortByDesc"
-          @childChange="applyChanges"
-        />
-        <v-dialog v-model="filedialog" max-width="700px" scrorable persistent>
-          <CardFile
-            :filepath.sync="filepath"
-            :dataType="0"
-            :download="true"
+            <!-- 入力ボックスの削除ボタン -->
+            <v-btn
+              class="flex-col"
+              type="button"
+              @click="removeInput(index)"
+              :class="`text-${bkPoint.model}`"
+              :height="bkPoint.btnHeight"
+            >
+              削除
+            </v-btn>
+          </div>
+        </v-card>
+      </v-card-text>
+    </v-card>
+    <v-card class="ma-3">
+      <v-toolbar outlined :height="bkPoint.btnHeight + 10">
+        <v-toolbar-title :class="`text-${bkPoint.model}`"
+          >テーブル表示</v-toolbar-title
+        >
+        <v-divider class="mx-4" vertical></v-divider>
+        <v-toolbar-title :class="`text-${bkPoint.model}`">
+          件数:{{ contents.length }}
+        </v-toolbar-title>
+        <v-spacer />
+        <v-btn
+          @click="registerSearch()"
+          v-if="select.length > 0"
+          :class="`text-${bkPoint.model}`"
+          :height="bkPoint.btnHeight"
+        >
+          地図連携
+        </v-btn>
+        <v-divider class="mx-4" vertical></v-divider>
+        <v-btn
+          @click="open(-1)"
+          :disabled="!(selectedName != '' && loginData.level >= 1)"
+          :class="`text-${bkPoint.model} mx-2`"
+          :height="bkPoint.btnHeight"
+        >
+          新規登録
+        </v-btn>
+        <v-btn
+          @click="open(0)"
+          :disabled="!(select.length > 0)"
+          :class="`text-${bkPoint.model} mx-2`"
+          :height="bkPoint.btnHeight"
+        >
+          閲覧
+        </v-btn>
+        <v-btn
+          @click="open(1)"
+          :disabled="!(select.length > 0 && loginData.level >= 1)"
+          :class="`text-${bkPoint.model} mx-2`"
+          :height="bkPoint.btnHeight"
+        >
+          編集
+        </v-btn>
+        <v-btn
+          @click="open(2)"
+          :disabled="!(select.length > 0 && loginData.level >= 1)"
+          :class="`text-${bkPoint.model} mx-2`"
+          :height="bkPoint.btnHeight"
+        >
+          削除
+        </v-btn>
+        <v-dialog v-model="dialog" max-width="700px" scrorable persistent>
+          <CardInput
+            :dialogType="selectIndex"
+            :content="editItem"
+            :loginType="loginData"
             :bkPoint="bkPoint"
-            :visible="filedialog"
-            @clickSubmit="filedialog = false"
-            @clickCancel="filedialog = false"
+            :showClose="true"
+            @clickSubmit="save"
+            @clickCancel="close"
           />
         </v-dialog>
-      </v-card>
-    </v-container>
-  </v-card>
+        <v-snackbar v-model="snackbar" :top="true" :timeout="timeout">
+          <span :class="`text-${bkPoint.model}`">{{ snackbarText }}</span>
+          <v-btn color="pink" text @click="snackbar = false">閉じる</v-btn>
+        </v-snackbar>
+      </v-toolbar>
+      <MyTable
+        :headers="shownHeaders"
+        :items="showContents"
+        :itemkey="itemkey"
+        :bkPoint="bkPoint"
+        :sortByItem="sortByItem"
+        :sortByDesc="sortByDesc"
+        @childChange="applyChanges"
+      />
+      <v-dialog v-model="filedialog" max-width="700px" scrorable persistent>
+        <CardFile
+          :filepath.sync="filepath"
+          :dataType="0"
+          :download="true"
+          :bkPoint="bkPoint"
+          :visible="filedialog"
+          @clickSubmit="filedialog = false"
+          @clickCancel="filedialog = false"
+        />
+      </v-dialog>
+    </v-card>
+  </div>
 </template>
 
 <script>
@@ -625,10 +623,6 @@ export default {
         console.log("台帳名が選択されていません");
         return;
       }
-      //項目を入力したか確認
-      const display = this.display.filter((x) => x.name == name)[0].display;
-      const json = JSON.parse(display);
-      this.tblHeaders = json;
 
       const cond = this.getCond();
       let url = `/db/${name}?${cond}`;

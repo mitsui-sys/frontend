@@ -1,17 +1,27 @@
 <template>
-  <v-card color="#fff">
-    <v-toolbar> ログ設定 </v-toolbar>
-    <v-card-text>
-      <MyTable
-        :headers="shownHeaders"
-        :items="showContents"
-        :itemkey="log.itemkey"
-        :bkPoint="bkPoint"
-        :sortByItem="sortByItem"
-        :sortByDesc="sortByDesc"
-        @childChange="applyChanges"
-      />
-    </v-card-text>
+  <v-card color="#fff" class="ma-3">
+    <v-toolbar outlined>
+      <v-toolbar-title :class="`text-${bkPoint.model}`">{{
+        title
+      }}</v-toolbar-title>
+      <v-divider
+        class="mx-4"
+        :class="`text-${bkPoint.model}`"
+        vertical
+      ></v-divider>
+      <v-toolbar-title :class="`text-${bkPoint.model}`">
+        件数：{{ contents.length }}
+      </v-toolbar-title>
+      <v-spacer />
+    </v-toolbar>
+    <MyTable
+      :headers="shownHeaders"
+      :items="showContents"
+      :bkPoint="bkPoint"
+      :sortByItem="sortByItem"
+      :sortByDesc="sortByDesc"
+      @childChange="applyChanges"
+    />
   </v-card>
 </template>
 
@@ -27,13 +37,8 @@ export default {
   props: ["bkPoint"],
   data() {
     return {
+      title: "ログ情報",
       select: [],
-      log: {
-        headers: [],
-        items: [],
-        itemkey: "id",
-        replace: [],
-      },
       headers: [],
       contents: [],
       sortByItem: [],

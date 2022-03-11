@@ -16,28 +16,11 @@
         </v-text-field>
         <v-text-field
           v-model="password_new"
-          :rules="[
-            required,
-            limit_length,
-            has_number,
-            has_alphabet_small,
-            has_alphabet_big,
-            has_not_alphabet,
-          ]"
+          :rules="[required]"
           label="新しいパスワード"
           :append-icon="showNew ? 'mdi-eye' : 'mdi-eye-off'"
           :type="showNew ? 'text' : 'password'"
           @click:append="showNew = !showNew"
-          required
-        ></v-text-field>
-
-        <v-text-field
-          v-model="password_same"
-          label="パスワード再入力"
-          :rules="[required, same_data]"
-          :append-icon="showSame ? 'mdi-eye' : 'mdi-eye-off'"
-          :type="showSame ? 'text' : 'password'"
-          @click:append="showSame = !showSame"
           required
         ></v-text-field>
 
@@ -49,9 +32,6 @@
         >
           更新
         </v-btn>
-        <!--
-        <v-btn color="error" class="mr-4" @click="clear">クリア</v-btn>
-        -->
         <v-btn class="mr-4" @click="cancel" :class="`text-${bkPoint.model}`"
           >キャンセル</v-btn
         >
@@ -61,6 +41,7 @@
 </template>
 
 <script>
+import http from "@/modules/http";
 export default {
   name: "DialogCard",
   props: ["dialogType", "content", "loginType", "dialog", "bkPoint"],
@@ -94,23 +75,33 @@ export default {
       this.username = "";
       this.password_old = "";
       this.password_new = "";
-      this.password_same = "";
     },
   },
-  computed: {},
   methods: {
     //親コンポーネントへ送信
-    submit() {
+    async submit() {
       if (this.$refs.form.validate()) {
-        console.log(this.password_new);
-        this.$emit("clickSubmit", this.password_new);
+        const data = {
+          data: {
+            user: this.username,
+            password: this.password_old,
+            new_password: this.password_new,
+          },
+        };
+        console.log(data);
+        // this.$emit("clickSubmit", this.password_new);
+        const res = await http.update("/system/user/check", data);
+        if (res.status == 200) {
+          console.log("更新しました");
+        } else {
+          console.log(res.data);
+        }
       } else {
         alert("もう1度確認してください");
       }
     },
     clear() {
       this.password_new = "";
-      this.password_same = "";
     },
     cancel() {
       this.$emit("clickCancel");

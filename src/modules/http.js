@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const http = axios.create({
-  baseURL: "http://LG2201001:50001",
-  // baseURL: "http://harima-isk:50001",
+  // baseURL: "http://LG2201001:50001",
+  baseURL: "http://localhost:50001",
   headers: {
     "Content-type": "application/json",
     // "X-Requested-With": "XMLHttpRequest",

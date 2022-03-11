@@ -1,17 +1,11 @@
 <template>
-  <v-btn
-    class="info"
-    @click="dialog = true"
-    id="loginbtn"
-    :class="`text-${bkPoint.model}`"
-    :width="bkPoint.btnWidth + 100"
-    :height="bkPoint.btnHeight"
+  <v-btn class="info" @click="dialog = true"
     >パスワード更新
     <v-dialog v-model="dialog" max-width="500px" scrorable persistent>
       <CardPasswordUpdate
         :dialog="dialog"
         :bkPoint="bkPoint"
-        @clickSubmit="save"
+        @clickSubmit="dialog = false"
         @clickCancel="dialog = false"
       />
     </v-dialog>
@@ -23,16 +17,6 @@ import CardPasswordUpdate from "@/components/Card/CardPasswordUpdate";
 export default {
   components: { CardPasswordUpdate },
   props: {
-    user: {
-      type: String,
-      default: "",
-      required: true,
-    },
-    password: {
-      type: String,
-      default: "",
-      required: true,
-    },
     bkPoint: {
       default: "",
     },
@@ -51,14 +35,6 @@ export default {
     },
     password(val) {
       this.internal_password = val;
-    },
-  },
-  computed: {
-    loginData() {
-      return this.$store.getters[`auth/login`];
-    },
-    loginElapsed() {
-      return this.$store.getters[`auth/elapsed`];
     },
   },
   methods: {
