@@ -13,9 +13,6 @@
         件数：{{ contents.length }}
       </v-toolbar-title>
       <v-spacer />
-      <v-btn @click="onPassword" :class="`text-${bkPoint.model} mx-2`">
-        パスワード更新
-      </v-btn>
       <v-btn @click="open(-1)" :class="`text-${bkPoint.model} mx-2`">
         新規登録
       </v-btn>
@@ -40,6 +37,14 @@
         :class="`text-${bkPoint.model} mx-2`"
       >
         削除
+      </v-btn>
+      <v-divider class="mx-4" vertical></v-divider>
+      <v-btn
+        @click="onPassword"
+        :disabled="!select.length > 0"
+        :class="`text-${bkPoint.model} mx-2`"
+      >
+        パスワード更新
       </v-btn>
     </v-toolbar>
     <MyTable

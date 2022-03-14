@@ -1,5 +1,15 @@
 <template>
   <div>
+    <v-btn
+      color="purple darken-3"
+      fab
+      small
+      @click="changeDisplayType"
+      v-if="this.user.level > 0"
+    >
+      <v-icon v-if="isEditing"> mdi-close </v-icon>
+      <v-icon v-else> mdi-pencil </v-icon>
+    </v-btn>
     <CardInput
       :dialogType="selectIndex"
       :content="editItem"
@@ -53,6 +63,7 @@ export default {
   },
   data() {
     return {
+      isEditing: false,
       title: "台帳システム",
       text: "テキストは改行ありだとcssだけで対処しきれないのでtrancate関数を作って対応する",
       detailData: { columns: [], rows: [] },
@@ -176,6 +187,11 @@ export default {
     // },
   },
   methods: {
+    changeDisplayType() {
+      this.isEditing = !this.isEditing;
+      this.selectIndex = this.isEditing ? 0 : 1;
+      this.setDisplayData(this.selectIndex, this.originItem);
+    },
     setDataType(typeName) {
       return typeName == "整数" || typeName == "小数"
         ? "number"
@@ -309,7 +325,7 @@ export default {
           const selected = rows[0];
           console.log("選択データ", selected);
           this.originItem = Object.assign(selected);
-          this.setDisplayData(this.selectIndex, selected);
+          this.setDisplayData(this.selectIndex, this.originItem);
         } else {
           // alert("台帳名 失敗");
           // this.snackbarText = "台帳名 失敗";

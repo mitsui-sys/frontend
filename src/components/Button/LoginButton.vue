@@ -1,5 +1,7 @@
 <template>
-  <v-btn class="info" @click="confirm" id="loginbtn" block>ログイン</v-btn>
+  <v-btn class="info displaybutton" @click="confirm" id="loginbtn" block
+    >ログイン</v-btn
+  >
 </template>
 <script>
 import http from "@/modules/http";

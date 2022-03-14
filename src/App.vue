@@ -69,7 +69,7 @@
         >進む<v-icon>mdi-arrow-right-bold-circle-outline</v-icon></v-btn
       >
       <v-spacer></v-spacer>
-      <v-toolbar-items v-if="!$vuetify.breakpoint.xs">
+      <v-toolbar-items>
         <v-btn text to="/" :class="`text-${bkPoint.btnSize}`">{{
           btn_title.home
         }}</v-btn>
@@ -416,7 +416,6 @@ export default {
   font-family: sans-serif !important;
   font-family: serif !important;
   */
-  /*font-size: 20px !important;*/
 }
 .main-title {
   font-size: 28px !important;
@@ -445,6 +444,10 @@ export default {
 
 .v-data-table tr:nth-child(odd) td {
   background: #ffffff;
+}
+
+.displaybutton {
+  font-size: 20px !important;
 }
 
 /* ヘッダに縦線出すよ */

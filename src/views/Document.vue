@@ -41,7 +41,6 @@
       >
       <v-divider class="mx-4" vertical></v-divider>
       <v-btn
-        class="primary"
         @click="download"
         :disabled="!(select.length > 0)"
         :class="`text-${bkPoint.model} mx-2`"
@@ -209,8 +208,8 @@ export default {
           point.cardWidth = 600;
           point.btnWidth = 500;
           point.btnHeight = 70;
-          point.titleModel = "h3";
-          point.model = "h5";
+          point.titleModel = "h6";
+          point.model = "body-1";
           break;
         default:
           break;
