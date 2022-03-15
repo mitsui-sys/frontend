@@ -23,7 +23,6 @@ export default {
       if (res.status == 200) {
         const data = res.data;
         await this.$store.dispatch(`table/updateReplace`, data);
-        console.log("Replace", this.replaceData);
       } else {
         console.error(res);
       }
@@ -34,7 +33,6 @@ export default {
       if (res.status == 200) {
         const data = res.data;
         await this.$store.dispatch(`table/updateDisplay`, data);
-        console.log("Display", this.displayData);
       } else {
         console.error(res);
       }

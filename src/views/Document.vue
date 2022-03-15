@@ -1,6 +1,6 @@
 <template>
   <v-card class="ma-3">
-    <v-toolbar outlined>
+    <v-toolbar outlined class="overflow-hidden">
       <v-toolbar-title :class="`text-${bkPoint.model}`">{{
         title
       }}</v-toolbar-title>
@@ -69,6 +69,8 @@
       :items="showContents"
       :itemkey="table.itemkey"
       :bkPoint="bkPoint"
+      :sortByItem="sortByItem"
+      :sortByDesc="sortByDesc"
       @childChange="applyChanges"
     />
   </v-card>
@@ -110,6 +112,8 @@ export default {
       snackbar: false,
       snackbarText: "",
       timeout: 1000,
+      sortByItem: ["書類番号"],
+      sortByDesc: [false],
     };
   },
   watch: {
@@ -228,9 +232,20 @@ export default {
         : "text";
     },
     initilize() {
+      // const data =
+      //   this.displayData.rows
+      //     .filter((x) => x.name == "埋蔵文化財発掘届出・通知書")
+      //     .shift() || null;
+      // if (data != null) {
+      //   //ソート情報の初期化
+      //   console.log(data);
+      //   const sort_default = JSON.parse(data.sort_default);
+      //   this.sortByItem = sort_default.map((x) => x.column) || [];
+      //   this.sortByDesc = sort_default.map((x) => x.desc) || [];
+      // }
+
       const user_replace =
         this.replaceData.rows.filter((x) => x.table == "document") || null;
-      console.log("置換設定", user_replace);
       let newReplaceData = [];
       //表示属性の順序を変更する
       const user_replace_new = user_replace.sort((a, b) => {
@@ -245,10 +260,7 @@ export default {
         rep["shown"] = rep["display_type"];
         newReplaceData.push(rep);
       }
-      console.log("置換設定_新", newReplaceData);
       this.headers = newReplaceData;
-      console.log("show", this.shownHeaders);
-      console.log("edit", this.editHeaders);
     },
     applyChanges(select) {
       // console.log("parentChange", select);
@@ -441,57 +453,36 @@ export default {
         alert("選択されていません");
         return;
       }
-      const assigns = {
-        __date__: "令和4年1月14日",
-        __name__: "播磨太郎", // エクセル内の__name__という文字列を置換
-        __address__: "加古郡播磨町東本荘1丁目5番30番",
-        __doc_number__: 5,
-        __doc_date__: "令和  年  月  日",
-        __city_date__: "令和  年  月  日",
-        __place__: "加古郡播磨町大中1丁目1番2号",
-        __area__: "約500㎡",
-        __owner_name__: "播磨太郎",
-        __owner_address__: "加古郡播磨町東本荘1丁目5番30番",
-        __iseki_type__: "大中遺跡",
-        __iseki_name__: "大中遺跡",
-        __iseki_current__: "大中遺跡",
-        __iseki_era__: "大中遺跡",
-        __site_main__: "大中遺跡",
-        __site_content__: "木造2階建個人住宅",
-        __site_name__: "播磨太郎",
-        __site_address__: "加古郡播磨町東本荘1丁目5番30番",
-        __construction_name__: "未定",
-        __construction_address__: "",
-        __start__: "令和4年7月1日（予定）",
-        __end__: "令和4年12月末",
-        __option__: "",
-        __guidance__: "",
-      };
-
       //書き込み番号
       const count = 25;
-      const serialNumber = Array.from({ length: count }).map((v, k) => k);
-      console.log(serialNumber); //結果：[0,1,2,3,4]
-      const serialObj = serialNumber.map((k) => `**value${k}`);
-      console.log(serialObj);
+      //const serialNumber = Array.from({ length: count }).map((v, k) => k);
+      //console.log(serialNumber); //結果：[0,1,2,3,4]
+      //const serialObj = serialNumber.map((k) => `**value${k}`);
       //テーブル情報を読み込む
       let datas = [];
 
       const content = this.select;
       console.log("書き込みデータ", content[0]);
-      console.log(content);
+      console.log("表示属性", this.editHeaders);
       for (const i in content) {
-        console.log(content[i]);
-        let data = Object.assign(assigns);
-        let index = 0;
+        console.log(i);
+        let data = {};
+        let index = 1;
         for (const test in content[i]) {
           console.log(test);
-          const value = content[i][test] || "";
-          const name = `**value${index}`;
-          data[name] = value;
-          index++;
+          const item = this.editHeaders.filter((x) => x.column == test);
+          if (item.length > 0) {
+            let value = content[i][test] || "";
+            //日付データを日付型に変換
+            if (item[0].type == "date") {
+              value = new Date(content[i][test]) || "";
+            }
+            const name = `**value${index}`;
+            data[name] = value;
+            index++;
+          }
         }
-        //データ番号
+        //データ番号が少なければ追加する
         while (index <= count) {
           const name = `**value${index}`;
           data[name] = "";
@@ -501,7 +492,7 @@ export default {
         console.log(data);
         datas.push(data);
       }
-      const filename = "届出・通知書.xlsx";
+      const filename = "埋蔵文化財発掘届出・通知書.xlsx";
       const path = "/resources/テンプレート.xlsx";
       //届出・通知書をファイルに出力
       MyXlsx.getTemplateWorkbook(path, datas, filename);

@@ -149,9 +149,9 @@
         </v-menu>
         <v-btn
           text
-          v-if="development"
-          to="/help"
           :class="`text-${bkPoint.btnSize}`"
+          @click="openPDF"
+          v-if="showPDF && loginData.token"
           >{{ btn_title.help }}<v-icon>mdi-help</v-icon></v-btn
         >
       </v-toolbar-items>
@@ -178,11 +178,13 @@
 <script>
 // import Loading from "./components/Loading";
 import http from "@/modules/http";
+import saveAs from "file-saver";
 
 export default {
   name: "App",
   data() {
     return {
+      showPDF: true,
       width: 800,
       height: 600,
       default: { width: 800, height: 600 },
@@ -312,12 +314,6 @@ export default {
         case "xl":
         case "lg":
         case "md":
-          point.minHeight = 200;
-          point.titleModel = "h4";
-          point.btnSize = "h6";
-          point.btnWidth = 600;
-          point.btnHeight = 150;
-          break;
         case "sm":
         case "xs":
           point.minHeight = 200;
@@ -339,6 +335,14 @@ export default {
     },
   },
   methods: {
+    openPDF() {
+      const path = "/resources/manual.pdf";
+      window.open(path);
+      let isDownload = false;
+      if (isDownload) {
+        saveAs(path, "manual.pdf");
+      }
+    },
     handleResize() {
       // resizeのたびにこいつが発火するので、ここでやりたいことをやる
       const width = window.innerWidth;
@@ -389,9 +393,10 @@ export default {
   beforeCreate() {
     // リアクティブデータ作成前に行いたい処理
   },
-  created() {
-    this.getReplace();
-    this.getDisplay();
+  async created() {
+    await this.getReplace();
+    await this.getDisplay();
+    console.log(this.replaceData, this.displayData);
   },
   mounted() {
     setTimeout(() => {

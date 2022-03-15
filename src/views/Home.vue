@@ -39,7 +39,7 @@ export default {
       title: "ホーム画面",
       label: { link: "利用規約", text: "に同意して利用する" },
       items: [
-        { text: "遺跡台帳管理", link: "/sheet", color: "gray" },
+        { text: "台帳管理", link: "/sheet", color: "gray" },
 
         {
           text: "埋蔵文化財発掘届出・通知書管理",

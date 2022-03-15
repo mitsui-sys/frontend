@@ -5,7 +5,7 @@
       fab
       small
       @click="changeDisplayType"
-      v-if="this.user.level > 0"
+      v-if="this.user.level > 0 && showChange"
     >
       <v-icon v-if="isEditing"> mdi-close </v-icon>
       <v-icon v-else> mdi-pencil </v-icon>
@@ -63,6 +63,7 @@ export default {
   },
   data() {
     return {
+      showChange: false,
       isEditing: false,
       title: "台帳システム",
       text: "テキストは改行ありだとcssだけで対処しきれないのでtrancate関数を作って対応する",

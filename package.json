@@ -22,7 +22,6 @@
     "fs": "^0.0.1-security",
     "glob": "^7.2.0",
     "leaflet": "^1.7.1",
-    "log4js": "^6.3.0",
     "material-design-icons-iconfont": "^6.1.0",
     "moment": "^2.29.1",
     "ng2-pdf-viewer": "^7.0.2",

@@ -128,8 +128,8 @@ const getTemplateWorkbook = (filepath, datas, filename) => {
     .then((wb) => {
       // シート名の一覧を取得
       // console.log("Sheet Name", wb.sheets);
-      let copy = wb.sheet("Sheet1").usedRange().value();
-      console.log(copy);
+      // let copy = wb.sheet("Sheet1").usedRange().value();
+      // console.log(copy);
       // const list = copy.reduce((pre, current) => {
       //   pre.push(...current);
       //   return pre;

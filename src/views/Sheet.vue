@@ -85,7 +85,7 @@
       </v-card-text>
     </v-card>
     <v-card class="ma-3">
-      <v-toolbar outlined>
+      <v-toolbar outlined class="overflow-hidden">
         <v-toolbar-title :class="`text-${bkPoint.model}`"
           >台帳表示</v-toolbar-title
         >

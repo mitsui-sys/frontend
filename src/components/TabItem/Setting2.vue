@@ -1,6 +1,6 @@
 <template>
   <v-card color="#fff" class="ma-3">
-    <v-toolbar outlined>
+    <v-toolbar outlined class="overflow-hidden">
       <v-toolbar-title :class="`text-${bkPoint.model}`">{{
         title
       }}</v-toolbar-title>
