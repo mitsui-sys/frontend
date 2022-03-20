@@ -9,7 +9,7 @@ import L from "leaflet";
 export default {
   mounted() {
     L.map("app", { center: L.latLng(35.6825, 139.752778), zoom: 15 }).addLayer(
-      L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png")
+      L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png")
     );
   },
 };
@@ -18,5 +18,6 @@ export default {
 <style>
 #mapid {
   height: 400px;
+  outline: 1px;
 }
 </style>

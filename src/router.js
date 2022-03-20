@@ -71,6 +71,31 @@ const router = new Router({
       name: "error",
       component: loadView("Error"),
     },
+    {
+      path: "/leaflet",
+      name: "leaflet",
+      component: loadView("Leaflet"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/osm",
+      name: "osm",
+      component: loadView("OpenStreetMap"),
+      // component: loadView("About"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/cesium",
+      name: "cesium",
+      component: loadView("Cesium"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
     //これ以降不要なページ
     {
       path: "/pdf",
@@ -98,30 +123,6 @@ const router = new Router({
       },
     },
 
-    {
-      path: "/leaflet",
-      name: "leaflet",
-      component: loadView("MyLeaflet"),
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
-      path: "/osm",
-      name: "osm",
-      component: loadView("About"),
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
-      path: "/cesium",
-      name: "cesium",
-      component: loadView("Cesium"),
-      meta: {
-        requiresAuth: true,
-      },
-    },
     {
       path: "/fileregister",
       name: "fileregister",

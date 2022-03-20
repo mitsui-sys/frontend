@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.13.0/css/ol.css"
+      type="text/css"
+    />
+    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.13.0/build/ol.js"></script>
+    <style>
+      .map {
+        height: 800px;
+        width: 100%;
+      }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/ol-layerswitcher@3.8.3/src/ol-layerswitcher.css"
+    />
+    <script src="https://unpkg.com/ol-layerswitcher@3.8.3"></script>
+    <title>OpenLayers example</title>
+  </head>
+  <body onload="init()">
+    <a href="index.html">Leafletへ移動</a>
+    <a href="cesium.html">Cesiumへ移動</a>
+    <h2>My Map</h2>
+    <div id="map" class="map"></div>
+    <table>
+      <tr>
+        <th>OSM Opacity</th>
+        <td>
+          <input
+            id="osm-slide"
+            type="range"
+            min="0.0"
+            max="1.0"
+            step="0.1"
+            value="1"
+          />
+        </td>
+        <td><span id="osm-opacity">1</span></td>
+      </tr>
+    </table>
+    <button id="osm-visible">OSM ON/OFF</button>
+    <form class="form-inline">
+      <label for="type">Action type &nbsp;</label>
+      <select id="type" class="form-control">
+        <option value="click" selected>Click</option>
+        <option value="singleclick">Single-click</option>
+        <option value="pointermove">Hover</option>
+        <option value="altclick">Alt+Click</option>
+        <option value="none">None</option>
+      </select>
+      <span id="status">&nbsp;0 selected features</span>
+    </form>
+    <script type="text/javascript">
+      function init() {
+        console.log("init");
+      }
+      const Map = ol.Map;
+      const View = ol.View;
+      const Feature = ol.Feature;
+      const Polyline = ol.format.Polyline;
+      const Point = ol.geom.Point;
+      const TileLayer = ol.layer.Tile;
+      const VectorLayer = ol.layer.Vector;
+      const OSM = ol.source.OSM;
+      const VectorSource = ol.source.Vector;
+      const Icon = ol.style.Icon;
+      const Stroke = ol.style.Stroke;
+      const Style = ol.style.Style;
+      const Geom = ol.geom;
+      const Select = ol.interaction.Select;
+
+      const coordinates = [
+        // 経度、緯度の順で定義
+        [135.49565, 34.702113],
+        [139.76713, 35.680776],
+      ];
+
+      var route = new Geom.LineString(coordinates);
+      route.transform("EPSG:4326", "EPSG:3857"); // 地理座標系(WGS84) の EPSG:4326 からメルカトル図法の EPSG:3857 に変換します
+
+      const routeCoords = route.getCoordinates();
+      const routeLength = routeCoords.length;
+
+      const routeFeature = new Feature({
+        type: "route",
+        geometry: route,
+      });
+      const startMarker = new Feature({
+        type: "icon",
+        geometry: new Point(routeCoords[0]),
+      });
+      const endMarker = new Feature({
+        type: "icon",
+        geometry: new Point(routeCoords[routeLength - 1]),
+      });
+
+      const styles = {
+        route: new Style({
+          stroke: new Stroke({
+            width: 6,
+            color: [237, 30, 164, 0.8],
+          }),
+        }),
+        icon: new Style({
+          image: new Icon({
+            anchor: [0.5, 1],
+            src: "icons8-30.png", // 適当に置き換えてください
+          }),
+        }),
+      };
+
+      const vectorLayer = new VectorLayer({
+        source: new VectorSource({
+          features: [routeFeature, startMarker, endMarker],
+        }),
+        style: function (feature) {
+          return styles[feature.get("type")];
+        },
+      });
+
+      let layers = [];
+
+      //OpenStreetMap
+      let osm = new ol.layer.Tile({
+        source: new ol.source.OSM(),
+      });
+
+      //geoserverのデータを追加
+      var baseSource = new ol.source.TileWMS({
+        url: "http://localhost:8888/geoserver/wms",
+        params: {
+          format: "image/png",
+          transparent: true,
+          version: "1.3.0",
+          layers: "test:包蔵地",
+          tiled: true,
+        },
+        serverTyep: "geoserver",
+      });
+
+      var baseLayer = new ol.layer.Tile({
+        source: baseSource,
+      });
+
+      var baseSource1 = new ol.source.TileWMS({
+        url: "http://localhost:8888/geoserver/wms",
+        params: {
+          format: "image/png",
+          transparent: true,
+          version: "1.3.0",
+          layers: "test:照会_回答依頼書",
+          tiled: true,
+        },
+        serverTyep: "geoserver",
+      });
+
+      var baseLayer1 = new ol.layer.Tile({
+        source: baseSource1,
+      });
+
+      //追加
+      var gridsetName = "EPSG:6673_L2500";
+      var gridNames = [
+        "EPSG:6673_L2500:0",
+        "EPSG:6673_L2500:1",
+        "EPSG:6673_L2500:2",
+        "EPSG:6673_L2500:3",
+        "EPSG:6673_L2500:4",
+        "EPSG:6673_L2500:5",
+      ];
+      var baseUrl = "http://localhost:8888/geoserver/gwc/service/wmts"; //"../service/wmts";
+      //baseUrl = "http://lg2201001:8080/geoserver/gwc/service/wmts";
+
+      var projection = new ol.proj.Projection({
+        code: "EPSG:6673",
+        units: "m",
+        axisOrientation: "neu",
+      });
+      var defExtent = [
+        -110992.00295450131, -207439.91742665006, 111215.99704549866,
+        -28239.917426650092,
+      ];
+      var resolutions = [
+        27.999999999999996, 13.999999999999998, 6.999999999999999, 2.8, 1.4,
+        0.7,
+      ];
+
+      function constructSourceWMTS() {
+        var style = "";
+        var format = "image/png";
+        var infoFormat = "text/html";
+        var layerName = "geological:地質図"; //"geo:chishitsu_check";
+        baseParams = [
+          "VERSION",
+          "LAYER",
+          "STYLE",
+          "TILEMATRIX",
+          "TILEMATRIXSET",
+          "SERVICE",
+          "FORMAT",
+        ];
+
+        params = {
+          VERSION: "1.0.0",
+          LAYER: layerName,
+          STYLE: style,
+          TILEMATRIX: gridNames,
+          TILEMATRIXSET: gridsetName,
+          SERVICE: "WMTS",
+          FORMAT: format,
+        };
+        var url = baseUrl + "?";
+        for (var param in params) {
+          if (baseParams.indexOf(param.toUpperCase()) < 0) {
+            url = url + param + "=" + params[param] + "&";
+          }
+        }
+        url = url.slice(0, -1);
+        console.log("参照URL", url);
+
+        var source = new ol.source.WMTS({
+          url: url,
+          layer: params["LAYER"],
+          matrixSet: params["TILEMATRIXSET"],
+          format: params["FORMAT"],
+          projection: projection,
+          tileGrid: new ol.tilegrid.WMTS({
+            tileSize: [256, 256],
+            extent: defExtent,
+            origin: ol.extent.getTopLeft(defExtent),
+            resolutions: resolutions,
+            matrixIds: params["TILEMATRIX"],
+          }),
+          style: params["STYLE"],
+          wrapX: true,
+        });
+        return source;
+      }
+      var wmtsLayer = new ol.layer.Tile({
+        source: constructSourceWMTS(),
+      });
+
+      function constructSourceVectorTile() {
+        var style = "";
+        var format = "application/vnd.mapbox-vector-tile";
+        var infoFormat = "text/html";
+        var layerName = "chikei:tikei2500";
+        params = {
+          REQUEST: "GetTile",
+          SERVICE: "WMTS",
+          VERSION: "1.0.0",
+          LAYER: layerName,
+          STYLE: style,
+          TILEMATRIX: gridsetName + ":{z}",
+          TILEMATRIXSET: gridsetName,
+          FORMAT: format,
+          TILECOL: "{x}",
+          TILEROW: "{y}",
+        };
+        var url = baseUrl + "?";
+        for (var param in params) {
+          url = url + param + "=" + params[param] + "&";
+        }
+        url = url.slice(0, -1);
+
+        var source = new ol.source.VectorTile({
+          url: url,
+          format: new ol.format.MVT({}),
+          projection: projection,
+          tileGrid: new ol.tilegrid.WMTS({
+            tileSize: [256, 256],
+            origin: ol.extent.getTopLeft(defExtent),
+            resolutions: resolutions,
+            matrixIds: gridNames,
+          }),
+          wrapX: true,
+        });
+        return source;
+      }
+
+      var vectortileLayer = new ol.layer.VectorTile({
+        source: constructSourceVectorTile(),
+      });
+
+      //layers.push(osm);
+      //layers.push(baseLayer);
+      //layers.push(baseLayer1);
+      //layers.push(wmtsLayer);
+      //layers.push(vectortileLayer);
+
+      var view = new ol.View({
+        center: [0, 0],
+        zoom: 2,
+        resolutions: resolutions,
+        projection: projection,
+      });
+
+      var map = new ol.Map({
+        target: "map",
+        layers: [osm, wmtsLayer, vectortileLayer, baseLayer, baseLayer1],
+        //layers: [osm, wmtsLayer, baseLayer, baseLayer1],
+        view: view,
+      });
+      map
+        .getView()
+        .fit([30000.0, -160000.0, 70000.0, -120000.0], map.getSize());
+
+      //イベントの付加
+      map.on("moveend", function (e) {
+        var zoom = map.getView().getZoom();
+        if (zoom >= 2) {
+          baseLayer.setVisible(true);
+        } else if (zoom < 2) {
+          baseLayer.setVisible(false);
+        }
+      });
+
+      var osmToggle = document.getElementById("osm-visible");
+      osmToggle.addEventListener("click", function (e) {
+        if (baseLayer1.getVisible()) {
+          baseLayer1.setVisible(false);
+        } else {
+          baseLayer1.setVisible(true);
+        }
+      });
+
+      //クリック時のイベント
+      map.on("click", function (evt) {
+        alert("マップ内がクリックされました");
+      });
+
+      async function createMap() {
+        var parser = new ol.format.WMTSCapabilities();
+        var assetUrl = "http://localhost:8888/geoserver/gwc/service/wmts/rest/";
+        var response = await fetch(assetUrl + "WMTSCapabilities.xml");
+        var text = await response.text();
+        var result = parser.read(text);
+        console.log(result);
+
+        // ion capabilities only support Mercator with a single default layer
+        /*
+        var options = ol.source.WMTS.optionsFromCapabilities(result, {
+          layer: "chikei:tikei2500",
+          format: "image/png",
+          matrixSet: "EPSG:6773",
+        });
+        console.log(options);
+        new ol.layer.Tile({
+          opacity: 1,
+          source: new ol.source.WMTS(options),
+        });
+        */
+      }
+      createMap();
+    </script>
+  </body>
+</html>

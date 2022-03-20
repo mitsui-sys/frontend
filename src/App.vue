@@ -5,6 +5,7 @@
       clipped
       v-model="drawer"
       v-if="development && loginData.level >= 1"
+      app
     >
       <v-container>
         <v-row>
@@ -154,6 +155,9 @@
           v-if="showPDF && loginData.token"
           >{{ btn_title.help }}<v-icon>mdi-help</v-icon></v-btn
         >
+        <v-btn text to="/osm" :class="`text-${bkPoint.btnSize}`"
+          >{{ btn_title.map }}<v-icon>mdi-map</v-icon></v-btn
+        >
       </v-toolbar-items>
     </v-app-bar>
     <!-- メイン -->
@@ -184,6 +188,7 @@ export default {
   name: "App",
   data() {
     return {
+      development: true,
       showPDF: true,
       width: 800,
       height: 600,
@@ -196,6 +201,7 @@ export default {
         login: "ログイン",
         support: "サポート",
         help: "ヘルプ",
+        map: "地図",
       },
       drawer: false,
       supports: [
@@ -286,9 +292,9 @@ export default {
     loginData() {
       return this.$store.getters[`auth/login`];
     },
-    development() {
-      return this.$store.getters[`config/development`];
-    },
+    // development() {
+    //   return this.$store.getters[`config/development`];
+    // },
     loginLevel() {
       const level = this.loginData.level;
       return level == 0
