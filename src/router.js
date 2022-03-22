@@ -79,19 +79,27 @@ const router = new Router({
         requiresAuth: true,
       },
     },
+    // {
+    //   path: "/osm",
+    //   name: "osm",
+    //   component: loadView("OpenStreetMap"),
+    //   // component: loadView("About"),
+    //   meta: {
+    //     requiresAuth: true,
+    //   },
+    // },
     {
-      path: "/osm",
-      name: "osm",
-      component: loadView("OpenStreetMap"),
-      // component: loadView("About"),
+      path: "/cesium",
+      name: "cesium",
+      component: loadView("Cesium"),
       meta: {
         requiresAuth: true,
       },
     },
     {
-      path: "/cesium",
-      name: "cesium",
-      component: loadView("Cesium"),
+      path: "/osm",
+      name: "osm",
+      component: loadView("OSM"),
       meta: {
         requiresAuth: true,
       },

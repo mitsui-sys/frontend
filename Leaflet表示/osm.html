@@ -27,6 +27,7 @@
     <a href="cesium.html">Cesiumへ移動</a>
     <h2>My Map</h2>
     <div id="map" class="map"></div>
+    <!--
     <table>
       <tr>
         <th>OSM Opacity</th>
@@ -55,6 +56,7 @@
       </select>
       <span id="status">&nbsp;0 selected features</span>
     </form>
+  -->
     <script type="text/javascript">
       function init() {
         console.log("init");
@@ -302,7 +304,7 @@
 
       var map = new ol.Map({
         target: "map",
-        layers: [osm, wmtsLayer, vectortileLayer, baseLayer, baseLayer1],
+        layers: [osm, wmtsLayer, baseLayer, baseLayer1],
         //layers: [osm, wmtsLayer, baseLayer, baseLayer1],
         view: view,
       });

@@ -57,6 +57,7 @@
       <v-toolbar-title :class="`text-${bkPoint.titleModel}`" class="mainTitle"
         >台帳システム</v-toolbar-title
       >
+      <!--
       <v-btn
         v-if="development"
         @click="$router.go(-1)"
@@ -69,6 +70,7 @@
         :class="`text-${bkPoint.btnSize}`"
         >進む<v-icon>mdi-arrow-right-bold-circle-outline</v-icon></v-btn
       >
+      -->
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn text to="/" :class="`text-${bkPoint.btnSize}`">{{
@@ -155,8 +157,12 @@
           v-if="showPDF && loginData.token"
           >{{ btn_title.help }}<v-icon>mdi-help</v-icon></v-btn
         >
-        <v-btn text to="/osm" :class="`text-${bkPoint.btnSize}`"
-          >{{ btn_title.map }}<v-icon>mdi-map</v-icon></v-btn
+        <v-btn
+          text
+          to="/osm"
+          :class="`text-${bkPoint.btnSize}`"
+          v-if="loginData.level >= 1"
+          >{{ btn_title.map }}</v-btn
         >
       </v-toolbar-items>
     </v-app-bar>
@@ -188,7 +194,7 @@ export default {
   name: "App",
   data() {
     return {
-      development: true,
+      development: false,
       showPDF: true,
       width: 800,
       height: 600,
