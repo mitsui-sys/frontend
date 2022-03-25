@@ -201,6 +201,33 @@ export default {
       return blank_layer;
     },
     wmtsOldLayer() {
+      // const osm = new TileLayer({
+      //   title: "OSM",
+      //   type: "base",
+      //   visible: true,
+      //   source: new SourceOSM(),
+      // });
+      // const watercolor = new TileLayer({
+      //   title: "Water color",
+      //   type: "base",
+      //   visible: false,
+      //   source: new SourceStamen({
+      //     layer: "watercolor",
+      //   }),
+      // });
+      // const mierune = new TileLayer({
+      //   title: "mierune",
+      //   type: "base",
+      //   visible: false,
+      //   source: new XYZ({
+      //     url: "https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png",
+      //     attributions: "", //'Maptiles by <a href="http://mierune.co.jp" target="_blank">MIERUNE</a>, under CC BY. Data by <a href="http://osm.org/copyright" target="_blank">OpenStreetMap</a> contributors, under ODbL.',
+      //     attributionsCollapsible: false,
+      //     tileSize: [256, 256],
+      //     minZoom: 0,
+      //     maxZoom: 18,
+      //   }),
+      // });
       // const _proj = this.proj4Data["EPSG2447"];
       // this.setProj4(_proj);
       // const projection = this.getProjExtent(_proj);
@@ -236,39 +263,9 @@ export default {
       //   }),
       // });
     },
+
     initLayer() {
       // // レイヤーの生成
-
-      // const osm = new TileLayer({
-      //   title: "OSM",
-      //   type: "base",
-      //   visible: true,
-      //   source: new SourceOSM(),
-      // });
-
-      // const watercolor = new TileLayer({
-      //   title: "Water color",
-      //   type: "base",
-      //   visible: false,
-      //   source: new SourceStamen({
-      //     layer: "watercolor",
-      //   }),
-      // });
-
-      // const mierune = new TileLayer({
-      //   title: "mierune",
-      //   type: "base",
-      //   visible: false,
-      //   source: new XYZ({
-      //     url: "https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png",
-      //     attributions: "", //'Maptiles by <a href="http://mierune.co.jp" target="_blank">MIERUNE</a>, under CC BY. Data by <a href="http://osm.org/copyright" target="_blank">OpenStreetMap</a> contributors, under ODbL.',
-      //     attributionsCollapsible: false,
-      //     tileSize: [256, 256],
-      //     minZoom: 0,
-      //     maxZoom: 18,
-      //   }),
-      // });
-
       //OpenStreetMap
       // const osmLayer = this.createOSMLayer();
       // this.addLayer(osmLayer);
@@ -306,9 +303,6 @@ export default {
           },
         }),
       });
-      // const wmtsLayer = this.createWMTSLayer();
-      // this.addLayer(wmtsLayer);
-      //const chikei = this.createWMSLayer("chikei:地形図2500");
       this.addLayer(chikeiTile);
       var chibanTile = new TileLayer({
         title: "地番図",
@@ -327,10 +321,6 @@ export default {
         }),
       });
       this.addLayer(chibanTile);
-
-      //ベクトルタイル
-      // const vtLayer = this.createVectorsLayer();
-      // this.addLayer(vtLayer);
     },
     setMap() {
       this.initLayer();

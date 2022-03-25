@@ -25,7 +25,7 @@ const getters = {
       today.format("YYYY/MM/DD")
     );
 
-    if (elapsedDate > 90) alert("パスワードを更新してください");
+    if (elapsedDate > 90) console.log("パスワードを更新してください");
     // else if (elapsedDate > 80)
     //   alert(`パスワードの更新期限まであと${90 - elapsedDate}日です`);
     return elapsedDate;

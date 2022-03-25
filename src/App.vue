@@ -349,10 +349,11 @@ export default {
   methods: {
     openPDF() {
       const path = "/resources/manual.pdf";
-      window.open(path);
       let isDownload = false;
       if (isDownload) {
         saveAs(path, "manual.pdf");
+      } else {
+        window.open(path);
       }
     },
     handleResize() {
